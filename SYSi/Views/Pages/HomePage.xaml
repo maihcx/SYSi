@@ -49,16 +49,26 @@
                                        Command="{Binding ViewModel.NavigateCPUCommand}"
                                        IsChevronVisible="False">
                             <StackPanel>
-                                <StackPanel Orientation="Horizontal"
-                                            Margin="0">
-                                    <ui:SymbolIcon Symbol="BrainCircuit24"
+                                <Grid HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <ui:SymbolIcon Grid.Column="0"
+                                                   Symbol="BrainCircuit24"
                                                    FontSize="20" />
-                                    <TextBlock Text="{utils:Localization cpu_usage_title}"
+                                    <TextBlock Grid.Column="1"
+                                               Text="{utils:Localization cpu_usage_title}"
                                                FontSize="13"
                                                FontWeight="Medium"
                                                VerticalAlignment="Center"
                                                Margin="8,0,0,0" />
-                                </StackPanel>
+                                    <ui:SymbolIcon Grid.Column="2"
+                                                   Symbol="ChevronCircleRight24"
+                                                   FontSize="20" />
+                                </Grid>
                                 <TextBlock Text="{Binding ViewModel.CpuName}"
                                            FontSize="11"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
