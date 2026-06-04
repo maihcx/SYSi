@@ -82,25 +82,6 @@
             </StackPanel>
         </controls:FormFieldCard>
 
-        <controls:FormFieldCard
-            Icon="{ui:SymbolIcon PersonRunning20}"
-            PrimaryText="{utils:Localization page_settings_rat_title}"
-            DescriptionText="{utils:Localization page_settings_rat_summary}">
-
-            <ui:ToggleSwitch
-                IsChecked="{Binding ViewModel.IsStartWithWin}" />
-        </controls:FormFieldCard>
-
-        <controls:FormFieldCard
-            Margin="0,0,0,12"
-            Icon="{ui:SymbolIcon ShareScreenPersonOverlayInside20}"
-            PrimaryText="{utils:Localization page_settings_vab_title}"
-            DescriptionText="{utils:Localization page_settings_vab_summary}">
-
-            <ui:ToggleSwitch
-                IsChecked="{Binding ViewModel.IsViewAtBoot}" />
-        </controls:FormFieldCard>
-
         <ui:TextBlock
             Margin="0,24,0,8"
             FontTypography="BodyStrong"
@@ -277,7 +258,7 @@
                         Grid.Row="0"
                         Grid.Column="0"
                         FontTypography="Body"
-                        Text="Circle Search"
+                        Text="System Information"
                         TextWrapping="Wrap" />
                     <ui:TextBlock
                         Grid.Row="1"

@@ -41,10 +41,10 @@ namespace SYSi.Views.Windows
             snackbarService.SetSnackbarPresenter(GlobalSnackbar);
             WindowHelper.GlobalSnackbar = snackbarService;
 
-            //TranslationSource.Instance.PropertyChanged += (s, e) =>
-            //{
-            //    RootNavigation.UpdateBreadcrumbContents();
-            //};
+            TranslationSource.Instance.PropertyChanged += (s, e) =>
+            {
+                RootNavigation.UpdateBreadcrumbContents();
+            };
 
             RestoreWindow();
         }

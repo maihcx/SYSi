@@ -7,6 +7,7 @@
     xmlns:controls="clr-namespace:SYSi.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:utils="clr-namespace:SYSi.Utils"
     Title="HomePage"
     d:DataContext="{d:DesignInstance local:HomePage,
                                      IsDesignTimeCreatable=False}"
@@ -19,10 +20,198 @@
 
     <StackPanel Margin="0 0 0 30">
         <controls:ReferralCard
+            Margin="5 5 5 14"
             Title="{Binding ViewModel.SortAuthor, Mode=OneWay}"
             Subtitle="{Binding ViewModel.Author, Mode=OneWay}"
             Description="{Binding ViewModel.AppDescription, Mode=OneWay}"
-            FooterText="{Binding ViewModel.AuthorCreated, Mode=OneWay}" />
+            FooterText="{Binding ViewModel.AuthorCreated, Mode=OneWay}">
+            <controls:ReferralCard.FooterContent>
+                <StackPanel>
+                    <!-- Usage cards row -->
+                    <ItemsControl>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Margin="0,0,-8,-8" Columns="{Binding ActualWidth,
+                                    RelativeSource={RelativeSource AncestorType=ItemsControl},
+                                    Converter={StaticResource WidthToColumnsConverter}}"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+
+                        <ItemsControl.Resources>
+                            <Style TargetType="ui:Card" BasedOn="{StaticResource {x:Type ui:Card}}">
+                                <Setter Property="Margin" Value="0,0,8,8"/>
+                            </Style>
+                        </ItemsControl.Resources>
+
+                        <!-- CPU -->
+                        <ui:Card>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0">
+                                    <ui:SymbolIcon Symbol="BrainCircuit24" FontSize="20" />
+                                    <TextBlock Text="{utils:Localization cpu_usage_title}" 
+                                        FontSize="13" FontWeight="Medium"
+                                        VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding ViewModel.CpuName}" FontSize="11"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    TextTrimming="CharacterEllipsis" Margin="0,0,0,8"/>
+                                <Grid>
+                                    <ui:ProgressRing  Progress="{Binding ViewModel.CpuUsage}" Margin="0" />
+                                    <StackPanel
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                        <TextBlock FontSize="13" FontWeight="Bold"
+                                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
+                                            <Run Text="{Binding ViewModel.CpuUsage, StringFormat={}{0:F1}}"/>
+                                            <Run Text="%"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </ui:Card>
+
+                        <!-- RAM -->
+                        <ui:Card>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0">
+                                    <ui:SymbolIcon Symbol="Memory16" FontSize="20"
+                                        Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                    <TextBlock
+                                        FontSize="12" FontWeight="Medium"
+                                        VerticalAlignment="Center" Margin="8,0,0,0">
+                                        <Run Text="{utils:Localization ram_usage_title}" />
+                                        <Run Text="-" />
+                                        <Run Text="{Binding ViewModel.RamType, Mode=OneWay}" />
+                                    </TextBlock>
+                                </StackPanel>
+                                <TextBlock
+                                    FontSize="11"
+                                    Margin="0,0,0,8"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    TextWrapping="NoWrap"
+                                    TextTrimming="CharacterEllipsis">
+
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0}/{1} - {2}">
+                                            <Binding Path="ViewModel.RamUsage"/>
+                                            <Binding Path="ViewModel.TotalRam"/>
+                                            <Binding Path="ViewModel.RamSpeed"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+
+                                <Grid>
+                                    <ui:ProgressRing  Progress="{Binding ViewModel.RamUsagePercent}" Margin="0" />
+                                    <StackPanel
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                        <TextBlock FontSize="12" FontWeight="Bold"
+                                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
+                                            <Run Text="{Binding ViewModel.RamUsagePercent, StringFormat={}{0:F1}}"/>
+                                            <Run Text="%"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </ui:Card>
+
+                        <!-- OS / Uptime -->
+                        <ui:Card>
+                            <StackPanel MinHeight="103">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <ui:SymbolIcon Symbol="DesktopPulse24" FontSize="20"
+                                        Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="{utils:Localization os_title}" FontSize="13" FontWeight="Medium"
+                                        VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                </StackPanel>
+                                
+                                <StackPanel Orientation="Vertical" Margin="0,0,0,4">
+                                    <TextBlock 
+                                        FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,4"
+                                        Text="{Binding ViewModel.OsName}"/>
+                                    <TextBlock
+                                        FontSize="12"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap">
+
+                                        <Run Text="{utils:Localization uptime_title}" /><Run Text=":" />
+
+                                        <InlineUIContainer>
+                                            <TextBlock
+                                                Text="{Binding ViewModel.Uptime}"
+                                                TextWrapping="NoWrap"/>
+                                        </InlineUIContainer>
+
+                                    </TextBlock>
+                                </StackPanel>
+                            </StackPanel>
+                        </ui:Card>
+        
+                        <!-- GPU card -->
+                        <ui:Card>
+                            <StackPanel MinHeight="103">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <ui:SymbolIcon Symbol="Stream24" FontSize="20"
+                                        Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                    <TextBlock 
+                                        Text="{utils:Localization gpu_usage_title}" 
+                                        FontSize="13" FontWeight="Medium"
+                                        VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                </StackPanel>
+
+                                <TextBlock 
+                                    Text="{utils:Localization loading_title}"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    FontSize="12" FontWeight="SemiBold">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ViewModel.GpuList.Count, Mode=OneWay}" Value="0">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <ItemsControl ItemsSource="{Binding ViewModel.GpuList, Mode=OneWay}" AlternationCount="10">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,0,0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- GPU 0: -->
+                                                <TextBlock
+                                                    Grid.Column="0"
+                                                    FontSize="12"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
+                                                    <Run Text="GPU"/>
+                                                    <Run Text="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex), Mode=OneWay}"/><Run Text=": "/>
+                                                </TextBlock>
+
+                                                <!-- Tên GPU -->
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    FontSize="12"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Text="{Binding Name}"
+                                                    TextWrapping="Wrap"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ui:Card>
+                    </ItemsControl>
+                </StackPanel>
+            </controls:ReferralCard.FooterContent>
+        </controls:ReferralCard>
 
         <controls:GalleryNavigationPresenter
             Margin="0"

@@ -27,6 +27,9 @@ public class ReferralCard : Control
     public static readonly DependencyProperty FooterTextProperty =
         DependencyProperty.Register(nameof(FooterText), typeof(string), typeof(ReferralCard));
 
+    public static readonly DependencyProperty FooterContentProperty =
+        DependencyProperty.Register(nameof(FooterContent), typeof(object), typeof(ReferralCard));
+
     public ImageSource ImageSource
     {
         get => (ImageSource)GetValue(ImageSourceProperty);
@@ -57,4 +60,9 @@ public class ReferralCard : Control
         set => SetValue(FooterTextProperty, value);
     }
 
+    public object FooterContent
+    {
+        get => GetValue(FooterContentProperty);
+        set => SetValue(FooterContentProperty, value);
+    }
 }

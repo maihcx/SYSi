@@ -8,7 +8,6 @@
         <Setter Property="Focusable" Value="False" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="OverridesDefaultStyle" Value="True" />
-        <Setter Property="Height" Value="200" />
         <Setter Property="Margin" Value="4,4,4,14" />
         <Setter Property="Border.CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
         <Setter Property="Template">
@@ -30,9 +29,9 @@
                                     <GradientStop Offset="1.00" Color="#B0002B57" />
                                 </LinearGradientBrush>
                             </Border.Background>
-                            <Grid>
+                            <StackPanel>
                                 <StackPanel
-                                    Margin="48,0"
+                                    Margin="48 30 0 10"
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
                                     Background="Transparent">
@@ -49,14 +48,17 @@
                                         Foreground="#B7FFFFFF"
                                         Text="{TemplateBinding Description}" />
                                 </StackPanel>
+                                <ContentPresenter
+                                    Content="{TemplateBinding FooterContent}"
+                                    Margin="25 15"/>
                                 <ui:TextBlock
-                                    Margin="12"
+                                    Margin="0 0 12 12"
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Bottom"
                                     FontTypography="Caption"
                                     Foreground="#57FFFFFF"
                                     Text="{TemplateBinding FooterText}" />
-                            </Grid>
+                            </StackPanel>
                         </Border>
                     </Border>
                 </ControlTemplate>

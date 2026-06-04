@@ -23,6 +23,7 @@
       <helpers:BoolToStatusText x:Key="BoolToStatusText" />
       <helpers:StringToColorConverter x:Key="StringToColorConverter" />
       <helpers:BooleanToString x:Key="BooleanToString" />
+      <helpers:WidthToColumnsConverter x:Key="WidthToColumnsConverter" />
     </ResourceDictionary>
   </Application.Resources>
 </Application>
