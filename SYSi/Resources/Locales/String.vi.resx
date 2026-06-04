@@ -273,4 +273,61 @@
   <data name="gpu_usage_title" xml:space="preserve">
     <value>GPU</value>
   </data>
+  <data name="page_cpu_title" xml:space="preserve">
+    <value>Bộ xử lý (CPU)</value>
+  </data>
+  <data name="page_cpu_summary" xml:space="preserve">
+    <value>Đi đến trang Bộ Xử Lý (CPU)</value>
+  </data>
+  <data name="cpu_name_title" xml:space="preserve">
+    <value>Tên</value>
+  </data>
+  <data name="manu_title" xml:space="preserve">
+    <value>Nhà sản xuất</value>
+  </data>
+  <data name="arch_title" xml:space="preserve">
+    <value>Kiến trúc</value>
+  </data>
+  <data name="socket_title" xml:space="preserve">
+    <value>Socket</value>
+  </data>
+  <data name="family_cpu_title" xml:space="preserve">
+    <value>Họ vi xử lý</value>
+  </data>
+  <data name="stepping_title" xml:space="preserve">
+    <value>Stepping</value>
+  </data>
+  <data name="virt_title" xml:space="preserve">
+    <value>Ảo hóa</value>
+  </data>
+  <data name="proc_id_title" xml:space="preserve">
+    <value>ID Bộ xử lý</value>
+  </data>
+  <data name="cores_title" xml:space="preserve">
+    <value>Nhân vật lý</value>
+  </data>
+  <data name="threads_title" xml:space="preserve">
+    <value>Luồng xử lý</value>
+  </data>
+  <data name="base_speed_title" xml:space="preserve">
+    <value>Tốc độ cơ bản</value>
+  </data>
+  <data name="max_speed_title" xml:space="preserve">
+    <value>Tốc độ tối đa</value>
+  </data>
+  <data name="l1_title" xml:space="preserve">
+    <value>Bộ nhớ đệm L1</value>
+  </data>
+  <data name="l2_title" xml:space="preserve">
+    <value>Bộ nhớ đệm L2</value>
+  </data>
+  <data name="l3_title" xml:space="preserve">
+    <value>Bộ nhớ đệm L3</value>
+  </data>
+  <data name="perf_title" xml:space="preserve">
+    <value>Hiệu suất</value>
+  </data>
+  <data name="gen_info_title" xml:space="preserve">
+    <value>Thông tin chung</value>
+  </data>
 </root>

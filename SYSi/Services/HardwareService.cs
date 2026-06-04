@@ -75,7 +75,7 @@ public class HardwareService
                 uint l2 = Convert.ToUInt32(obj["L2CacheSize"] ?? 0);
                 uint l3 = Convert.ToUInt32(obj["L3CacheSize"] ?? 0);
                 info.L1Cache = "N/A"; // WMI doesn't expose L1 easily
-                info.L2Cache = l2 > 0 ? $"{l2} KB" : "N/A";
+                info.L2Cache = l2 > 0 ? FormatCacheSize(l2) : "N/A";
                 info.L3Cache = l3 > 0 ? FormatCacheSize(l3) : "N/A";
                 break;
             }

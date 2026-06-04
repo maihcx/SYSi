@@ -273,4 +273,61 @@
   <data name="gpu_usage_title" xml:space="preserve">
     <value>GPU</value>
   </data>
+  <data name="page_cpu_title" xml:space="preserve">
+    <value>Processor (CPU)</value>
+  </data>
+  <data name="page_cpu_summary" xml:space="preserve">
+    <value>Go to Processor (CPU)</value>
+  </data>
+  <data name="cpu_name_title" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="manu_title" xml:space="preserve">
+    <value>Manufacturer</value>
+  </data>
+  <data name="arch_title" xml:space="preserve">
+    <value>Architecture</value>
+  </data>
+  <data name="socket_title" xml:space="preserve">
+    <value>Socket</value>
+  </data>
+  <data name="family_cpu_title" xml:space="preserve">
+    <value>Family</value>
+  </data>
+  <data name="stepping_title" xml:space="preserve">
+    <value>Stepping</value>
+  </data>
+  <data name="virt_title" xml:space="preserve">
+    <value>Virtualization</value>
+  </data>
+  <data name="proc_id_title" xml:space="preserve">
+    <value>Processor ID</value>
+  </data>
+  <data name="cores_title" xml:space="preserve">
+    <value>Physical Cores</value>
+  </data>
+  <data name="threads_title" xml:space="preserve">
+    <value>Logical Processors</value>
+  </data>
+  <data name="base_speed_title" xml:space="preserve">
+    <value>Base Speed</value>
+  </data>
+  <data name="max_speed_title" xml:space="preserve">
+    <value>Max Speed</value>
+  </data>
+  <data name="l1_title" xml:space="preserve">
+    <value>L1 Cache</value>
+  </data>
+  <data name="l2_title" xml:space="preserve">
+    <value>L2 Cache</value>
+  </data>
+  <data name="l3_title" xml:space="preserve">
+    <value>L3 Cache</value>
+  </data>
+  <data name="perf_title" xml:space="preserve">
+    <value>Performance</value>
+  </data>
+  <data name="gen_info_title" xml:space="preserve">
+    <value>General information</value>
+  </data>
 </root>

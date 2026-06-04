@@ -1,6 +1,4 @@
-﻿using static System.Runtime.InteropServices.JavaScript.JSType;
-
-namespace SYSi.Views.Pages
+﻿namespace SYSi.Views.Pages
 {
     [PageMeta("page_home_title", "page_home_summary", SymbolRegular.Home48, 0, false)]
     public partial class HomePage : INavigableView<HomeViewModel>

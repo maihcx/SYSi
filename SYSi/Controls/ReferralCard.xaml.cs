@@ -9,7 +9,7 @@ public class ReferralCard : Control
 {
     public ReferralCard()
     {
-        
+
     }
 
     public static readonly DependencyProperty ImageSourceProperty =

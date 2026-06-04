@@ -3,30 +3,43 @@ using System.Timers;
 
 namespace SYSi.ViewModels.Pages
 {
-    public partial class HomeViewModel : ObservableObject
+    public partial class HomeViewModel : ObservableObject, INavigationAware
     {
         private bool _isInitialized = false;
 
-        private HardwareService _hw;
-        private DispatcherTimer _timer;
+        private HardwareService? _hw;
+
+        private DispatcherTimer? _timer;
+
+        static string loadingText = LanguageBase.GetLangValue("loading_title");
+
+        private INavigationService navigationService;
 
         [ObservableProperty]
-        private ICollection<NavigationCard> _navigationCards = NavigationHandle.GetNavigationCards(["SYSi.Views.Pages", "SYSi.Views.PagesBottom"], typeof(HomePage));
+        private ICollection<NavigationCard> _navigationCards = NavigationHandle.GetNavigationCards(["SYSi.Views.Pages", "SYSi.Views.PagesBottom"], typeof(HomePage), typeof(CpuPage));
 
-        public HomeViewModel()
+        public HomeViewModel(INavigationService navigationService)
         {
-            if (!_isInitialized)
-                InitializeViewModel();
+            this.navigationService = navigationService;
         }
 
-        public Task OnNavigatedToAsync()
+        public async Task OnNavigatedToAsync()
         {
+            if (!_isInitialized)
+            {
+                await InitializeViewModel();
+            }
+
+            StartTimer();
+        }
+
+        public Task OnNavigatedFromAsync() {
+            StopTimer();
+
             return Task.CompletedTask;
         }
 
-        public Task OnNavigatedFromAsync() => Task.CompletedTask;
-
-        private async void InitializeViewModel()
+        private async Task InitializeViewModel()
         {
             _isInitialized = true;
 
@@ -35,10 +48,6 @@ namespace SYSi.ViewModels.Pages
             await LoadStaticInfo();
 
             await RefreshDynamic();
-
-            _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-            _timer.Tick += (s, e) => _ = RefreshDynamic();
-            _timer.Start();
         }
 
         [ObservableProperty]
@@ -66,28 +75,34 @@ namespace SYSi.ViewModels.Pages
         private double _gpuUsage;
 
         [ObservableProperty]
-        private string _osName = LanguageBase.GetLangValue("loading_title");
+        private string _osName = loadingText;
 
         [ObservableProperty]
-        private string _uptime = LanguageBase.GetLangValue("loading_title");
+        private string _uptime = loadingText;
 
         [ObservableProperty]
-        private string _totalRam = LanguageBase.GetLangValue("loading_title");
+        private string _totalRam = loadingText;
 
         [ObservableProperty]
-        private string _cpuName = LanguageBase.GetLangValue("loading_title");
+        private string _cpuName = loadingText;
 
         [ObservableProperty]
-        private string _ramUsage = LanguageBase.GetLangValue("loading_title");
+        private string _ramUsage = loadingText;
 
         [ObservableProperty]
-        private string _ramType = LanguageBase.GetLangValue("loading_title");
+        private string _ramType = loadingText;
 
         [ObservableProperty]
-        private string _ramSpeed = LanguageBase.GetLangValue("loading_title");
+        private string _ramSpeed = loadingText;
 
         [ObservableProperty]
         private ObservableCollection<GpuInfo> _gpuList = [];
+
+        [RelayCommand]
+        private void NavigateCPU()
+        {
+            navigationService.Navigate(typeof(CpuPage));
+        }
 
         private async Task LoadStaticInfo()
         {
@@ -113,17 +128,17 @@ namespace SYSi.ViewModels.Pages
                     return "Windows";
                 });
 
-                var cpuTask = Task.Run(() => _hw.GetCpuInfo());
-                var gpuTask = Task.Run(() => _hw.GetGpuInfoList());
-                var ramTask = Task.Run(() => _hw.GetRamInfo());
+                var cpuTask = Task.Run(() => _hw?.GetCpuInfo());
+                var gpuTask = Task.Run(() => _hw?.GetGpuInfoList());
+                var ramTask = Task.Run(() => _hw?.GetRamInfo());
 
                 await Task.WhenAll(osTask, cpuTask, gpuTask, ramTask);
 
                 OsName = await osTask;
-                CpuName = cpuTask.Result.Name;
-                GpuList = new ObservableCollection<GpuInfo>(gpuTask.Result);
-                RamType = ramTask.Result.MemoryType;
-                RamSpeed = ramTask.Result.SpeedText;
+                CpuName = cpuTask.Result?.Name ?? "N/A";
+                GpuList = new ObservableCollection<GpuInfo>(gpuTask.Result ?? new());
+                RamType = ramTask.Result?.MemoryType ?? "N/A";
+                RamSpeed = ramTask.Result?.SpeedText ?? "N/A";
             }
             catch
             {
@@ -134,16 +149,16 @@ namespace SYSi.ViewModels.Pages
         {
             var data = await Task.Run(() =>
             {
-                var cpu = _hw.GetCpuUsage();
-                var ram = _hw.GetRamInfo();
-                var gpu = _hw.GetGpuInfoList().FirstOrDefault();
+                var cpu = _hw?.GetCpuUsage() ?? 0;
+                var ram = _hw?.GetRamInfo();
+                var gpu = _hw?.GetGpuInfoList().FirstOrDefault();
 
                 return new
                 {
                     Cpu = cpu,
-                    RamUsagePercent = ram.UsagePercent,
-                    RamUsage = ram.UsedText,
-                    TotalRam = ram.TotalText
+                    RamUsagePercent = ram?.UsagePercent ?? 0,
+                    RamUsage = ram?.UsedText ?? "N/A",
+                    TotalRam = ram?.TotalText ?? "N/A"
                 };
             });
 
@@ -160,6 +175,17 @@ namespace SYSi.ViewModels.Pages
             return $"{(int)ts.TotalDays}d {ts.Hours:D2}h {ts.Minutes:D2}m";
         }
 
-        public void StopTimer() => _timer.Stop();
+        public void StartTimer()
+        {
+            _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _timer.Tick += (s, e) => _ = RefreshDynamic();
+            _timer.Start();
+        }
+
+        public void StopTimer()
+        {
+            _timer?.Stop();
+            _timer = null;
+        }
     }
 }

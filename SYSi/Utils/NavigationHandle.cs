@@ -112,7 +112,7 @@
             }
         }
 
-        public static ICollection<NavigationCard> GetNavigationCards(string[] @namespace, Type? excludePageType = null)
+        public static ICollection<NavigationCard> GetNavigationCards(string[] @namespace, params Type[] excludePageType)
         {
             return new ObservableCollection<NavigationCard>(
                 Assembly.GetExecutingAssembly()
@@ -120,10 +120,10 @@
                         .Where(t => t.IsClass &&
                                     t.IsSubclassOf(typeof(Page)) &&
                                     @namespace.Contains(t.Namespace) &&
-                                    (excludePageType == null || t != excludePageType))
+                                    (excludePageType == null || !excludePageType.Contains(t)))
                         .OrderBy(t => t.GetCustomAttribute<PageMetaAttribute>()?.SortIndex)
                         .Select(pageType =>
-                        {
+                        {   
                             var attr = pageType.GetCustomAttribute<PageMetaAttribute>();
                             return new NavigationCard()
                             {
