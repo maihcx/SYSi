@@ -93,10 +93,8 @@ namespace SYSi.ViewModels.Pages
         {
             try
             {
-                var result = await Task.Run(() =>
+                var osTask = Task.Run(() =>
                 {
-                    string osName = "Windows";
-
                     try
                     {
                         using var searcher =
@@ -105,33 +103,27 @@ namespace SYSi.ViewModels.Pages
 
                         foreach (ManagementObject obj in searcher.Get())
                         {
-                            osName =
-                                obj["Caption"]?.ToString()?.Trim()
-                                ?? "N/A";
-                            break;
+                            return obj["Caption"]?.ToString()?.Trim() ?? "N/A";
                         }
                     }
-                    catch { }
-
-                    var cpu = _hw.GetCpuInfo();
-                    var gpu = _hw.GetGpuInfoList();
-                    var ram = _hw.GetRamInfo();
-                    var gpuList = new ObservableCollection<GpuInfo>(gpu.Select(g => g));
-
-                    return new
+                    catch
                     {
-                        Os = osName,
-                        Cpu = cpu.Name,
-                        GpuList = gpuList,
-                        RamInfo = ram
-                    };
+                    }
+
+                    return "Windows";
                 });
 
-                OsName = result.Os;
-                CpuName = result.Cpu;
-                GpuList = result.GpuList;
-                RamType = result.RamInfo.MemoryType;
-                RamSpeed = result.RamInfo.SpeedText;
+                var cpuTask = Task.Run(() => _hw.GetCpuInfo());
+                var gpuTask = Task.Run(() => _hw.GetGpuInfoList());
+                var ramTask = Task.Run(() => _hw.GetRamInfo());
+
+                await Task.WhenAll(osTask, cpuTask, gpuTask, ramTask);
+
+                OsName = await osTask;
+                CpuName = cpuTask.Result.Name;
+                GpuList = new ObservableCollection<GpuInfo>(gpuTask.Result);
+                RamType = ramTask.Result.MemoryType;
+                RamSpeed = ramTask.Result.SpeedText;
             }
             catch
             {
