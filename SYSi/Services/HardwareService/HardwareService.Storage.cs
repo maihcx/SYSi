@@ -58,31 +58,118 @@ public sealed partial class HardwareService
 
     private static void EnrichDrivesWithModel(List<StorageDriveInfo> drives)
     {
-        var models = ReadScsiModels();
-        int idx    = 0;
+        var cache = new Dictionary<int, string>();
 
-        foreach (var d in drives.Where(d => d.DriveType == "Fixed"))
-            d.Model = idx < models.Count ? models[idx++] : "N/A";
+        foreach (var drive in drives)
+        {
+            int diskNumber = GetDiskNumber(drive.Letter);
 
-        foreach (var d in drives.Where(d => string.IsNullOrEmpty(d.Model)))
-            d.Model = "N/A";
+            if (diskNumber < 0)
+            {
+                drive.Model = "N/A";
+                continue;
+            }
+
+            if (!cache.TryGetValue(diskNumber, out string? model))
+            {
+                model = GetDiskModel(diskNumber);
+                cache[diskNumber] = model;
+            }
+
+            drive.Model = model;
+        }
     }
 
-    private static List<string> ReadScsiModels()
+    private static int GetDiskNumber(string driveLetter)
     {
-        var models = new List<string>();
-        for (int port = 0; port < 8; port++)
+        try
         {
+            using var handle =
+                NativeMethods.CreateFile(
+                    @"\\.\" + driveLetter.TrimEnd('\\'),
+                    0,
+                    FileShare.ReadWrite,
+                    IntPtr.Zero,
+                    FileMode.Open,
+                    0,
+                    IntPtr.Zero);
+
+            if (handle.IsInvalid)
+                return -1;
+
+            int size = Marshal.SizeOf<NativeMethods.VOLUME_DISK_EXTENTS>();
+            IntPtr buffer = Marshal.AllocHGlobal(size);
+
             try
             {
-                string path = $@"HARDWARE\DEVICEMAP\Scsi\Scsi Port {port}\Scsi Bus 0\Target Id 0\Logical Unit Id 0";
-                using var key = Registry.LocalMachine.OpenSubKey(path);
-                string? model = key?.GetValue("Identifier")?.ToString()?.Trim();
-                if (!string.IsNullOrEmpty(model) && model != "N/A")
-                    models.Add(model);
+                if (!NativeMethods.DeviceIoControl(
+                        handle,
+                        NativeMethods.IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS,
+                        IntPtr.Zero,
+                        0,
+                        buffer,
+                        (uint)size,
+                        out _,
+                        IntPtr.Zero))
+                    return -1;
+
+                var extents =
+                    Marshal.PtrToStructure<NativeMethods.VOLUME_DISK_EXTENTS>(buffer);
+
+                return (int)extents.Extents.DiskNumber;
             }
-            catch { }
+            finally
+            {
+                Marshal.FreeHGlobal(buffer);
+            }
         }
-        return models;
+        catch
+        {
+            return -1;
+        }
+    }
+
+    private static string GetDiskModel(int diskNumber)
+    {
+        try
+        {
+            using var key = Registry.LocalMachine.OpenSubKey(
+                @"SYSTEM\CurrentControlSet\Services\disk\Enum");
+
+            string? value =
+                key?.GetValue(diskNumber.ToString())?.ToString();
+
+            return string.IsNullOrWhiteSpace(value)
+                ? "N/A"
+                : NormalizeModel(value);
+        }
+        catch
+        {
+            return "N/A";
+        }
+    }
+
+    private static string NormalizeModel(string pnpId)
+    {
+        if (string.IsNullOrWhiteSpace(pnpId))
+            return "N/A";
+
+        int ven = pnpId.IndexOf("Ven_", StringComparison.OrdinalIgnoreCase);
+        int prod = pnpId.IndexOf("&Prod_", StringComparison.OrdinalIgnoreCase);
+
+        if (ven < 0 || prod < 0)
+            return pnpId;
+
+        string vendor = pnpId.Substring(ven + 4, prod - (ven + 4));
+
+        string product = pnpId[(prod + 6)..];
+
+        int slash = product.IndexOf('\\');
+        if (slash >= 0)
+            product = product[..slash];
+
+        return $"{vendor} {product}"
+            .Replace('_', ' ')
+            .Trim();
     }
 }
