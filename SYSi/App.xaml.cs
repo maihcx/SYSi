@@ -1,4 +1,6 @@
-﻿namespace SYSi
+﻿using SYSi.Services.HardwareService;
+
+namespace SYSi
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -44,6 +46,9 @@
                 services.AddNavigationViewPageProvider();
 
                 services.AddHostedService<ApplicationHostService>();
+
+                services.AddSingleton<HardwareService>();
+                services.AddSingleton<HardwareHostService>();
 
                 // Theme manipulation
                 services.AddSingleton<IThemeService, ThemeService>();

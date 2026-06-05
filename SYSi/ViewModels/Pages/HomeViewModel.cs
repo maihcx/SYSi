@@ -1,5 +1,4 @@
 ﻿using System.Management;
-using System.Timers;
 
 namespace SYSi.ViewModels.Pages
 {
@@ -7,7 +6,7 @@ namespace SYSi.ViewModels.Pages
     {
         private bool _isInitialized = false;
 
-        private HardwareService? _hw;
+        private readonly HardwareHostService hardwareHostService;
 
         private DispatcherTimer? _timer;
 
@@ -18,9 +17,10 @@ namespace SYSi.ViewModels.Pages
         [ObservableProperty]
         private ICollection<NavigationCard> _navigationCards = NavigationHandle.GetNavigationCards(["SYSi.Views.Pages", "SYSi.Views.PagesBottom"], typeof(HomePage), typeof(CpuPage), typeof(GpuPage));
 
-        public HomeViewModel(INavigationService navigationService)
+        public HomeViewModel(INavigationService navigationService, HardwareHostService hardwareHostService)
         {
             this.navigationService = navigationService;
+            this.hardwareHostService = hardwareHostService;
         }
 
         public async Task OnNavigatedToAsync()
@@ -43,11 +43,7 @@ namespace SYSi.ViewModels.Pages
         {
             _isInitialized = true;
 
-            _hw = await Task.Run(() => new HardwareService());
-
             await LoadStaticInfo();
-
-            await RefreshDynamic();
         }
 
         [ObservableProperty]
@@ -66,37 +62,19 @@ namespace SYSi.ViewModels.Pages
         private string _appDescription = AppInfoHelper.AppDescription;
 
         [ObservableProperty]
-        private double _cpuUsage;
-
-        [ObservableProperty]
-        private double _ramUsagePercent;
-
-        [ObservableProperty]
-        private double _gpuUsage;
-
-        [ObservableProperty]
         private string _osName = loadingText;
 
         [ObservableProperty]
         private string _uptime = loadingText;
 
         [ObservableProperty]
-        private string _totalRam = loadingText;
-
-        [ObservableProperty]
-        private string _cpuName = loadingText;
-
-        [ObservableProperty]
-        private string _ramUsage = loadingText;
-
-        [ObservableProperty]
-        private string _ramType = loadingText;
-
-        [ObservableProperty]
-        private string _ramSpeed = loadingText;
-
-        [ObservableProperty]
         private ObservableCollection<GpuInfo> _gpuList = [];
+
+        [ObservableProperty]
+        private CpuInfo _cpuInfo = new CpuInfo();
+
+        [ObservableProperty]
+        private RamInfo _ramInfo = new RamInfo();
 
         [RelayCommand]
         private void NavigateCPU()
@@ -134,17 +112,14 @@ namespace SYSi.ViewModels.Pages
                     return "Windows";
                 });
 
-                var cpuTask = Task.Run(() => _hw?.GetCpuInfo());
-                var gpuTask = Task.Run(() => _hw?.GetGpuInfoList());
-                var ramTask = Task.Run(() => _hw?.GetRamInfo());
-
-                await Task.WhenAll(osTask, cpuTask, gpuTask, ramTask);
+                await Task.WhenAll(osTask);
 
                 OsName = await osTask;
-                CpuName = cpuTask.Result?.Name ?? "N/A";
-                GpuList = new ObservableCollection<GpuInfo>(gpuTask.Result ?? new());
-                RamType = ramTask.Result?.MemoryType ?? "N/A";
-                RamSpeed = ramTask.Result?.SpeedText ?? "N/A";
+                GpuList = new ObservableCollection<GpuInfo>(hardwareHostService?.Gpus ?? new());
+
+                CpuInfo = hardwareHostService?.CpuInfo ?? new CpuInfo();
+                RamInfo = hardwareHostService?.RamInfo ?? new RamInfo();
+
             }
             catch
             {
@@ -153,25 +128,6 @@ namespace SYSi.ViewModels.Pages
 
         private async Task RefreshDynamic()
         {
-            var data = await Task.Run(() =>
-            {
-                var cpu = _hw?.GetCpuUsage() ?? 0;
-                var ram = _hw?.GetRamInfo();
-                var gpu = _hw?.GetGpuInfoList().FirstOrDefault();
-
-                return new
-                {
-                    Cpu = cpu,
-                    RamUsagePercent = ram?.UsagePercent ?? 0,
-                    RamUsage = ram?.UsedText ?? "N/A",
-                    TotalRam = ram?.TotalText ?? "N/A"
-                };
-            });
-
-            CpuUsage = data.Cpu;
-            RamUsagePercent = data.RamUsagePercent;
-            RamUsage = data.RamUsage;
-            TotalRam = data.TotalRam;
             Uptime = GetUptime();
         }
 

@@ -27,11 +27,11 @@
                     <TextBlock HorizontalAlignment="Right"
                                FontWeight="Bold"
                                Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
-                <Run Text="{Binding ViewModel.CpuUsage, StringFormat={}{0:F1}}" />
+                <Run Text="{Binding ViewModel.CpuInfo.UsagePercent, StringFormat={}{0:F1}}" />
                 <Run Text="%" />
                     </TextBlock>
                 </Grid>
-                <ProgressBar Value="{Binding ViewModel.CpuUsage}"
+                <ProgressBar Value="{Binding ViewModel.CpuInfo.UsagePercent}"
                              Maximum="100"
                              Height="12" />
             </StackPanel>

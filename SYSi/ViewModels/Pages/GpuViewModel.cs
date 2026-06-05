@@ -6,17 +6,18 @@ namespace SYSi.ViewModels.Pages
     {
         private bool _isInitialized = false;
 
-        private HardwareService? _hw;
+        private readonly HardwareHostService hardwareHostService;
 
         private List<GpuInfo> Gpus = new();
 
         static string loadingText = LanguageBase.GetLangValue("loading_title");
 
-        public GpuViewModel()
+        public GpuViewModel(HardwareHostService hardwareHostService)
         {
+            this.hardwareHostService = hardwareHostService;
             if (!_isInitialized)
             {
-                _ = InitializeViewModel();
+                InitializeViewModel();
             }
         }
 
@@ -53,12 +54,9 @@ namespace SYSi.ViewModels.Pages
             GpuInfo.VideoMemoryType = loadingText;
         }
 
-        public async Task OnNavigatedToAsync()
+        public Task OnNavigatedToAsync()
         {
-            if (!_isInitialized)
-            {
-                await InitializeViewModel();
-            }
+            return Task.CompletedTask;
         }
 
         public Task OnNavigatedFromAsync()
@@ -66,28 +64,20 @@ namespace SYSi.ViewModels.Pages
             return Task.CompletedTask;
         }
 
-        private async Task InitializeViewModel()
+        private void InitializeViewModel()
         {
             _isInitialized = true;
 
             setLoading();
 
-            _hw = await Task.Run(() => new HardwareService());
-
-            await LoadStaticInfo();
+            LoadStaticInfo();
         }
 
-        private async Task LoadStaticInfo()
+        private void LoadStaticInfo()
         {
             try
             {
-                var gpuTask = Task.Run(() => _hw?.GetGpuInfoList());
-
-                //GpuInfo = _hw?.GetGpuInfoList() ?? new CpuInfo { Name = "N/A" };
-
-                await Task.WhenAll(gpuTask);
-
-                Gpus = gpuTask.Result ?? new();
+                Gpus = hardwareHostService?.Gpus ?? new();
                 NoneGpus = Gpus.Count < 1;
 
 

@@ -1,20 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SYSi.Models
+﻿namespace SYSi.Models
 {
-    public class NetworkAdapterInfo
+    public partial class NetworkAdapterInfo : ObservableObject
     {
-        public string Name { get; set; } = string.Empty;
-        public string MacAddress { get; set; } = string.Empty;
-        public string IpAddress { get; set; } = string.Empty;
-        public string Ipv6Address { get; set; } = string.Empty;
-        public string SubnetMask { get; set; } = string.Empty;
-        public string Gateway { get; set; } = string.Empty;
-        public string DnsServers { get; set; } = string.Empty;
-        public string LinkSpeed { get; set; } = string.Empty;
-        public bool IsConnected { get; set; }
-        public string AdapterType { get; set; } = string.Empty;
+        [ObservableProperty]
+        public string _name = string.Empty;
+
+        [ObservableProperty]
+        public string _macAddress = string.Empty;
+
+        [ObservableProperty]
+        public string _ipAddress = string.Empty;
+
+        [ObservableProperty]
+        public string _ipv6Address = string.Empty;
+
+        [ObservableProperty]
+        public string _subnetMask = string.Empty;
+
+        [ObservableProperty]
+        public string _gateway = string.Empty;
+
+        [ObservableProperty]
+        public string _dnsServers = string.Empty;
+
+        [ObservableProperty]
+        public string _linkSpeed = string.Empty;
+
+        [ObservableProperty]
+        public bool _isConnected = false;
+
+        [ObservableProperty]
+        public string _adapterType = string.Empty;
     }
 }

@@ -1,28 +1,58 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SYSi.Models
+﻿namespace SYSi.Models
 {
-    public class CpuInfo
+    public partial class CpuInfo : ObservableObject
     {
-        public string Name { get; set; } = string.Empty;
-        public string Manufacturer { get; set; } = string.Empty;
-        public string Architecture { get; set; } = string.Empty;
-        public int PhysicalCores { get; set; }
-        public int LogicalProcessors { get; set; }
-        public double BaseSpeedGHz { get; set; }
-        public double MaxSpeedGHz { get; set; }
-        public string L1Cache { get; set; } = string.Empty;
-        public string L2Cache { get; set; } = string.Empty;
-        public string L3Cache { get; set; } = string.Empty;
-        public string Socket { get; set; } = string.Empty;
-        public bool VirtualizationEnabled { get; set; }
-        public string ProcessorId { get; set; } = string.Empty;
-        public string Stepping { get; set; } = string.Empty;
-        public string Family { get; set; } = string.Empty;
-        public string Model { get; set; } = string.Empty;
-        public double UsagePercent { get; set; }
+        [ObservableProperty]
+        public string _name = string.Empty;
+
+        [ObservableProperty]
+        public string _manufacturer = string.Empty;
+
+        [ObservableProperty]
+        public string _architecture = string.Empty;
+
+        [ObservableProperty]
+        public int _physicalCores;
+
+        [ObservableProperty]
+        public int _logicalProcessors;
+
+        [ObservableProperty]
+        public double _baseSpeedGHz;
+
+        [ObservableProperty]
+        public double _maxSpeedGHz;
+
+        [ObservableProperty]
+        public string _l1Cache = string.Empty;
+
+        [ObservableProperty]
+        public string _l2Cache = string.Empty;
+
+        [ObservableProperty]
+        public string _l3Cache = string.Empty;
+
+        [ObservableProperty]
+        public string _socket = string.Empty;
+
+        [ObservableProperty]
+        public bool _virtualizationEnabled;
+
+        [ObservableProperty]
+        public string _processorId = string.Empty;
+
+        [ObservableProperty]
+        public string _stepping = string.Empty;
+
+        [ObservableProperty]
+        public string _family = string.Empty;
+
+        [ObservableProperty]
+        public string _model = string.Empty;
+
+        [ObservableProperty]
+        public double _usagePercent;
+
         public double TemperatureCelsius { get; set; }
     }
 }

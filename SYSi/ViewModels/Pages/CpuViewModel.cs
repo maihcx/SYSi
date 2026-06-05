@@ -4,14 +4,15 @@
     {
         private bool _isInitialized = false;
 
-        private HardwareService? _hw;
+        private readonly HardwareHostService hardwareHostService;
 
         private DispatcherTimer? _timer;
 
         static string loadingText = LanguageBase.GetLangValue("loading_title");
 
-        public CpuViewModel()
+        public CpuViewModel(HardwareHostService hardwareHostService)
         {
+            this.hardwareHostService = hardwareHostService;
             if (!_isInitialized)
             {
                 InitializeViewModel();
@@ -41,81 +42,31 @@
         {
             if (!_isInitialized)
             {
-                await InitializeViewModel();
+                InitializeViewModel();
             }
-
-            StartTimer();
         }
 
         public Task OnNavigatedFromAsync()
         {
-            StopTimer();
-
             return Task.CompletedTask;
         }
 
-        private async Task InitializeViewModel()
+        private void InitializeViewModel()
         {
             _isInitialized = true;
 
-            _hw = await Task.Run(() => new HardwareService());
-
-            await LoadStaticInfo();
-
-            await RefreshDynamic();
+            LoadStaticInfo();
         }
 
-        private async Task LoadStaticInfo()
+        private void LoadStaticInfo()
         {
             try
             {
-                var cpuTask = Task.Run(() => _hw?.GetCpuInfo());
-
-                CpuInfo = _hw?.GetCpuInfo() ?? new CpuInfo { Name = "N/A" };
-
-                await Task.WhenAll(cpuTask);
-
-                //OsName = await osTask;
-                //CpuName = cpuTask.Result.Name;
-                //GpuList = new ObservableCollection<GpuInfo>(gpuTask.Result);
-                //RamType = ramTask.Result.MemoryType;
-                //RamSpeed = ramTask.Result.SpeedText;
+                CpuInfo = hardwareHostService?.CpuInfo ?? new CpuInfo { Name = "N/A" };
             }
             catch
             {
             }
-        }
-
-        private async Task RefreshDynamic()
-        {
-            var data = await Task.Run(() =>
-            {
-                var cpuUsage = _hw?.GetCpuUsage();
-
-                return new
-                {
-                    CpuUsage = cpuUsage ?? 0,
-                };
-            });
-
-            CpuUsage = data.CpuUsage;
-
-            //RamUsagePercent = data.RamUsagePercent;
-            //RamUsage = data.RamUsage;
-            //TotalRam = data.TotalRam;
-        }
-
-        public void StartTimer()
-        {
-            _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-            _timer.Tick += (s, e) => _ = RefreshDynamic();
-            _timer.Start();
-        }
-
-        public void StopTimer()
-        {
-            _timer?.Stop();
-            _timer = null;
         }
     }
 }
