@@ -246,14 +246,6 @@
             public double doubleValue;
         }
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        public struct PDH_FMT_COUNTERVALUE_ITEM
-        {
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
-            public string szName;
-            public PDH_FMT_COUNTERVALUE FmtValue;
-        }
-
         // ── Enums ────────────────────────────────────────────────────────────────
 
         public enum LOGICAL_PROCESSOR_RELATIONSHIP

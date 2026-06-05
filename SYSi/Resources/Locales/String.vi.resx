@@ -369,4 +369,22 @@
   <data name="display_title" xml:space="preserve">
     <value>Màn hình</value>
   </data>
+  <data name="page_memory_title" xml:space="preserve">
+    <value>Bộ nhớ (RAM)</value>
+  </data>
+  <data name="page_memory_summary" xml:space="preserve">
+    <value>Đi đến trang Bộ Nhớ Ram</value>
+  </data>
+  <data name="memory_total_title" xml:space="preserve">
+    <value>Tổng dung lượng</value>
+  </data>
+  <data name="memory_used_title" xml:space="preserve">
+    <value>Đang sử dụng</value>
+  </data>
+  <data name="memory_available_title" xml:space="preserve">
+    <value>Khả dụng</value>
+  </data>
+  <data name="memory_slots_title" xml:space="preserve">
+    <value>Khe cắm đang dùng</value>
+  </data>
 </root>

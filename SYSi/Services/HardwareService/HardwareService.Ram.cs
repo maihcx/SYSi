@@ -59,9 +59,10 @@ public sealed partial class HardwareService
                 MemoryType   = ParseMemoryType(s.Byte(0x12)),
                 FormFactor   = ParseFormFactor(s.Byte(0x0E)),
                 BankLabel    = s.Length > 0x11 ? s.Str(0x11) : "N/A",
-                Manufacturer = s.Length > 0x13 ? s.Str(0x13) : "N/A",
+                Manufacturer = s.Length > 0x17 ? s.Str(0x17) : "N/A",
                 PartNumber   = s.Length > 0x1A ? s.Str(0x1A) : "N/A",
                 SerialNumber = s.Length > 0x18 ? s.Str(0x18) : "N/A",
+                DataWidth = s.Length > 0x0B ? s.Word(0x0A) : (ushort)0,
             };
 
             if (speedMhz > 0) speeds.Add(speedMhz.ToString());

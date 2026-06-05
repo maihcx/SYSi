@@ -187,9 +187,13 @@ public sealed partial class HardwareService
             {
                 NativeMethods.PdhCollectQueryData(_gpuQuery);
 
-                uint bufSize = 0, itemCount = 0;
+                uint bufSize = 0;
+                uint itemCount = 0;
+
+                // 1st call — get required size (returns PDH_MORE_DATA = 0x800007D2)
                 NativeMethods.PdhGetFormattedCounterArray(
-                    _gpuCounter, NativeMethods.PDH_FMT_DOUBLE, ref bufSize, out itemCount, IntPtr.Zero);
+                    _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
+                    ref bufSize, out itemCount, IntPtr.Zero);
 
                 if (bufSize == 0) return;
 
@@ -197,24 +201,42 @@ public sealed partial class HardwareService
                 try
                 {
                     uint r = NativeMethods.PdhGetFormattedCounterArray(
-                        _gpuCounter, NativeMethods.PDH_FMT_DOUBLE, ref bufSize, out itemCount, buf);
+                        _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
+                        ref bufSize, out itemCount, buf);
 
-                    if (r != 0) return;
+                    // PDH_CSTATUS_VALID_DATA = 0, PDH_MORE_DATA = 0x800007D2
+                    if (r != 0 && r != 0x800007D2) return;
 
-                    // Accumulate usage per physical GPU index embedded in the instance name:
-                    // "luid_0x00000000_0x00013B6C_phys_0_eng_0_engtype_3D"
                     var physUsage = new Dictionary<int, double>();
-                    int itemSize  = Marshal.SizeOf<NativeMethods.PDH_FMT_COUNTERVALUE_ITEM>();
+
+                    // PDH_FMT_COUNTERVALUE_ITEM_W layout (Windows actual):
+                    //   szName  : pointer to wide string  (8 bytes on x64, 4 on x86)
+                    //   CStatus : uint   (4 bytes)
+                    //   padding : uint   (4 bytes, alignment)
+                    //   Value   : double (8 bytes)
+                    // Total per item: IntPtr.Size + 16 bytes
+                    int ptrSize = IntPtr.Size;          // 8 (x64) or 4 (x86)
+                    int itemSize = ptrSize + 16;          // szName ptr + CStatus + pad + double
 
                     for (int j = 0; j < (int)itemCount; j++)
                     {
-                        var item    = Marshal.PtrToStructure<NativeMethods.PDH_FMT_COUNTERVALUE_ITEM>(
-                            IntPtr.Add(buf, j * itemSize));
-                        int physIdx = ParsePhysIndex(item.szName);
+                        IntPtr itemPtr = IntPtr.Add(buf, j * itemSize);
+
+                        // szName là pointer trỏ vào tên instance (nằm đâu đó trong buf)
+                        IntPtr namePtr = Marshal.ReadIntPtr(itemPtr);
+                        string name = namePtr != IntPtr.Zero
+                            ? Marshal.PtrToStringUni(namePtr) ?? ""
+                            : "";
+
+                        // double value nằm ở offset: ptrSize + 8 (CStatus uint + 4 pad)
+                        double value = Marshal.PtrToStructure<double>(
+                            IntPtr.Add(itemPtr, ptrSize + 8));
+
+                        int physIdx = ParsePhysIndex(name);
                         if (physIdx < 0) physIdx = 0;
 
                         physUsage.TryGetValue(physIdx, out double cur);
-                        physUsage[physIdx] = cur + item.FmtValue.doubleValue;
+                        physUsage[physIdx] = cur + value;
                     }
 
                     foreach (var (idx, usage) in physUsage)

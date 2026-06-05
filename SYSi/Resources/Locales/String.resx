@@ -369,4 +369,22 @@
   <data name="display_title" xml:space="preserve">
     <value>display_title</value>
   </data>
+  <data name="page_memory_title" xml:space="preserve">
+    <value>page_ram_title</value>
+  </data>
+  <data name="page_memory_summary" xml:space="preserve">
+    <value>page_ram_summary</value>
+  </data>
+  <data name="memory_total_title" xml:space="preserve">
+    <value>memory_total_title</value>
+  </data>
+  <data name="memory_used_title" xml:space="preserve">
+    <value>memory_used_title</value>
+  </data>
+  <data name="memory_available_title" xml:space="preserve">
+    <value>memory_available_title</value>
+  </data>
+  <data name="memory_slots_title" xml:space="preserve">
+    <value>memory_slots_title</value>
+  </data>
 </root>

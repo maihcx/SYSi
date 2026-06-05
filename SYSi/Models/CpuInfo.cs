@@ -18,10 +18,10 @@
         public int _logicalProcessors;
 
         [ObservableProperty]
-        public double _baseSpeedGHz;
+        public string _baseSpeedGHz = string.Empty;
 
         [ObservableProperty]
-        public double _maxSpeedGHz;
+        public string _maxSpeedGHz = string.Empty;
 
         [ObservableProperty]
         public string _l1Cache = string.Empty;

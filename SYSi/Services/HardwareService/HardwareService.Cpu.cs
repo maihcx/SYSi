@@ -66,7 +66,7 @@ public sealed partial class HardwareService
         info.Name         = key.GetValue("ProcessorNameString")?.ToString()?.Trim() ?? "N/A";
         info.Manufacturer = key.GetValue("VendorIdentifier")?.ToString() ?? "N/A";
         double mhz        = Convert.ToDouble(key.GetValue("~MHz") ?? 0);
-        info.BaseSpeedGHz = Math.Round(mhz / 1000.0, 2);
+        info.BaseSpeedGHz = $"{Math.Round(mhz / 1000.0, 2)} GHz";
         info.MaxSpeedGHz  = info.BaseSpeedGHz;
     }
 

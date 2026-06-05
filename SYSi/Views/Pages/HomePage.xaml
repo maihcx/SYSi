@@ -58,7 +58,8 @@
 
                                     <ui:SymbolIcon Grid.Column="0"
                                                    Symbol="BrainCircuit24"
-                                                   FontSize="20" />
+                                                   FontSize="20"
+                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
                                     <TextBlock Grid.Column="1"
                                                Text="{utils:Localization cpu_usage_title}"
                                                FontSize="13"
@@ -104,7 +105,8 @@
 
                                     <ui:SymbolIcon Grid.Column="0"
                                                    Symbol="Stream24"
-                                                   FontSize="20" />
+                                                   FontSize="20"
+                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
                                     <TextBlock Grid.Column="1"
                                                Text="{utils:Localization gpu_usage_title}"
                                                FontSize="13"
@@ -169,22 +171,34 @@
                         </ui:CardAction>
 
                         <!-- RAM -->
-                        <ui:Card>
+                        <ui:CardAction Margin="0 -7 8 1"
+                                       Command="{Binding ViewModel.NavigateMemoryCommand}"
+                                       IsChevronVisible="False">
                             <StackPanel>
-                                <StackPanel Orientation="Horizontal"
-                                            Margin="0">
-                                    <ui:SymbolIcon Symbol="Memory16"
+                                <Grid HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <ui:SymbolIcon Grid.Column="0"
+                                                   Symbol="Memory16"
                                                    FontSize="20"
                                                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
-                                    <TextBlock FontSize="12"
-                                               FontWeight="Medium"
-                                               VerticalAlignment="Center"
-                                               Margin="8,0,0,0">
+                                    <TextBlock  Grid.Column="1"
+                                                FontSize="12"
+                                                FontWeight="Medium"
+                                                VerticalAlignment="Center"
+                                                Margin="8,0,0,0">
                                         <Run Text="{utils:Localization ram_usage_title}" />
                                         <Run Text="-" />
                                         <Run Text="{Binding ViewModel.RamInfo.MemoryType, Mode=OneWay}" />
                                     </TextBlock>
-                                </StackPanel>
+                                    <ui:SymbolIcon Grid.Column="2"
+                                                   Symbol="ChevronCircleRight24"
+                                                   FontSize="20" />
+                                </Grid>
                                 <TextBlock FontSize="11"
                                            Margin="0,0,0,8"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
@@ -214,7 +228,7 @@
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
-                        </ui:Card>
+                        </ui:CardAction>
 
                         <!-- OS / Uptime -->
                         <ui:Card>
