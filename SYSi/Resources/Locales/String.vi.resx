@@ -405,4 +405,40 @@
   <data name="storage_usage_title" xml:space="preserve">
     <value>Mức sử dụng</value>
   </data>
+  <data name="page_motherboard_title" xml:space="preserve">
+    <value>Bo mạch chủ</value>
+  </data>
+  <data name="page_motherboard_summary" xml:space="preserve">
+    <value>Đi đến trang Bo Mạch Chủ</value>
+  </data>
+  <data name="motherboard_title" xml:space="preserve">
+    <value>Bo mạch chủ</value>
+  </data>
+  <data name="product_title" xml:space="preserve">
+    <value>Sản phẩm</value>
+  </data>
+  <data name="version_title" xml:space="preserve">
+    <value>Phiên bản</value>
+  </data>
+  <data name="serial_title" xml:space="preserve">
+    <value>Số sê-ri</value>
+  </data>
+  <data name="sys_model_title" xml:space="preserve">
+    <value>Model hệ thống</value>
+  </data>
+  <data name="sys_family_title" xml:space="preserve">
+    <value>Dòng hệ thống</value>
+  </data>
+  <data name="bios_manu_title" xml:space="preserve">
+    <value>Nhà sản xuất BIOS</value>
+  </data>
+  <data name="bios_ver_title" xml:space="preserve">
+    <value>Phiên bản BIOS</value>
+  </data>
+  <data name="bios_date_title" xml:space="preserve">
+    <value>Ngày phát hành BIOS</value>
+  </data>
+  <data name="bios_title" xml:space="preserve">
+    <value>BIOS</value>
+  </data>
 </root>

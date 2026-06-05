@@ -17,73 +17,75 @@
       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       mc:Ignorable="d">
 
-    <StackPanel>
-        <!-- Multi-GPU selector -->
-        <ui:Card Margin="0,0,0,16"
-                 Visibility="{Binding ViewModel.NoneGpus, Converter={StaticResource InvertedBoolToVisibilityConverter}}">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="{utils:Localization gpu_multiple_title}"
-                           VerticalAlignment="Center"
-                           Margin="0,0,12,0" />
-                <ComboBox ItemsSource="{Binding ViewModel.GpuNames}"
-                          SelectedItem="{Binding ViewModel.SelectedGpuName, Mode=TwoWay}"
-                          MinWidth="300" />
-            </StackPanel>
-        </ui:Card>
-
-        <!-- Info -->
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <ui:Card Grid.Column="0">
-                <StackPanel>
-                    <TextBlock Text="{utils:Localization gen_info_title}"
-                               FontWeight="SemiBold"
-                               FontSize="14"
-                               Margin="0,0,0,12" />
-                    <controls:InfoRow LabelText="{utils:Localization gpu_name_title}"
-                                      ValueText="{Binding ViewModel.GpuInfo.Name}" />
-                    <controls:InfoRow LabelText="{utils:Localization manu_title}"
-                                      ValueText="{Binding ViewModel.GpuInfo.Manufacturer}" />
-                    <controls:InfoRow LabelText="{utils:Localization vram_title}"
-                                      ValueText="{Binding ViewModel.GpuInfo.VramText}" />
-                    <controls:InfoRow LabelText="{utils:Localization driver_ver_title}"
-                                      ValueText="{Binding ViewModel.GpuInfo.DriverVersion}" />
-                    <controls:InfoRow LabelText="{utils:Localization driver_date_title}"
-                                      ValueText="{Binding ViewModel.GpuInfo.DriverDate}"
-                                      IsLast="True" />
-                    <controls:InfoRow LabelText=""
-                                      ValueText=""
-                                      IsLast="True"
-                                      Visibility="Hidden" />
+    <Grid>
+        <StackPanel>
+            <!-- Multi-GPU selector -->
+            <ui:Card Margin="0,0,0,16"
+                     Visibility="{Binding ViewModel.NoneGpus, Converter={StaticResource InvertedBoolToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{utils:Localization gpu_multiple_title}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,12,0" />
+                    <ComboBox ItemsSource="{Binding ViewModel.GpuNames}"
+                              SelectedItem="{Binding ViewModel.SelectedGpuName, Mode=TwoWay}"
+                              MinWidth="300" />
                 </StackPanel>
             </ui:Card>
 
-            <ui:Card Grid.Column="2">
-                <StackPanel>
-                    <TextBlock Text="{utils:Localization display_title}"
-                               FontWeight="SemiBold"
-                               FontSize="14"
-                               Margin="0,0,0,12" />
-                    <controls:InfoRow LabelText="{utils:Localization resolution_title}"
-                                      ValueText="{Binding ViewModel.GpuInfo.Resolution}" />
-                    <controls:InfoRow LabelText="{utils:Localization refresh_rate_title}"
-                                      ValueText="{Binding ViewModel.GpuInfo.RefreshRate}" />
-                    <controls:InfoRow LabelText="{utils:Localization color_depth_title}"
-                                      ValueText="{Binding ViewModel.GpuInfo.BitsPerPixel}" />
-                    <controls:InfoRow LabelText="{utils:Localization arch_title}"
-                                      ValueText="{Binding ViewModel.GpuInfo.VideoArchitecture}" />
-                    <controls:InfoRow LabelText="{utils:Localization mem_type_title}"
-                                      ValueText="{Binding ViewModel.GpuInfo.VideoMemoryType}" />
-                    <controls:InfoRow LabelText="{utils:Localization pnp_label}"
-                                      ValueText="{Binding ViewModel.GpuInfo.PnpDeviceId}"
-                                      IsLast="True" />
-                </StackPanel>
-            </ui:Card>
-        </Grid>
-    </StackPanel>
+            <!-- Info -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <ui:Card Grid.Column="0">
+                    <StackPanel>
+                        <TextBlock Text="{utils:Localization gen_info_title}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   Margin="0,0,0,12" />
+                        <controls:InfoRow LabelText="{utils:Localization gpu_name_title}"
+                                          ValueText="{Binding ViewModel.GpuInfo.Name}" />
+                        <controls:InfoRow LabelText="{utils:Localization manu_title}"
+                                          ValueText="{Binding ViewModel.GpuInfo.Manufacturer}" />
+                        <controls:InfoRow LabelText="{utils:Localization vram_title}"
+                                          ValueText="{Binding ViewModel.GpuInfo.VramText}" />
+                        <controls:InfoRow LabelText="{utils:Localization driver_ver_title}"
+                                          ValueText="{Binding ViewModel.GpuInfo.DriverVersion}" />
+                        <controls:InfoRow LabelText="{utils:Localization driver_date_title}"
+                                          ValueText="{Binding ViewModel.GpuInfo.DriverDate}"
+                                          IsLast="True" />
+                        <controls:InfoRow LabelText=""
+                                          ValueText=""
+                                          IsLast="True"
+                                          Visibility="Hidden" />
+                    </StackPanel>
+                </ui:Card>
+
+                <ui:Card Grid.Column="2">
+                    <StackPanel>
+                        <TextBlock Text="{utils:Localization display_title}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   Margin="0,0,0,12" />
+                        <controls:InfoRow LabelText="{utils:Localization resolution_title}"
+                                          ValueText="{Binding ViewModel.GpuInfo.Resolution}" />
+                        <controls:InfoRow LabelText="{utils:Localization refresh_rate_title}"
+                                          ValueText="{Binding ViewModel.GpuInfo.RefreshRate}" />
+                        <controls:InfoRow LabelText="{utils:Localization color_depth_title}"
+                                          ValueText="{Binding ViewModel.GpuInfo.BitsPerPixel}" />
+                        <controls:InfoRow LabelText="{utils:Localization arch_title}"
+                                          ValueText="{Binding ViewModel.GpuInfo.VideoArchitecture}" />
+                        <controls:InfoRow LabelText="{utils:Localization mem_type_title}"
+                                          ValueText="{Binding ViewModel.GpuInfo.VideoMemoryType}" />
+                        <controls:InfoRow LabelText="{utils:Localization pnp_label}"
+                                          ValueText="{Binding ViewModel.GpuInfo.PnpDeviceId}"
+                                          IsLast="True" />
+                    </StackPanel>
+                </ui:Card>
+            </Grid>
+        </StackPanel>
+    </Grid>
 </Page>

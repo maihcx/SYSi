@@ -17,91 +17,93 @@
       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       mc:Ignorable="d">
 
-    <StackPanel>
-        <!-- Usage Bar -->
-        <ui:Card Margin="0,0,0,16">
-            <StackPanel>
-                <Grid Margin="0,0,0,8">
-                    <TextBlock Text="{Binding ViewModel.CpuInfo.Name}"
-                               FontWeight="Medium" />
-                    <TextBlock HorizontalAlignment="Right"
-                               FontWeight="Bold"
-                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
-                <Run Text="{Binding ViewModel.CpuInfo.UsagePercent, StringFormat={}{0:F1}}" />
-                <Run Text="%" />
-                    </TextBlock>
-                </Grid>
-                <ProgressBar Value="{Binding ViewModel.CpuInfo.UsagePercent}"
-                             Maximum="100"
-                             Height="12" />
-            </StackPanel>
-        </ui:Card>
-
-        <!-- Info Grid -->
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <!-- General -->
-            <ui:Card Grid.Column="0"
-                     VerticalAlignment="Stretch">
+    <Grid>
+        <StackPanel>
+            <!-- Usage Bar -->
+            <ui:Card Margin="0,0,0,16">
                 <StackPanel>
-                    <TextBlock Text="{utils:Localization gen_info_title}"
-                               FontWeight="SemiBold"
-                               FontSize="14"
-                               Margin="0,0,0,12" />
-                    <controls:InfoRow LabelText="{utils:Localization cpu_name_title}"
-                                      ValueText="{Binding ViewModel.CpuInfo.Name}" />
-                    <controls:InfoRow LabelText="{utils:Localization manu_title}"
-                                      ValueText="{Binding ViewModel.CpuInfo.Manufacturer}" />
-                    <controls:InfoRow LabelText="{utils:Localization arch_title}"
-                                      ValueText="{Binding ViewModel.CpuInfo.Architecture}" />
-                    <controls:InfoRow LabelText="{utils:Localization socket_title}"
-                                      ValueText="{Binding ViewModel.CpuInfo.Socket}" />
-                    <controls:InfoRow LabelText="{utils:Localization family_cpu_title}"
-                                      ValueText="{Binding ViewModel.CpuInfo.Family}" />
-                    <controls:InfoRow LabelText="{utils:Localization stepping_title}"
-                                      ValueText="{Binding ViewModel.CpuInfo.Stepping}" />
-                    <controls:InfoRow LabelText="{utils:Localization virt_title}"
-                                      ValueText="{Binding ViewModel.CpuInfo.VirtualizationEnabled}" />
-                    <controls:InfoRow LabelText="{utils:Localization proc_id_title}"
-                                      ValueText="{Binding ViewModel.CpuInfo.ProcessorId}"
-                                      IsLast="True" />
+                    <Grid Margin="0,0,0,8">
+                        <TextBlock Text="{Binding ViewModel.CpuInfo.Name}"
+                                   FontWeight="Medium" />
+                        <TextBlock HorizontalAlignment="Right"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
+                    <Run Text="{Binding ViewModel.CpuInfo.UsagePercent, StringFormat={}{0:F1}}" />
+                    <Run Text="%" />
+                        </TextBlock>
+                    </Grid>
+                    <ProgressBar Value="{Binding ViewModel.CpuInfo.UsagePercent}"
+                                 Maximum="100"
+                                 Height="12" />
                 </StackPanel>
             </ui:Card>
 
-            <!-- Performance -->
-            <ui:Card Grid.Column="2"
-                     VerticalAlignment="Stretch">
-                <StackPanel>
-                    <TextBlock Text="{utils:Localization perf_title}"
-                               FontWeight="SemiBold"
-                               FontSize="14"
-                               Margin="0,0,0,12" />
-                    <controls:InfoRow LabelText="{utils:Localization cores_title}"
-                                      ValueText="{Binding ViewModel.CpuInfo.PhysicalCores}" />
-                    <controls:InfoRow LabelText="{utils:Localization threads_title}"
-                                      ValueText="{Binding ViewModel.CpuInfo.LogicalProcessors}" />
-                    <controls:InfoRow LabelText="{utils:Localization base_speed_title}"
-                                      ValueText="{Binding ViewModel.CpuInfo.BaseSpeedGHz}" />
-                    <controls:InfoRow LabelText="{utils:Localization max_speed_title}"
-                                      ValueText="{Binding ViewModel.CpuInfo.MaxSpeedGHz}" />
-                    <controls:InfoRow LabelText="{utils:Localization l1_title}"
-                                      ValueText="{Binding ViewModel.CpuInfo.L1Cache}" />
-                    <controls:InfoRow LabelText="{utils:Localization l2_title}"
-                                      ValueText="{Binding ViewModel.CpuInfo.L2Cache}" />
-                    <controls:InfoRow LabelText="{utils:Localization l3_title}"
-                                      ValueText="{Binding ViewModel.CpuInfo.L3Cache}"
-                                      IsLast="True" />
-                    <controls:InfoRow LabelText=""
-                                      ValueText=""
-                                      IsLast="True" Visibility="Hidden" />
-                </StackPanel>
-            </ui:Card>
-        </Grid>
+            <!-- Info Grid -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
 
-    </StackPanel>
+                <!-- General -->
+                <ui:Card Grid.Column="0"
+                         VerticalAlignment="Stretch">
+                    <StackPanel>
+                        <TextBlock Text="{utils:Localization gen_info_title}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   Margin="0,0,0,12" />
+                        <controls:InfoRow LabelText="{utils:Localization cpu_name_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.Name}" />
+                        <controls:InfoRow LabelText="{utils:Localization manu_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.Manufacturer}" />
+                        <controls:InfoRow LabelText="{utils:Localization arch_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.Architecture}" />
+                        <controls:InfoRow LabelText="{utils:Localization socket_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.Socket}" />
+                        <controls:InfoRow LabelText="{utils:Localization family_cpu_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.Family}" />
+                        <controls:InfoRow LabelText="{utils:Localization stepping_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.Stepping}" />
+                        <controls:InfoRow LabelText="{utils:Localization virt_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.VirtualizationEnabled}" />
+                        <controls:InfoRow LabelText="{utils:Localization proc_id_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.ProcessorId}"
+                                          IsLast="True" />
+                    </StackPanel>
+                </ui:Card>
+
+                <!-- Performance -->
+                <ui:Card Grid.Column="2"
+                         VerticalAlignment="Stretch">
+                    <StackPanel>
+                        <TextBlock Text="{utils:Localization perf_title}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   Margin="0,0,0,12" />
+                        <controls:InfoRow LabelText="{utils:Localization cores_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.PhysicalCores}" />
+                        <controls:InfoRow LabelText="{utils:Localization threads_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.LogicalProcessors}" />
+                        <controls:InfoRow LabelText="{utils:Localization base_speed_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.BaseSpeedGHz}" />
+                        <controls:InfoRow LabelText="{utils:Localization max_speed_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.MaxSpeedGHz}" />
+                        <controls:InfoRow LabelText="{utils:Localization l1_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.L1Cache}" />
+                        <controls:InfoRow LabelText="{utils:Localization l2_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.L2Cache}" />
+                        <controls:InfoRow LabelText="{utils:Localization l3_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.L3Cache}"
+                                          IsLast="True" />
+                        <controls:InfoRow LabelText=""
+                                          ValueText=""
+                                          IsLast="True"
+                                          Visibility="Hidden" />
+                    </StackPanel>
+                </ui:Card>
+            </Grid>
+        </StackPanel>
+    </Grid>
 </Page>
