@@ -58,7 +58,7 @@
                     <controls:InfoRow LabelText="{utils:Localization ui_lib_title}"
                                       ValueText="WPF-UI v4.3.0 by lepoco" />
                     <controls:InfoRow LabelText="{utils:Localization license_title}"
-                                      ValueText="MIT"
+                                      ValueText="GPT-3.0"
                                       IsLast="True" />
                 </StackPanel>
             </ui:Card>
