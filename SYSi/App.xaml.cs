@@ -47,9 +47,6 @@ namespace SYSi
 
                 services.AddHostedService<ApplicationHostService>();
 
-                services.AddSingleton<HardwareService>();
-                services.AddSingleton<HardwareHostService>();
-
                 // Theme manipulation
                 services.AddSingleton<IThemeService, ThemeService>();
 
@@ -62,6 +59,9 @@ namespace SYSi
                 // Main window with navigation
                 services.AddSingleton<INavigationWindow, MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
+
+                services.AddSingleton<HardwareService>();
+                services.AddSingleton<HardwareHostService>();
 
                 NavigationHandle.SetupPageViewModelPairs(services, "SYSi.Views.Pages", "SYSi.ViewModels.Pages");
                 NavigationHandle.SetupPageViewModelPairs(services, "SYSi.Views.PagesBottom", "SYSi.ViewModels.PagesBottom");

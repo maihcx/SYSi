@@ -1,0 +1,63 @@
+﻿<Page x:Class="SYSi.Views.Pages.MotherboardPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="clr-namespace:SYSi.Views.Pages"
+      xmlns:controls="clr-namespace:SYSi.Controls"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:utils="clr-namespace:SYSi.Utils"
+      Title="MotherboardPage"
+      d:DataContext="{d:DesignInstance local:MotherboardPage,
+                                     IsDesignTimeCreatable=False}"
+      d:DesignHeight="450"
+      d:DesignWidth="800"
+      ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+      ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+      mc:Ignorable="d">
+
+    <Grid>
+        <StackPanel>
+            <!-- Board info -->
+            <ui:Card Margin="0 0 0 8">
+                <StackPanel>
+                    <TextBlock Text="{utils:Localization motherboard_title}"
+                                FontWeight="SemiBold"
+                                FontSize="14"
+                                Margin="0,0,0,12" />
+                    <controls:InfoRow LabelText="{utils:Localization manu_title}"
+                                        ValueText="{Binding ViewModel.MotherboardInfo.Manufacturer}" />
+                    <controls:InfoRow LabelText="{utils:Localization product_title}"
+                                        ValueText="{Binding ViewModel.MotherboardInfo.Product}" />
+                    <controls:InfoRow LabelText="{utils:Localization version_title}"
+                                        ValueText="{Binding ViewModel.MotherboardInfo.Version}" />
+                    <controls:InfoRow LabelText="{utils:Localization serial_title}"
+                                        ValueText="{Binding ViewModel.MotherboardInfo.SerialNumber}" />
+                    <controls:InfoRow LabelText="{utils:Localization sys_model_title}"
+                                        ValueText="{Binding ViewModel.MotherboardInfo.SystemModel}" />
+                    <controls:InfoRow LabelText="{utils:Localization sys_family_title}"
+                                        ValueText="{Binding ViewModel.MotherboardInfo.SystemFamily}"
+                                        IsLast="True" />
+                </StackPanel>
+            </ui:Card>
+
+                <!-- BIOS info -->
+            <ui:Card>
+                <StackPanel>
+                    <TextBlock Text="{utils:Localization bios_title}"
+                               FontWeight="SemiBold"
+                               FontSize="14"
+                               Margin="0,0,0,12" />
+                    <controls:InfoRow LabelText="{utils:Localization bios_manu_title}"
+                                      ValueText="{Binding ViewModel.MotherboardInfo.BiosManufacturer}" />
+                    <controls:InfoRow LabelText="{utils:Localization bios_ver_title}"
+                                      ValueText="{Binding ViewModel.MotherboardInfo.BiosVersion}" />
+                    <controls:InfoRow LabelText="{utils:Localization bios_date_title}"
+                                      ValueText="{Binding ViewModel.MotherboardInfo.BiosDate}"
+                                      IsLast="True" />
+                </StackPanel>
+            </ui:Card>
+        </StackPanel>
+    </Grid>
+</Page>

@@ -1,0 +1,104 @@
+﻿<Page x:Class="SYSi.Views.Pages.StoragePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="clr-namespace:SYSi.Views.Pages"
+      xmlns:controls="clr-namespace:SYSi.Controls"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:utils="clr-namespace:SYSi.Utils"
+      Title="StoragePage"
+      d:DataContext="{d:DesignInstance local:StoragePage,
+                                     IsDesignTimeCreatable=False}"
+      d:DesignHeight="450"
+      d:DesignWidth="800"
+      ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+      ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+      mc:Ignorable="d">
+
+    <Grid>
+        <ItemsControl ItemsSource="{Binding ViewModel.Drives}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <ui:Card Margin="0,0,0,16">
+                        <StackPanel>
+                            <!-- Drive header -->
+                            <Grid Margin="0,0,0,14">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="Storage24"
+                                                   FontSize="24"
+                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                    <StackPanel Margin="12,0,0,0">
+                                        <TextBlock FontWeight="Bold"
+                                                   FontSize="15">
+                                    <Run Text="{Binding Letter}" />
+                                    <Run Text="{Binding VolumeLabel, StringFormat=' ({0})'}" />
+                                        </TextBlock>
+                                        <TextBlock Text="{Binding Model}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <TextBlock HorizontalAlignment="Right"
+                                           VerticalAlignment="Center"
+                                           FontWeight="SemiBold">
+                            <Run Text="{Binding UsedText}" />
+                            <Run Text=" / " />
+                            <Run Text="{Binding TotalText}" />
+                                </TextBlock>
+                            </Grid>
+
+                            <!-- Usage bar -->
+                            <ProgressBar Value="{Binding UsagePercent}"
+                                         Maximum="100"
+                                         Height="8"
+                                         Margin="0,0,0,14" />
+
+                            <!-- Stats -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{utils:Localization storage_free_space_title}"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{Binding FreeText}"
+                                               FontWeight="SemiBold" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{utils:Localization storage_file_sys_title}"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{Binding FileSystem}"
+                                               FontWeight="SemiBold" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{utils:Localization storage_drive_type_title}"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{Binding DriveType}"
+                                               FontWeight="SemiBold" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="3">
+                                    <TextBlock Text="{utils:Localization storage_usage_title}"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock FontWeight="SemiBold"
+                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
+                                <Run Text="{Binding UsagePercent, StringFormat={}{0:F1}}" />
+                                <Run Text="%" />
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </ui:Card>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</Page>

@@ -1,6 +1,4 @@
-﻿using static SYSi.Resources.ThemeConfigs;
-
-namespace SYSi.ViewModels.Pages
+﻿namespace SYSi.ViewModels.Pages
 {
     public partial class MemoryViewModel : ObservableObject, INavigationAware
     {

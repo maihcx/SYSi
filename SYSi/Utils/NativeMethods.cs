@@ -1,4 +1,6 @@
-﻿namespace SYSi.Utils
+﻿using Microsoft.Win32.SafeHandles;
+
+namespace SYSi.Utils
 {
     internal static class NativeMethods
     {
@@ -108,6 +110,26 @@
 
         [DllImport("pdh.dll")]
         public static extern uint PdhCloseQuery(IntPtr hQuery);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateFile(
+            string lpFileName,
+            uint dwDesiredAccess,
+            FileShare dwShareMode,
+            IntPtr lpSecurityAttributes,
+            FileMode dwCreationDisposition,
+            uint dwFlagsAndAttributes,
+            IntPtr hTemplateFile
+        );
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool DeviceIoControl(
+            IntPtr hDevice,
+            uint dwIoControlCode,
+            IntPtr lpInBuffer, uint nInBufferSize,
+            byte[] lpOutBuffer, uint nOutBufferSize,
+            out uint lpBytesReturned,
+            IntPtr lpOverlapped);
 
         // ── Structs ─────────────────────────────────────────────────────────────
 
@@ -256,6 +278,34 @@
             RelationProcessorPackage = 3,
             RelationGroup = 4,
             RelationAll = 0xFFFF,
+        }
+
+        public const uint IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS = 0x00560000;
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool DeviceIoControl(
+            SafeFileHandle hDevice,
+            uint dwIoControlCode,
+            IntPtr lpInBuffer,
+            uint nInBufferSize,
+            IntPtr lpOutBuffer,
+            uint nOutBufferSize,
+            out uint lpBytesReturned,
+            IntPtr lpOverlapped);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct DISK_EXTENT
+        {
+            public uint DiskNumber;
+            public long StartingOffset;
+            public long ExtentLength;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct VOLUME_DISK_EXTENTS
+        {
+            public uint NumberOfDiskExtents;
+            public DISK_EXTENT Extents;
         }
     }
 }

@@ -6,8 +6,6 @@
 
         private readonly HardwareHostService hardwareHostService;
 
-        private DispatcherTimer? _timer;
-
         static string loadingText = LanguageBase.GetLangValue("loading_title");
 
         public CpuViewModel(HardwareHostService hardwareHostService)

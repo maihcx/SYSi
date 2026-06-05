@@ -387,4 +387,79 @@
   <data name="memory_slots_title" xml:space="preserve">
     <value>Slots Used</value>
   </data>
+  <data name="page_storage_title" xml:space="preserve">
+    <value>Storage</value>
+  </data>
+  <data name="page_storage_summary" xml:space="preserve">
+    <value>Go to Storage</value>
+  </data>
+  <data name="storage_free_space_title" xml:space="preserve">
+    <value>Free Space</value>
+  </data>
+  <data name="storage_file_sys_title" xml:space="preserve">
+    <value>File System</value>
+  </data>
+  <data name="storage_drive_type_title" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="storage_usage_title" xml:space="preserve">
+    <value>Usage</value>
+  </data>
+  <data name="page_motherboard_title" xml:space="preserve">
+    <value>Motherboard</value>
+  </data>
+  <data name="page_motherboard_summary" xml:space="preserve">
+    <value>Go to Motherboard</value>
+  </data>
+  <data name="motherboard_title" xml:space="preserve">
+    <value>Motherboard</value>
+  </data>
+  <data name="product_title" xml:space="preserve">
+    <value>Product</value>
+  </data>
+  <data name="version_title" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="serial_title" xml:space="preserve">
+    <value>Serial Number</value>
+  </data>
+  <data name="sys_model_title" xml:space="preserve">
+    <value>System Model</value>
+  </data>
+  <data name="sys_family_title" xml:space="preserve">
+    <value>System Family</value>
+  </data>
+  <data name="bios_manu_title" xml:space="preserve">
+    <value>BIOS Manufacturer</value>
+  </data>
+  <data name="bios_ver_title" xml:space="preserve">
+    <value>BIOS Version</value>
+  </data>
+  <data name="bios_date_title" xml:space="preserve">
+    <value>BIOS Release Date</value>
+  </data>
+  <data name="bios_title" xml:space="preserve">
+    <value>BIOS</value>
+  </data>
+  <data name="app_description_summary" xml:space="preserve">
+    <value>A useful tool for viewing your computer's hardware information with high performance.</value>
+  </data>
+  <data name="framework_title" xml:space="preserve">
+    <value>Framework</value>
+  </data>
+  <data name="ui_lib_title" xml:space="preserve">
+    <value>UI Library</value>
+  </data>
+  <data name="license_title" xml:space="preserve">
+    <value>License</value>
+  </data>
+  <data name="page_about_title" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="page_about_summary" xml:space="preserve">
+    <value>Go to About</value>
+  </data>
+  <data name="open_source_summary" xml:space="preserve">
+    <value>This application uses open-source libraries.</value>
+  </data>
 </root>
