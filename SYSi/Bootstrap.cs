@@ -41,7 +41,7 @@
             #endregion
 
             #region SplashScreen Show
-            SplashScreen = new SplashScreen("Assets/wpfui-icon-256.png");
+            SplashScreen = new SplashScreen("Assets/logo_256.png");
             SplashScreen.Show(false, true);
             #endregion
 
