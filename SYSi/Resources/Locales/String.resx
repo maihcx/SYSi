@@ -330,4 +330,43 @@
   <data name="gen_info_title" xml:space="preserve">
     <value>gen_info_title</value>
   </data>
+  <data name="page_gpu_title" xml:space="preserve">
+    <value>page_gpu_title</value>
+  </data>
+  <data name="page_gpu_summary" xml:space="preserve">
+    <value>page_gpu_summary</value>
+  </data>
+  <data name="gpu_multiple_title" xml:space="preserve">
+    <value>gpu_multiple_title</value>
+  </data>
+  <data name="gpu_name_title" xml:space="preserve">
+    <value>gpu_name_title</value>
+  </data>
+  <data name="vram_title" xml:space="preserve">
+    <value>vram_title</value>
+  </data>
+  <data name="driver_ver_title" xml:space="preserve">
+    <value>driver_ver_title</value>
+  </data>
+  <data name="driver_date_title" xml:space="preserve">
+    <value>driver_date_title</value>
+  </data>
+  <data name="resolution_title" xml:space="preserve">
+    <value>resolution_title</value>
+  </data>
+  <data name="refresh_rate_title" xml:space="preserve">
+    <value>refresh_rate_title</value>
+  </data>
+  <data name="color_depth_title" xml:space="preserve">
+    <value>color_depth_title</value>
+  </data>
+  <data name="mem_type_title" xml:space="preserve">
+    <value>mem_type_title</value>
+  </data>
+  <data name="pnp_label" xml:space="preserve">
+    <value>pnp_label</value>
+  </data>
+  <data name="display_title" xml:space="preserve">
+    <value>display_title</value>
+  </data>
 </root>

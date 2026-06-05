@@ -16,7 +16,7 @@ namespace SYSi.ViewModels.Pages
         private INavigationService navigationService;
 
         [ObservableProperty]
-        private ICollection<NavigationCard> _navigationCards = NavigationHandle.GetNavigationCards(["SYSi.Views.Pages", "SYSi.Views.PagesBottom"], typeof(HomePage), typeof(CpuPage));
+        private ICollection<NavigationCard> _navigationCards = NavigationHandle.GetNavigationCards(["SYSi.Views.Pages", "SYSi.Views.PagesBottom"], typeof(HomePage), typeof(CpuPage), typeof(GpuPage));
 
         public HomeViewModel(INavigationService navigationService)
         {
@@ -102,6 +102,12 @@ namespace SYSi.ViewModels.Pages
         private void NavigateCPU()
         {
             navigationService.Navigate(typeof(CpuPage));
+        }
+
+        [RelayCommand]
+        private void NavigateGPU()
+        {
+            navigationService.Navigate(typeof(GpuPage));
         }
 
         private async Task LoadStaticInfo()

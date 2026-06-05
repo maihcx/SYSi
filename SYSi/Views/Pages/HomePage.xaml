@@ -90,6 +90,84 @@
                             </StackPanel>
                         </ui:CardAction>
 
+                        <!-- GPU card -->
+                        <ui:CardAction Margin="0 -7 8 1"
+                                       Command="{Binding ViewModel.NavigateGPUCommand}"
+                                       IsChevronVisible="False">
+                            <StackPanel MinHeight="103">
+                                <Grid HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <ui:SymbolIcon Grid.Column="0"
+                                                   Symbol="Stream24"
+                                                   FontSize="20" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="{utils:Localization gpu_usage_title}"
+                                               FontSize="13"
+                                               FontWeight="Medium"
+                                               VerticalAlignment="Center"
+                                               Margin="8,0,0,0" />
+                                    <ui:SymbolIcon Grid.Column="2"
+                                                   Symbol="ChevronCircleRight24"
+                                                   FontSize="20" />
+                                </Grid>
+
+                                <TextBlock Text="{utils:Localization loading_title}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           FontSize="12"
+                                           FontWeight="SemiBold">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility"
+                                                    Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ViewModel.GpuList.Count, Mode=OneWay}"
+                                                             Value="0">
+                                                    <Setter Property="Visibility"
+                                                            Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <ItemsControl ItemsSource="{Binding ViewModel.GpuList, Mode=OneWay}"
+                                              AlternationCount="10">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,0,0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- GPU 0: -->
+                                                <TextBlock Grid.Column="0"
+                                                           FontSize="12"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
+                            <Run Text="GPU" />
+                            <Run Text="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex), Mode=OneWay}" /><Run Text=": " />
+                                                </TextBlock>
+
+                                                <!-- Tên GPU -->
+                                                <TextBlock Grid.Column="1"
+                                                           FontSize="12"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                           Text="{Binding Name}"
+                                                           TextWrapping="Wrap" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ui:CardAction>
+
                         <!-- RAM -->
                         <ui:Card>
                             <StackPanel>
@@ -173,73 +251,6 @@
 
                                     </TextBlock>
                                 </StackPanel>
-                            </StackPanel>
-                        </ui:Card>
-
-                        <!-- GPU card -->
-                        <ui:Card>
-                            <StackPanel MinHeight="103">
-                                <StackPanel Orientation="Horizontal"
-                                            Margin="0,0,0,6">
-                                    <ui:SymbolIcon Symbol="Stream24"
-                                                   FontSize="20"
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
-                                    <TextBlock Text="{utils:Localization gpu_usage_title}"
-                                               FontSize="13"
-                                               FontWeight="Medium"
-                                               VerticalAlignment="Center"
-                                               Margin="8,0,0,0" />
-                                </StackPanel>
-
-                                <TextBlock Text="{utils:Localization loading_title}"
-                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                           FontSize="12"
-                                           FontWeight="SemiBold">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility"
-                                                    Value="Collapsed" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding ViewModel.GpuList.Count, Mode=OneWay}"
-                                                             Value="0">
-                                                    <Setter Property="Visibility"
-                                                            Value="Visible" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-
-                                <ItemsControl ItemsSource="{Binding ViewModel.GpuList, Mode=OneWay}"
-                                              AlternationCount="10">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Grid Margin="0,0,0,2">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-
-                                                <!-- GPU 0: -->
-                                                <TextBlock Grid.Column="0"
-                                                           FontSize="12"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
-                                                    <Run Text="GPU" />
-                                                    <Run Text="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex), Mode=OneWay}" /><Run Text=": " />
-                                                </TextBlock>
-
-                                                <!-- Tên GPU -->
-                                                <TextBlock Grid.Column="1"
-                                                           FontSize="12"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                           Text="{Binding Name}"
-                                                           TextWrapping="Wrap" />
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
                             </StackPanel>
                         </ui:Card>
                     </ItemsControl>
