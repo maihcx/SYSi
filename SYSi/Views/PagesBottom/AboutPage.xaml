@@ -1,0 +1,74 @@
+﻿<Page x:Class="SYSi.Views.PagesBottom.AboutPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:helpers="clr-namespace:SYSi.Helpers"
+      xmlns:controls="clr-namespace:SYSi.Controls"
+      xmlns:local="clr-namespace:SYSi.Views.PagesBottom"
+      xmlns:utils="clr-namespace:SYSi.Utils"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="AboutPage"
+      d:DataContext="{d:DesignInstance local:AboutPage,
+                                     IsDesignTimeCreatable=False}"
+      d:DesignHeight="450"
+      d:DesignWidth="800"
+      ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+      ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+      mc:Ignorable="d">
+    <Grid>
+        <StackPanel HorizontalAlignment="Stretch">
+
+            <!-- App Identity -->
+            <ui:Card Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:Image Grid.Column="0"
+                              Source="pack://application:,,,/Assets/logo_256.png"
+                              Width="80"
+                              Height="80" />
+                    <StackPanel  Grid.Column="2"
+                                 HorizontalAlignment="Stretch"
+                                 VerticalAlignment="Center">
+                        <ui:TextBlock Text="SYSTEM INFORMATION"
+                                   FontSize="18"
+                                   FontWeight="Bold" />
+                        <ui:TextBlock Text="{utils:Localization app_description_summary}"
+                                   FontSize="13"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Margin="0,4,0,0" />
+                    </StackPanel>
+                </Grid>
+            </ui:Card>
+
+            <!-- Info card -->
+            <ui:Card Margin="0,0,0,16">
+                <StackPanel>
+                    <controls:InfoRow LabelText="{utils:Localization version_title}"
+                                      ValueText="{Binding ViewModel.AppVersion}" />
+                    <controls:InfoRow LabelText="{utils:Localization framework_title}"
+                                      ValueText=".NET 10 / WPF" />
+                    <controls:InfoRow LabelText="{utils:Localization ui_lib_title}"
+                                      ValueText="WPF-UI v4.3.0 by lepoco" />
+                    <controls:InfoRow LabelText="{utils:Localization license_title}"
+                                      ValueText="MIT"
+                                      IsLast="True" />
+                </StackPanel>
+            </ui:Card>
+
+            <ui:InfoBar Title="SYSi"
+                        Message="{utils:Localization open_source_summary}"
+                        Severity="Informational"
+                        IsOpen="True"
+                        IsClosable="False" />
+
+        </StackPanel>
+    </Grid>
+</Page>
