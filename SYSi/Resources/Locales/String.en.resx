@@ -387,4 +387,22 @@
   <data name="memory_slots_title" xml:space="preserve">
     <value>Slots Used</value>
   </data>
+  <data name="page_storage_title" xml:space="preserve">
+    <value>Storage</value>
+  </data>
+  <data name="page_storage_summary" xml:space="preserve">
+    <value>Go to Storage</value>
+  </data>
+  <data name="storage_free_space_title" xml:space="preserve">
+    <value>Free Space</value>
+  </data>
+  <data name="storage_file_sys_title" xml:space="preserve">
+    <value>File System</value>
+  </data>
+  <data name="storage_drive_type_title" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="storage_usage_title" xml:space="preserve">
+    <value>Usage</value>
+  </data>
 </root>

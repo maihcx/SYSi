@@ -148,7 +148,7 @@
     <value>Cá nhân hóa</value>
   </data>
   <data name="page_settings_summary" xml:space="preserve">
-    <value>Đi đến trang cài đặt</value>
+    <value>Đi đến trang Cài Đặt</value>
   </data>
   <data name="page_settings_title" xml:space="preserve">
     <value>Cài đặt</value>
@@ -386,5 +386,23 @@
   </data>
   <data name="memory_slots_title" xml:space="preserve">
     <value>Khe cắm đang dùng</value>
+  </data>
+  <data name="page_storage_title" xml:space="preserve">
+    <value>Ổ lưu trữ</value>
+  </data>
+  <data name="page_storage_summary" xml:space="preserve">
+    <value>Đi đến trang Ổ Lưu Trữ</value>
+  </data>
+  <data name="storage_free_space_title" xml:space="preserve">
+    <value>Dung lượng trống</value>
+  </data>
+  <data name="storage_file_sys_title" xml:space="preserve">
+    <value>Hệ thống tệp</value>
+  </data>
+  <data name="storage_drive_type_title" xml:space="preserve">
+    <value>Loại ổ đĩa</value>
+  </data>
+  <data name="storage_usage_title" xml:space="preserve">
+    <value>Mức sử dụng</value>
   </data>
 </root>

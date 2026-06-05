@@ -109,6 +109,25 @@
         [DllImport("pdh.dll")]
         public static extern uint PdhCloseQuery(IntPtr hQuery);
 
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateFile(
+    string lpFileName,
+    uint dwDesiredAccess,
+    FileShare dwShareMode,
+    IntPtr lpSecurityAttributes,
+    FileMode dwCreationDisposition,
+    uint dwFlagsAndAttributes,
+    IntPtr hTemplateFile);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool DeviceIoControl(
+            IntPtr hDevice,
+            uint dwIoControlCode,
+            IntPtr lpInBuffer, uint nInBufferSize,
+            byte[] lpOutBuffer, uint nOutBufferSize,
+            out uint lpBytesReturned,
+            IntPtr lpOverlapped);
+
         // ── Structs ─────────────────────────────────────────────────────────────
 
         [StructLayout(LayoutKind.Sequential)]
