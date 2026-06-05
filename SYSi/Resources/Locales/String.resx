@@ -387,4 +387,22 @@
   <data name="memory_slots_title" xml:space="preserve">
     <value>memory_slots_title</value>
   </data>
+  <data name="page_storage_title" xml:space="preserve">
+    <value>page_storage_title</value>
+  </data>
+  <data name="page_storage_summary" xml:space="preserve">
+    <value>page_storage_summary</value>
+  </data>
+  <data name="storage_free_space_title" xml:space="preserve">
+    <value>storage_free_space_title</value>
+  </data>
+  <data name="storage_file_sys_title" xml:space="preserve">
+    <value>storage_file_sys_title</value>
+  </data>
+  <data name="storage_drive_type_title" xml:space="preserve">
+    <value>storage_drive_type_title</value>
+  </data>
+  <data name="storage_usage_title" xml:space="preserve">
+    <value>storage_usage_title</value>
+  </data>
 </root>
