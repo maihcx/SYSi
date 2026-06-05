@@ -50,6 +50,7 @@
                            MenuItemsSource="{Binding ViewModel.MenuItems, Mode=OneWay}"
                            OpenPaneLength="310"
                            PaneDisplayMode="Left"
+                           Transition="FadeInWithSlideAuto"
                            TitleBar="{Binding ElementName=TitleBar, Mode=OneWay}">
             <ui:NavigationView.Header>
                 <StackPanel>
