@@ -17,164 +17,166 @@
       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       mc:Ignorable="d">
 
-    <StackPanel>
-        <!-- Summary Row -->
-        <Grid Margin="0 0 0 8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="8" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="8" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <ui:Card Grid.Column="0">
+    <Grid>
+        <StackPanel>
+            <!-- Summary Row -->
+            <Grid Margin="0 0 0 8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ui:Card Grid.Column="0">
+                    <StackPanel>
+                        <TextBlock Text="{utils:Localization memory_total_title}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{Binding ViewModel.RamInfo.TotalText}"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                    </StackPanel>
+                </ui:Card>
+                <ui:Card Grid.Column="2">
+                    <StackPanel>
+                        <TextBlock Text="{utils:Localization memory_used_title}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{Binding ViewModel.RamInfo.UsedText}"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                    </StackPanel>
+                </ui:Card>
+                <ui:Card Grid.Column="4">
+                    <StackPanel>
+                        <TextBlock Text="{utils:Localization memory_available_title}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{Binding ViewModel.RamInfo.AvailableText}"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                    </StackPanel>
+                </ui:Card>
+            </Grid>
+
+            <!-- Usage bar -->
+            <ui:Card Margin="0,0,0,20">
                 <StackPanel>
-                    <TextBlock Text="{utils:Localization memory_total_title}"
-                               FontSize="11"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                    <TextBlock Text="{Binding ViewModel.RamInfo.TotalText}"
-                               FontSize="18"
-                               FontWeight="Bold"
-                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                    <Grid Margin="0,0,0,8">
+                        <TextBlock Text="{utils:Localization memory_used_title}"
+                                   FontWeight="Medium" />
+                        <TextBlock HorizontalAlignment="Right"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
+                    <Run Text="{Binding ViewModel.RamInfo.UsagePercent, StringFormat={}{0:F1}}" />
+                    <Run Text="%" />
+                        </TextBlock>
+                    </Grid>
+                    <ProgressBar Value="{Binding ViewModel.RamInfo.UsagePercent}"
+                                 Maximum="100"
+                                 Height="12" />
                 </StackPanel>
             </ui:Card>
-            <ui:Card Grid.Column="2">
-                <StackPanel>
-                    <TextBlock Text="{utils:Localization memory_used_title}"
-                               FontSize="11"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                    <TextBlock Text="{Binding ViewModel.RamInfo.UsedText}"
-                               FontSize="18"
-                               FontWeight="Bold"
-                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
-                </StackPanel>
-            </ui:Card>
-            <ui:Card Grid.Column="4">
-                <StackPanel>
-                    <TextBlock Text="{utils:Localization memory_available_title}"
-                               FontSize="11"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                    <TextBlock Text="{Binding ViewModel.RamInfo.AvailableText}"
-                               FontSize="18"
-                               FontWeight="Bold"
-                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
-                </StackPanel>
-            </ui:Card>
-        </Grid>
 
-        <!-- Usage bar -->
-        <ui:Card Margin="0,0,0,20">
-            <StackPanel>
-                <Grid Margin="0,0,0,8">
-                    <TextBlock Text="{utils:Localization memory_used_title}"
-                               FontWeight="Medium" />
-                    <TextBlock HorizontalAlignment="Right"
-                               FontWeight="Bold"
-                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
-                <Run Text="{Binding ViewModel.RamInfo.UsagePercent, StringFormat={}{0:F1}}" />
-                <Run Text="%" />
-                    </TextBlock>
-                </Grid>
-                <ProgressBar Value="{Binding ViewModel.RamInfo.UsagePercent}"
-                             Maximum="100"
-                             Height="12" />
-            </StackPanel>
-        </ui:Card>
+            <!-- Slots -->
+            <TextBlock Text="{utils:Localization memory_slots_title}"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,12" />
 
-        <!-- Slots -->
-        <TextBlock Text="{utils:Localization memory_slots_title}"
-                   FontSize="16"
-                   FontWeight="SemiBold"
-                   Margin="0,0,0,12" />
+            <ItemsControl ItemsSource="{Binding ViewModel.RamInfo.Slots}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ui:Card Margin="0,0,0,12">
+                            <StackPanel>
+                                <!-- Slot header -->
+                                <StackPanel Orientation="Horizontal"
+                                            Margin="0,0,0,12">
+                                    <ui:SymbolIcon Symbol="Memory16"
+                                                   FontSize="20"
+                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                    <TextBlock Text="{Binding BankLabel}"
+                                               FontWeight="Bold"
+                                               FontSize="14"
+                                               VerticalAlignment="Center"
+                                               Margin="8,0,12,0" />
+                                    <TextBlock Text="{Binding CapacityText}"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
 
-        <ItemsControl ItemsSource="{Binding ViewModel.RamInfo.Slots}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <ui:Card Margin="0,0,0,12">
-                        <StackPanel>
-                            <!-- Slot header -->
-                            <StackPanel Orientation="Horizontal"
-                                        Margin="0,0,0,12">
-                                <ui:SymbolIcon Symbol="Memory16"
-                                               FontSize="20"
-                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
-                                <TextBlock Text="{Binding BankLabel}"
-                                           FontWeight="Bold"
-                                           FontSize="14"
-                                           VerticalAlignment="Center"
-                                           Margin="8,0,12,0" />
-                                <TextBlock Text="{Binding CapacityText}"
-                                           FontSize="13"
-                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                           VerticalAlignment="Center" />
+                                <!-- Row 1 -->
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Type"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{Binding MemoryType}"
+                                                   FontWeight="SemiBold" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Speed"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock FontWeight="SemiBold">
+                                    <Run Text="{Binding SpeedMHz}" /><Run Text=" MHz" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Manufacturer"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{Binding Manufacturer}"
+                                                   FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Row 2 -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Form Factor"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{Binding FormFactor}"
+                                                   FontWeight="SemiBold" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Part Number"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{Binding PartNumber}"
+                                                   FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Data Width"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock FontWeight="SemiBold">
+                                    <Run Text="{Binding DataWidth}" /><Run Text=" bit" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
                             </StackPanel>
-
-                            <!-- Row 1 -->
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Type"
-                                               FontSize="11"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                                    <TextBlock Text="{Binding MemoryType}"
-                                               FontWeight="SemiBold" />
-                                </StackPanel>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Speed"
-                                               FontSize="11"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                                    <TextBlock FontWeight="SemiBold">
-                                <Run Text="{Binding SpeedMHz}" /><Run Text=" MHz" />
-                                    </TextBlock>
-                                </StackPanel>
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Manufacturer"
-                                               FontSize="11"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                                    <TextBlock Text="{Binding Manufacturer}"
-                                               FontWeight="SemiBold" />
-                                </StackPanel>
-                            </Grid>
-
-                            <!-- Row 2 -->
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Form Factor"
-                                               FontSize="11"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                                    <TextBlock Text="{Binding FormFactor}"
-                                               FontWeight="SemiBold" />
-                                </StackPanel>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Part Number"
-                                               FontSize="11"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                                    <TextBlock Text="{Binding PartNumber}"
-                                               FontWeight="SemiBold"
-                                               TextTrimming="CharacterEllipsis" />
-                                </StackPanel>
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Data Width"
-                                               FontSize="11"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                                    <TextBlock FontWeight="SemiBold">
-                                <Run Text="{Binding DataWidth}" /><Run Text=" bit" />
-                                    </TextBlock>
-                                </StackPanel>
-                            </Grid>
-                        </StackPanel>
-                    </ui:Card>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </StackPanel>
+                        </ui:Card>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </Grid>
 </Page>

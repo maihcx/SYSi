@@ -405,4 +405,40 @@
   <data name="storage_usage_title" xml:space="preserve">
     <value>storage_usage_title</value>
   </data>
+  <data name="page_motherboard_title" xml:space="preserve">
+    <value>page_motherboard_title</value>
+  </data>
+  <data name="page_motherboard_summary" xml:space="preserve">
+    <value>page_motherboard_summary</value>
+  </data>
+  <data name="motherboard_title" xml:space="preserve">
+    <value>motherboard_title</value>
+  </data>
+  <data name="product_title" xml:space="preserve">
+    <value>product_title</value>
+  </data>
+  <data name="version_title" xml:space="preserve">
+    <value>version_title</value>
+  </data>
+  <data name="serial_title" xml:space="preserve">
+    <value>serial_title</value>
+  </data>
+  <data name="sys_model_title" xml:space="preserve">
+    <value>sys_model_title</value>
+  </data>
+  <data name="sys_family_title" xml:space="preserve">
+    <value>sys_family_title</value>
+  </data>
+  <data name="bios_manu_title" xml:space="preserve">
+    <value>bios_manu_title</value>
+  </data>
+  <data name="bios_ver_title" xml:space="preserve">
+    <value>bios_ver_title</value>
+  </data>
+  <data name="bios_date_title" xml:space="preserve">
+    <value>bios_date_title</value>
+  </data>
+  <data name="bios_title" xml:space="preserve">
+    <value>bios_title</value>
+  </data>
 </root>

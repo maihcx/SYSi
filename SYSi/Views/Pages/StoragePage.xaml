@@ -17,7 +17,7 @@
       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       mc:Ignorable="d">
 
-    <StackPanel>
+    <Grid>
         <ItemsControl ItemsSource="{Binding ViewModel.Drives}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
@@ -100,5 +100,5 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-    </StackPanel>
+    </Grid>
 </Page>
