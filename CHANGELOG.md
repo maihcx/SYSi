@@ -1,3 +1,17 @@
+## v0.3.2
+
+## 🚀 Changelog
+## ⚡ Performance
+
+- Disable navigation cache for navigation items (#30) — @maihcx
+
+## 🧹 Maintenance
+
+- Set default empty strings for AppConfig props (#29) — @maihcx
+
+
+---
+
 ## v0.3.1
 
 ## 🚀 Changelog
