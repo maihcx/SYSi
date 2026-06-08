@@ -17,11 +17,11 @@
       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       mc:Ignorable="d">
 
-    <Grid>
-        <ItemsControl ItemsSource="{Binding ViewModel.Drives}">
+    <Grid Margin="0 0 0 30">
+        <ItemsControl ItemsSource="{Binding ViewModel.Drives}" Margin="0 0 0 -8">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <ui:Card Margin="0,0,0,16">
+                    <ui:Card Margin="0,0,0,8">
                         <StackPanel>
                             <!-- Drive header -->
                             <Grid Margin="0,0,0,14">

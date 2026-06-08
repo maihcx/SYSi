@@ -17,7 +17,7 @@
       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       mc:Ignorable="d">
 
-    <Grid>
+    <Grid Margin="0 0 0 30">
         <StackPanel>
             <!-- Summary Row -->
             <Grid Margin="0 0 0 8">
@@ -88,10 +88,10 @@
                        FontWeight="SemiBold"
                        Margin="0,0,0,12" />
 
-            <ItemsControl ItemsSource="{Binding ViewModel.RamInfo.Slots}">
+            <ItemsControl ItemsSource="{Binding ViewModel.RamInfo.Slots}" Margin="0 0 0 -8">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <ui:Card Margin="0,0,0,12">
+                        <ui:Card Margin="0,0,0,8">
                             <StackPanel>
                                 <!-- Slot header -->
                                 <StackPanel Orientation="Horizontal"
