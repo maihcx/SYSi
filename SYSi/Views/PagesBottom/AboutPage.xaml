@@ -65,11 +65,32 @@
             </ui:Card>
 
             <ui:InfoBar Title="SYSi"
+                        Margin="0,0,0,8"
                         Message="{utils:Localization open_source_summary}"
                         Severity="Informational"
                         IsOpen="True"
                         IsClosable="False" />
 
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                
+                <ui:InfoBar Grid.Column="0"
+                            Title="SYSi"
+                            Message="{utils:Localization issue_report_summary}"
+                            Severity="Warning"
+                            IsOpen="True"
+                            IsClosable="False"
+                            HorizontalAlignment="Stretch" />
+                <ui:HyperlinkButton VerticalAlignment="Stretch"
+                                    Grid.Column="2"
+                                    NavigateUri="https://github.com/maihcx/SYSi/issues/new">
+                    <TextBlock Text="{utils:Localization report_issue_title}" />
+                </ui:HyperlinkButton>
+            </Grid>
         </StackPanel>
     </Grid>
 </Page>
