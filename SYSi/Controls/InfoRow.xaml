@@ -7,6 +7,8 @@
 
     <helpers:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" />
 
+    <helpers:NullOrEmptyToVisibilityConverter x:Key="NullToCollapsedConverter" />
+
     <Style TargetType="{x:Type controls:InfoRow}">
         <Setter Property="Focusable"
                 Value="False" />
@@ -18,9 +20,11 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:InfoRow}">
                     <StackPanel>
-                        <Grid Margin="0,5,0,5">
+                        <Grid x:Name="PART_MainGrid"
+                              Margin="0,5,0,5"
+                              VerticalAlignment="Center">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170" />
+                                <ColumnDefinition Width="{Binding LabelWidth, RelativeSource={RelativeSource TemplatedParent}}" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
@@ -56,6 +60,15 @@
                             </Separator.Visibility>
                         </Separator>
                     </StackPanel>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsLast"
+                                 Value="True">
+                            <Setter TargetName="PART_MainGrid"
+                                    Property="Margin"
+                                    Value="0,5,0,-8" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
