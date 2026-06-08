@@ -54,6 +54,20 @@ public class InfoRow : ContentControl
         new PropertyMetadata(false)
     );
 
+    public static readonly DependencyProperty NavigateUriProperty = DependencyProperty.Register(
+        nameof(NavigateUri),
+        typeof(string),
+        typeof(InfoRow),
+        new PropertyMetadata(null)
+    );
+
+    public static readonly DependencyProperty LabelWidthProperty = DependencyProperty.Register(
+        nameof(LabelWidth),
+        typeof(double),
+        typeof(InfoRow),
+        new PropertyMetadata((double)120)
+    );
+
     public string? LabelText
     {
         get => (string)GetValue(LabelTextProperty);
@@ -70,6 +84,18 @@ public class InfoRow : ContentControl
     {
         get => (bool)GetValue(IsLastProperty);
         set => SetValue(IsLastProperty, value);
+    }
+
+    public string? NavigateUri
+    {
+        get => (string?)GetValue(NavigateUriProperty);
+        set => SetValue(NavigateUriProperty, value);
+    }
+
+    public double? LabelWidth
+    {
+        get => (double)GetValue(LabelWidthProperty);
+        set => SetValue(LabelWidthProperty, value);
     }
 
     private void CopyButton_Click(object sender, RoutedEventArgs e)

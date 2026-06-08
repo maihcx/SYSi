@@ -45,10 +45,10 @@
                         </ItemsControl.Resources>
 
                         <!-- CPU -->
-                        <ui:CardAction Margin="0 -7 8 1"
+                        <ui:CardAction Margin="0 0 8 8"
                                        Command="{Binding ViewModel.NavigateCPUCommand}"
                                        IsChevronVisible="False">
-                            <StackPanel>
+                            <StackPanel Height="104">
                                 <Grid HorizontalAlignment="Stretch">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
@@ -92,10 +92,10 @@
                         </ui:CardAction>
 
                         <!-- GPU card -->
-                        <ui:CardAction Margin="0 -7 8 1"
+                        <ui:CardAction Margin="0 0 8 8"
                                        Command="{Binding ViewModel.NavigateGPUCommand}"
                                        IsChevronVisible="False">
-                            <StackPanel MinHeight="103">
+                            <StackPanel Height="104">
                                 <Grid HorizontalAlignment="Stretch">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
@@ -171,10 +171,10 @@
                         </ui:CardAction>
 
                         <!-- RAM -->
-                        <ui:CardAction Margin="0 -7 8 1"
+                        <ui:CardAction Margin="0 0 8 8"
                                        Command="{Binding ViewModel.NavigateMemoryCommand}"
                                        IsChevronVisible="False">
-                            <StackPanel>
+                            <StackPanel Height="104">
                                 <Grid HorizontalAlignment="Stretch">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
@@ -231,8 +231,9 @@
                         </ui:CardAction>
 
                         <!-- OS / Uptime -->
-                        <ui:Card>
-                            <StackPanel MinHeight="103">
+                        <ui:CardAction Margin="0 0 8 8"
+                                       IsChevronVisible="False">
+                            <StackPanel Height="104">
                                 <StackPanel Orientation="Horizontal"
                                             Margin="0,0,0,6">
                                     <ui:SymbolIcon Symbol="DesktopPulse24"
@@ -266,7 +267,7 @@
                                     </TextBlock>
                                 </StackPanel>
                             </StackPanel>
-                        </ui:Card>
+                        </ui:CardAction>
                     </ItemsControl>
                 </StackPanel>
             </controls:ReferralCard.FooterContent>
@@ -274,7 +275,7 @@
 
         <controls:GalleryNavigationPresenter Margin="0"
                                              Padding="0"
-                                             IsVertical="False"
+                                             MaxColumns="4"
                                              ItemsSource="{Binding ViewModel.NavigationCards, Mode=OneWay}" />
     </StackPanel>
 </Page>

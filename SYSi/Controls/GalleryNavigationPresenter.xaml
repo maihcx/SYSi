@@ -23,7 +23,8 @@
                                 IsItemsHost="True"
                                 Orientation="Vertical"
                                 StretchItems="True"
-                                SpacingMode="Uniform" />
+                                SpacingMode="Uniform"
+                                MaxColumns="{Binding Tag, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
                         </ItemsPanelTemplate>
 
                         <!-- Horizontal ItemsPanel -->
@@ -36,11 +37,14 @@
                         </ItemsPanelTemplate>
                     </ControlTemplate.Resources>
 
-                    <ItemsControl ItemsSource="{TemplateBinding ItemsSource}">
+                    <ItemsControl 
+                        Tag="{Binding MaxColumns, RelativeSource={RelativeSource TemplatedParent}}" 
+                        ItemsSource="{TemplateBinding ItemsSource}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:NavigationCard}">
                                 <ui:CardAction
                                     Margin="2"
+                                    MinWidth="230"
                                     MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ItemsControl}, Converter={StaticResource SubtractDoubleConverter}, ConverterParameter=8}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch"

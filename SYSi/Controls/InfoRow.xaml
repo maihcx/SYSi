@@ -7,6 +7,8 @@
 
     <helpers:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" />
 
+    <helpers:NullOrEmptyToVisibilityConverter x:Key="NullToCollapsedConverter" />
+
     <Style TargetType="{x:Type controls:InfoRow}">
         <Setter Property="Focusable"
                 Value="False" />
@@ -18,23 +20,47 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:InfoRow}">
                     <StackPanel>
-                        <Grid Margin="0,5,0,5">
+                        <Grid x:Name="PART_MainGrid"
+                              Margin="0,5,0,5"
+                              VerticalAlignment="Center">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="170" />
+                                <ColumnDefinition Width="{Binding LabelWidth, RelativeSource={RelativeSource TemplatedParent}}" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0"
-                                       Text="{TemplateBinding LabelText}"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                       FontSize="12"
-                                       VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="1"
-                                       Text="{TemplateBinding ValueText}"
-                                       FontSize="12"
-                                       FontWeight="Medium"
-                                       VerticalAlignment="Center"
-                                       TextTrimming="CharacterEllipsis" />
+                            <ui:TextBlock Grid.Column="0"
+                                          Text="{TemplateBinding LabelText}"
+                                          Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                          FontSize="12"
+                                          VerticalAlignment="Center" />
+                            <ui:HyperlinkButton Grid.Column="1"
+                                                NavigateUri="{TemplateBinding NavigateUri}">
+                                <ui:HyperlinkButton.Visibility>
+                                    <Binding Path="NavigateUri"
+                                             RelativeSource="{RelativeSource TemplatedParent}"
+                                             Converter="{StaticResource NullToCollapsedConverter}" />
+                                </ui:HyperlinkButton.Visibility>
+
+                                <ui:TextBlock Text="{TemplateBinding ValueText}"
+                                              FontSize="12"
+                                              FontWeight="Medium"
+                                              VerticalAlignment="Center"
+                                              TextTrimming="CharacterEllipsis" />
+                            </ui:HyperlinkButton>
+                            <ui:TextBlock Grid.Column="1"
+                                          Text="{TemplateBinding ValueText}"
+                                          FontSize="12"
+                                          FontWeight="Medium"
+                                          VerticalAlignment="Center"
+                                          TextTrimming="CharacterEllipsis"
+                                          Padding="11 5">
+                                <ui:TextBlock.Visibility>
+                                    <Binding Path="NavigateUri"
+                                             RelativeSource="{RelativeSource TemplatedParent}"
+                                             Converter="{StaticResource NullToCollapsedConverter}"
+                                             ConverterParameter="invert" />
+                                </ui:TextBlock.Visibility>
+                            </ui:TextBlock>
                             <ui:Button x:Name="PART_CopyButton"
                                        Grid.Column="2"
                                        ToolTip="Copy"
@@ -56,6 +82,15 @@
                             </Separator.Visibility>
                         </Separator>
                     </StackPanel>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsLast"
+                                 Value="True">
+                            <Setter TargetName="PART_MainGrid"
+                                    Property="Margin"
+                                    Value="0,5,0,-8" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
