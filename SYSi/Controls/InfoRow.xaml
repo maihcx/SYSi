@@ -28,17 +28,39 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0"
-                                       Text="{TemplateBinding LabelText}"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                       FontSize="12"
-                                       VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="1"
-                                       Text="{TemplateBinding ValueText}"
-                                       FontSize="12"
-                                       FontWeight="Medium"
-                                       VerticalAlignment="Center"
-                                       TextTrimming="CharacterEllipsis" />
+                            <ui:TextBlock Grid.Column="0"
+                                          Text="{TemplateBinding LabelText}"
+                                          Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                          FontSize="12"
+                                          VerticalAlignment="Center" />
+                            <ui:HyperlinkButton Grid.Column="1"
+                                                NavigateUri="{TemplateBinding NavigateUri}">
+                                <ui:HyperlinkButton.Visibility>
+                                    <Binding Path="NavigateUri"
+                                             RelativeSource="{RelativeSource TemplatedParent}"
+                                             Converter="{StaticResource NullToCollapsedConverter}" />
+                                </ui:HyperlinkButton.Visibility>
+
+                                <ui:TextBlock Text="{TemplateBinding ValueText}"
+                                              FontSize="12"
+                                              FontWeight="Medium"
+                                              VerticalAlignment="Center"
+                                              TextTrimming="CharacterEllipsis" />
+                            </ui:HyperlinkButton>
+                            <ui:TextBlock Grid.Column="1"
+                                          Text="{TemplateBinding ValueText}"
+                                          FontSize="12"
+                                          FontWeight="Medium"
+                                          VerticalAlignment="Center"
+                                          TextTrimming="CharacterEllipsis"
+                                          Padding="11 5">
+                                <ui:TextBlock.Visibility>
+                                    <Binding Path="NavigateUri"
+                                             RelativeSource="{RelativeSource TemplatedParent}"
+                                             Converter="{StaticResource NullToCollapsedConverter}"
+                                             ConverterParameter="invert" />
+                                </ui:TextBlock.Visibility>
+                            </ui:TextBlock>
                             <ui:Button x:Name="PART_CopyButton"
                                        Grid.Column="2"
                                        ToolTip="Copy"
