@@ -85,9 +85,15 @@
                             IsOpen="True"
                             IsClosable="False"
                             HorizontalAlignment="Stretch" />
+                
                 <ui:HyperlinkButton VerticalAlignment="Stretch"
                                     Grid.Column="2"
                                     NavigateUri="https://github.com/maihcx/SYSi/issues/new">
+                    <ui:HyperlinkButton.Resources>
+                        <Style TargetType="ui:HyperlinkButton"
+                               BasedOn="{StaticResource {x:Type ui:Button}}" />
+                    </ui:HyperlinkButton.Resources>
+                    
                     <TextBlock Text="{utils:Localization report_issue_title}" />
                 </ui:HyperlinkButton>
             </Grid>
