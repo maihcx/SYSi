@@ -52,6 +52,9 @@ public sealed partial class HardwareService
 
             ushort speedMhz = s.Word(0x15);
 
+            string deviceLocator = s.Str(0x10); // "Controller0-DIMMA2"
+            string label = deviceLocator.Contains('-') ? deviceLocator.Split('-').Last() : deviceLocator;
+
             var slot = new RamSlotInfo
             {
                 CapacityText = FormatBytes(capBytes),
@@ -59,13 +62,12 @@ public sealed partial class HardwareService
                 MemoryType   = ParseMemoryType(s.Byte(0x12)),
                 FormFactor   = ParseFormFactor(s.Byte(0x0E)),
                 //BankLabel    = s.Length > 0x10 ? s.Str(0x10) : "N/A",
+                BankLabel = label != "N/A" ? label : $"Slot {info.Slots.Count + 1}",
                 Manufacturer = s.Length > 0x17 ? s.Str(0x17) : "N/A",
                 PartNumber   = s.Length > 0x1A ? s.Str(0x1A) : "N/A",
                 SerialNumber = s.Length > 0x18 ? s.Str(0x18) : "N/A",
                 DataWidth = s.Length > 0x0B ? s.Word(0x0A) : (ushort)0,
             };
-
-            slot.BankLabel = $"Slot {info.Slots.Count + 1}";
 
             if (speedMhz > 0) speeds.Add(speedMhz.ToString());
             info.Slots.Add(slot);
