@@ -17,10 +17,10 @@
       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       mc:Ignorable="d">
 
-    <Grid>
+    <Grid Margin="0 0 0 30">
         <StackPanel>
             <!-- Usage Bar -->
-            <ui:Card Margin="0,0,0,16">
+            <ui:Card Margin="0,0,0,8">
                 <StackPanel>
                     <Grid Margin="0,0,0,8">
                         <TextBlock Text="{Binding ViewModel.CpuInfo.Name}"
@@ -42,7 +42,7 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="8" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
