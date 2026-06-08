@@ -148,7 +148,7 @@
     <value>Cá nhân hóa</value>
   </data>
   <data name="page_settings_summary" xml:space="preserve">
-    <value>Đi đến trang Cài Đặt</value>
+    <value>Đi đến Cài Đặt</value>
   </data>
   <data name="page_settings_title" xml:space="preserve">
     <value>Cài đặt</value>
@@ -277,7 +277,7 @@
     <value>Bộ xử lý (CPU)</value>
   </data>
   <data name="page_cpu_summary" xml:space="preserve">
-    <value>Đi đến trang Bộ Xử Lý (CPU)</value>
+    <value>Đi đến Bộ Xử Lý (CPU)</value>
   </data>
   <data name="cpu_name_title" xml:space="preserve">
     <value>Tên</value>
@@ -334,7 +334,7 @@
     <value>Card đồ họa (GPU)</value>
   </data>
   <data name="page_gpu_summary" xml:space="preserve">
-    <value>Đi đến trang Card Đồ Họa (GPU)</value>
+    <value>Đi đến Card Đồ Họa (GPU)</value>
   </data>
   <data name="gpu_multiple_title" xml:space="preserve">
     <value>Chọn GPU</value>
@@ -373,7 +373,7 @@
     <value>Bộ nhớ (RAM)</value>
   </data>
   <data name="page_memory_summary" xml:space="preserve">
-    <value>Đi đến trang Bộ Nhớ Ram</value>
+    <value>Đi đến Bộ Nhớ Ram</value>
   </data>
   <data name="memory_total_title" xml:space="preserve">
     <value>Tổng dung lượng</value>
@@ -391,7 +391,7 @@
     <value>Ổ lưu trữ</value>
   </data>
   <data name="page_storage_summary" xml:space="preserve">
-    <value>Đi đến trang Ổ Lưu Trữ</value>
+    <value>Đi đến Ổ Lưu Trữ</value>
   </data>
   <data name="storage_free_space_title" xml:space="preserve">
     <value>Dung lượng trống</value>
@@ -409,7 +409,7 @@
     <value>Bo mạch chủ</value>
   </data>
   <data name="page_motherboard_summary" xml:space="preserve">
-    <value>Đi đến trang Bo Mạch Chủ</value>
+    <value>Đi đến Bo Mạch Chủ</value>
   </data>
   <data name="motherboard_title" xml:space="preserve">
     <value>Bo mạch chủ</value>
@@ -457,7 +457,7 @@
     <value>Giới thiệu</value>
   </data>
   <data name="page_about_summary" xml:space="preserve">
-    <value>Đi đến trang Giới Thiệu</value>
+    <value>Đi đến Giới Thiệu</value>
   </data>
   <data name="open_source_summary" xml:space="preserve">
     <value>Ứng dụng này sử dụng các thư viện mã nguồn mở.</value>
