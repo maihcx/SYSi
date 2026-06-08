@@ -27,6 +27,13 @@ public class GalleryNavigationPresenter : System.Windows.Controls.Control
         new PropertyMetadata(null)
     );
 
+    public static readonly DependencyProperty MaxColumnsProperty = DependencyProperty.Register(
+        nameof(MaxColumns),
+        typeof(int),
+        typeof(GalleryNavigationPresenter),
+        new PropertyMetadata(4)
+    );
+
     public object? ItemsSource
     {
         get => GetValue(ItemsSourceProperty);
@@ -69,5 +76,11 @@ public class GalleryNavigationPresenter : System.Windows.Controls.Control
     {
         get => (bool)GetValue(IsVerticalProperty);
         set => SetValue(IsVerticalProperty, value);
+    }
+
+    public int MaxColumns
+    {
+        get => (int)GetValue(MaxColumnsProperty);
+        set => SetValue(MaxColumnsProperty, value);
     }
 }
