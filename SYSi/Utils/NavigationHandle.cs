@@ -24,6 +24,7 @@
                     {
                         Content = attr?.DisplayName ?? pageType.Name.Replace("Page", ""),
                         Icon = new SymbolIcon { Symbol = attr?.Icon ?? SymbolRegular.Document24 },
+                        NavigationCacheMode = NavigationCacheMode.Disabled,
                         TargetPageType = pageType
                     };
                     NavViewItem.SetBinding(NavigationViewItem.ContentProperty, new LocalizationExtension(attr?.DisplayNameKey ?? string.Empty));
