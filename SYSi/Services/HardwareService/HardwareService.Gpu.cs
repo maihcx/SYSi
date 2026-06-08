@@ -399,12 +399,14 @@ public sealed partial class HardwareService
         {
             return dev switch
             {
+                // RDNA 4
+                (0x7550 or 0x7551 or 0x7480 or 0x7590 or 0x75A0) or
                 // RDNA 3
-                >= 0x7440 and <= 0x745F => "GDDR6",
+                (>= 0x7440 and <= 0x745F) or
                 // RDNA 2
-                >= 0x73A0 and <= 0x73FF => "GDDR6",
+                (>= 0x73A0 and <= 0x73FF) or
                 // RDNA 1
-                >= 0x7310 and <= 0x734F => "GDDR6",
+                (>= 0x7310 and <= 0x734F) => "GDDR6",
                 // Radeon Pro VII / Vega 20 → HBM2
                 >= 0x66A0 and <= 0x66AF => "HBM2",
                 // Vega 10
