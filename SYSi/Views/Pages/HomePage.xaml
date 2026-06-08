@@ -274,7 +274,7 @@
 
         <controls:GalleryNavigationPresenter Margin="0"
                                              Padding="0"
-                                             IsVertical="False"
+                                             MaxColumns="4"
                                              ItemsSource="{Binding ViewModel.NavigationCards, Mode=OneWay}" />
     </StackPanel>
 </Page>
