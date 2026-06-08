@@ -238,7 +238,7 @@
     <value>You're up to date</value>
   </data>
   <data name="page_settings_update_available" xml:space="preserve">
-    <value>Version {0} is available</value>
+    <value>page_settings_update_available</value>
   </data>
   <data name="page_settings_update_downloading" xml:space="preserve">
     <value>Downloading update...</value>
@@ -461,5 +461,14 @@
   </data>
   <data name="open_source_summary" xml:space="preserve">
     <value>open_source_summary</value>
+  </data>
+  <data name="update_available_summary" xml:space="preserve">
+    <value>update_available_summary</value>
+  </data>
+  <data name="issue_report_summary" xml:space="preserve">
+    <value>issue_report_summary</value>
+  </data>
+  <data name="report_issue_title" xml:space="preserve">
+    <value>report_issue_title</value>
   </data>
 </root>
