@@ -17,11 +17,11 @@
       ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       mc:Ignorable="d">
-    <Grid>
+    <Grid Margin="0 0 0 30">
         <StackPanel HorizontalAlignment="Stretch">
 
             <!-- App Identity -->
-            <ui:Card Margin="0,0,0,16">
+            <ui:Card Margin="0,0,0,8">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -49,16 +49,17 @@
             </ui:Card>
 
             <!-- Info card -->
-            <ui:Card Margin="0,0,0,16">
+            <ui:Card Margin="0,0,0,8">
                 <StackPanel>
                     <controls:InfoRow LabelText="{utils:Localization version_title}"
-                                      ValueText="{Binding ViewModel.AppVersion}" />
+                                      ValueText="{Binding ViewModel.AppVersion}"
+                                      NavigateUri="https://github.com/maihcx/SYSi/releases"/>
                     <controls:InfoRow LabelText="{utils:Localization framework_title}"
                                       ValueText=".NET 10 / WPF" />
                     <controls:InfoRow LabelText="{utils:Localization ui_lib_title}"
                                       ValueText="WPF-UI v4.3.0 by lepoco" />
                     <controls:InfoRow LabelText="{utils:Localization license_title}"
-                                      ValueText="GPT-3.0"
+                                      ValueText="GPL-3.0"
                                       IsLast="True" />
                 </StackPanel>
             </ui:Card>
