@@ -1,6 +1,4 @@
-﻿using SYSi.Services.HardwareService;
-
-namespace SYSi
+﻿namespace SYSi
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -60,8 +58,11 @@ namespace SYSi
                 services.AddSingleton<INavigationWindow, MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
 
-                services.AddSingleton<HardwareService>();
+                services.AddSingleton<Services.HardwareService.HardwareService>();
                 services.AddSingleton<HardwareHostService>();
+
+                services.AddSingleton<Services.UpdateService.UpdateService>();
+                services.AddSingleton<UpdateHostService>();
 
                 NavigationHandle.SetupPageViewModelPairs(services, "SYSi.Views.Pages", "SYSi.ViewModels.Pages");
                 NavigationHandle.SetupPageViewModelPairs(services, "SYSi.Views.PagesBottom", "SYSi.ViewModels.PagesBottom");

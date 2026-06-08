@@ -1,56 +1,12 @@
-using System.Diagnostics;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Json;
-using System.Reflection;
-using System.Text.Json.Serialization;
 
-namespace SYSi.Services
+namespace SYSi.Services.UpdateService
 {
-    public enum UpdateStatus
-    {
-        Idle,
-        Checking,
-        UpdateAvailable,
-        Downloading,
-        ReadyToInstall,
-        UpToDate,
-        Error,
-    }
-
-    public class ReleaseAsset
-    {
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
-
-        [JsonPropertyName("browser_download_url")]
-        public string DownloadUrl { get; set; } = string.Empty;
-
-        [JsonPropertyName("size")]
-        public long Size { get; set; }
-    }
-
-    public class GitHubRelease
-    {
-        [JsonPropertyName("tag_name")]
-        public string TagName { get; set; } = string.Empty;
-
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
-
-        [JsonPropertyName("body")]
-        public string Body { get; set; } = string.Empty;
-
-        [JsonPropertyName("html_url")]
-        public string HtmlUrl { get; set; } = string.Empty;
-
-        [JsonPropertyName("assets")]
-        public List<ReleaseAsset> Assets { get; set; } = [];
-    }
-
     public class UpdateService
     {
         private const string GitHubOwner = "maihcx";
-        private const string GitHubRepo  = "SYSi";
+        private const string GitHubRepo = "SYSi";
 
         private static readonly HttpClient _http = new()
         {
@@ -109,7 +65,7 @@ namespace SYSi.Services
 
             ErrorMessage = null;
 
-            string tempDir  = Path.Combine(Path.GetTempPath(), "SYSiUpdate");
+            string tempDir = Path.Combine(Path.GetTempPath(), "SYSiUpdate");
             Directory.CreateDirectory(tempDir);
 
             string fileName = Path.GetFileName(new Uri(InstallerDownloadUrl).LocalPath);
@@ -123,12 +79,12 @@ namespace SYSi.Services
 
                 long total = response.Content.Headers.ContentLength ?? InstallerSize;
 
-                await using var src  = await response.Content.ReadAsStreamAsync(ct);
+                await using var src = await response.Content.ReadAsStreamAsync(ct);
                 await using var dest = File.Create(destPath);
 
                 var buffer = new byte[81920];
                 long downloaded = 0;
-                int  read;
+                int read;
 
                 while ((read = await src.ReadAsync(buffer, ct)) > 0)
                 {

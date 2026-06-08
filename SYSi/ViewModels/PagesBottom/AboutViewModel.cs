@@ -26,7 +26,7 @@
         {
             _isInitialized = true;
 
-            var v = UpdateService.GetCurrentVersion();
+            var v = Services.UpdateService.UpdateService.GetCurrentVersion();
             AppVersion = $"{v.Major}.{v.Minor}.{v.Build}";
         }
     }

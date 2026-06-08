@@ -1,4 +1,5 @@
 ﻿using SYSi.ViewModels.Windows;
+using System.Reflection.Metadata;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
@@ -15,7 +16,8 @@ namespace SYSi.Views.Windows
         public MainWindow(
             MainWindowViewModel viewModel,
             INavigationViewPageProvider navigationViewPageProvider,
-            INavigationService navigationService
+            INavigationService navigationService,
+            UpdateHostService updateHostService
         )
         {
             ViewModel = viewModel;
@@ -46,7 +48,17 @@ namespace SYSi.Views.Windows
                 RootNavigation.UpdateBreadcrumbContents();
             };
 
+            _ = updateHostService.CheckAsync(release =>
+            {
+                ShowUpdateBanner(release.TagName);
+            });
+
             RestoreWindow();
+        }
+
+        private void ShowUpdateBanner(string tagName)
+        {
+            MessengerService.ShowSnackbar("sys_notification_title", LanguageBase.GetLangValue("update_available_summary", tagName), ControlAppearance.Caution, new SymbolIcon(SymbolRegular.ArrowDownload24), TimeSpan.FromSeconds(15));
         }
 
         #region INavigationWindow methods
