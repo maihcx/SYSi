@@ -34,6 +34,7 @@ public sealed partial class HardwareService
                     };
 
                     EnrichGpuFromRegistry(gpu, driverKey);
+
                     list.Add(gpu);
                 }
             }
@@ -62,7 +63,9 @@ public sealed partial class HardwareService
 
             gpu.VramText       = ReadVram(key);
             gpu.VideoProcessor = RegistryString(key.GetValue("HardwareInformation.ChipType"));
-            gpu.VideoArchitecture = RegistryString(key.GetValue("HardwareInformation.DacType"));
+
+            var (vendorId, deviceId) = ParsePciIds(gpu.PnpDeviceId);
+            gpu.VideoArchitecture = LookupGpuArchitecture(vendorId, deviceId);
 
             object? memTypeObj = key.GetValue("HardwareInformation.MemoryType");
             gpu.VideoMemoryType = memTypeObj switch
@@ -72,6 +75,11 @@ public sealed partial class HardwareService
                 int n when n > 0 => ParseVideoMemoryType(n),
                 _ => "N/A",
             };
+
+            if (gpu.VideoMemoryType == "N/A" || string.IsNullOrEmpty(gpu.VideoMemoryType))
+            {
+                gpu.VideoMemoryType = LookupVramType(vendorId, deviceId);
+            }
         }
         catch { }
     }
@@ -304,4 +312,123 @@ public sealed partial class HardwareService
         13 => "SGRAM",
         _ => $"Type {val}",
     };
+
+    // "PCI\VEN_1002&DEV_66AF&..." → vendor="1002", device="66AF"
+    private static (string vendor, string device) ParsePciIds(string pnpId)
+    {
+        string vendor = "", dev = "";
+        var m = System.Text.RegularExpressions.Regex.Match(
+            pnpId, @"VEN_([0-9A-Fa-f]{4})&DEV_([0-9A-Fa-f]{4})",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (m.Success) { vendor = m.Groups[1].Value.ToUpper(); dev = m.Groups[2].Value.ToUpper(); }
+        return (vendor, dev);
+    }
+
+    private static string LookupGpuArchitecture(string vendor, string deviceId)
+    {
+        // AMD: VEN_1002
+        if (vendor == "1002")
+        {
+            if (!int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber, null, out int dev))
+                return "N/A";
+            return dev switch
+            {
+                // Navi 48: RX 9070 / 9070 XT / 9070 GRE  → 0x7550, 0x7551, 0x7480
+                // Navi 44: RX 9060 / 9060 XT             → 0x7590, 0x75A0
+                0x7550 or 0x7551 or 0x7480 or 0x7590 or 0x75A0 => "RDNA 4",
+                // RDNA 3.5 (Navi 3x mobile/APU)
+                >= 0x1580 and <= 0x15BF => "RDNA 3.5",
+                // RDNA 3 (Navi 3x)
+                >= 0x7440 and <= 0x745F => "RDNA 3",
+                // RDNA 2 (Navi 2x)
+                (0x73BF or 0x73A5 or 0x73AF) or (>= 0x73A0 and <= 0x73FF) => "RDNA 2",
+                // RDNA 1 (Navi 1x)
+                (>= 0x7310 and <= 0x731F) or (>= 0x7340 and <= 0x734F) => "RDNA 1",
+                // Vega / GCN 5
+                // ← Radeon Pro VII = 0x66AF
+                (>= 0x6860 and <= 0x687F) or (>= 0x66A0 and <= 0x66AF) => "GCN 5 (Vega)",
+                // Polaris / GCN 4
+                (>= 0x67C0 and <= 0x67FF) or (>= 0x6980 and <= 0x699F) => "GCN 4 (Polaris)",
+                _ => "AMD GCN"
+            };
+        }
+
+        // NVIDIA: VEN_10DE
+        if (vendor == "10DE")
+        {
+            if (!int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber, null, out int dev))
+                return "N/A";
+            return dev switch
+            {
+                // Ada Lovelace (RTX 40)
+                >= 0x2600 and <= 0x27FF => "Ada Lovelace",
+                // Ampere (RTX 30)
+                (>= 0x2200 and <= 0x25FF) or (>= 0x2480 and <= 0x249F) => "Ampere",
+                // Turing (RTX 20 / GTX 16)
+                (>= 0x1E00 and <= 0x1FFF) or (>= 0x2180 and <= 0x21FF) => "Turing",
+                // Pascal (GTX 10)
+                (>= 0x1B00 and <= 0x1B80) or (>= 0x1C00 and <= 0x1C8F) => "Pascal",
+                _ => "NVIDIA GPU"
+            };
+        }
+
+        // Intel: VEN_8086
+        if (vendor == "8086")
+        {
+            if (!int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber, null, out int dev))
+                return "N/A";
+            return dev switch
+            {
+                >= 0x4F80 and <= 0x4F90 => "Xe HPG (Arc)",
+                >= 0x5690 and <= 0x56BF => "Xe HPG (Arc)",
+                >= 0x9A40 and <= 0x9A7F => "Xe LP (Tiger Lake)",
+                >= 0x4C8A and <= 0x4C9A => "Xe LP (Rocket Lake)",
+                _ => "Intel Graphics"
+            };
+        }
+
+        return "N/A";
+    }
+
+    private static string LookupVramType(string vendor, string deviceId)
+    {
+        if (!int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber, null, out int dev))
+            return "N/A";
+
+        if (vendor == "1002") // AMD
+        {
+            return dev switch
+            {
+                // RDNA 3
+                >= 0x7440 and <= 0x745F => "GDDR6",
+                // RDNA 2
+                >= 0x73A0 and <= 0x73FF => "GDDR6",
+                // RDNA 1
+                >= 0x7310 and <= 0x734F => "GDDR6",
+                // Radeon Pro VII / Vega 20 → HBM2
+                >= 0x66A0 and <= 0x66AF => "HBM2",
+                // Vega 10
+                >= 0x6860 and <= 0x687F => "HBM2",
+                // Polaris
+                >= 0x67C0 and <= 0x67FF => "GDDR5",
+                _ => "GDDR"
+            };
+        }
+
+        if (vendor == "10DE") // NVIDIA
+        {
+            return dev switch
+            {
+                >= 0x2600 and <= 0x27FF => "GDDR6X",  // Ada
+                >= 0x2200 and <= 0x25FF => "GDDR6",   // Ampere
+                >= 0x1E00 and <= 0x21FF => "GDDR6",   // Turing
+                >= 0x1B00 and <= 0x1C8F => "GDDR5X",  // Pascal high-end
+                _ => "GDDR"
+            };
+        }
+
+        if (vendor == "8086") return "Shared";
+
+        return "N/A";
+    }
 }
