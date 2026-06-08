@@ -465,4 +465,10 @@
   <data name="update_available_summary" xml:space="preserve">
     <value>Phiên bản {0} đã có sẵn, vui lòng vào cài đặt để tiến hành cập nhật!</value>
   </data>
+  <data name="issue_report_summary" xml:space="preserve">
+    <value>Nếu bạn phát hiện bất kỳ vấn đề nào, vui lòng báo cáo lại!</value>
+  </data>
+  <data name="report_issue_title" xml:space="preserve">
+    <value>Báo cáo sự cố?</value>
+  </data>
 </root>
