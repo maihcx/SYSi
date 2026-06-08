@@ -63,7 +63,7 @@ public sealed partial class HardwareService
             @"HARDWARE\DESCRIPTION\System\CentralProcessor\0");
         if (key == null) return;
 
-        info.Name         = key.GetValue("ProcessorNameString")?.ToString()?.Trim() ?? "N/A";
+        info.Name         = ParseCpuName(key.GetValue("ProcessorNameString")?.ToString()?.Trim() ?? "N/A");
         info.Manufacturer = key.GetValue("VendorIdentifier")?.ToString() ?? "N/A";
         double mhz        = Convert.ToDouble(key.GetValue("~MHz") ?? 0);
         info.BaseSpeedGHz = $"{Math.Round(mhz / 1000.0, 2)} GHz";
@@ -208,5 +208,10 @@ public sealed partial class HardwareService
         info.Model       = sig.Model     > 0 ? $"{sig.Model:X}"     : "N/A";
         info.Stepping    = sig.Stepping  > 0 ? $"{sig.Stepping:X}"  : "N/A";
         info.ProcessorId = sig.ProcessorId;
+    }
+
+    private static string ParseCpuName(string cpuName)
+    {
+        return cpuName.Replace("Intel(R) Core(TM)", "Core");
     }
 }
