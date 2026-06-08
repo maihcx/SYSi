@@ -138,10 +138,11 @@
                                 </TextBlock>
 
                                 <ItemsControl ItemsSource="{Binding ViewModel.GpuList, Mode=OneWay}"
-                                              AlternationCount="10">
+                                              AlternationCount="10"
+                                              Margin="0 8 0 0">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Grid Margin="0,0,0,2">
+                                            <Grid Margin="0,0,0,4">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />
                                                     <ColumnDefinition Width="*" />
