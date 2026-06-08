@@ -1,25 +1,3 @@
-## v0.3.0
-
-## 🚀 Changelog
-## 🚀 Features
-
-- Use device locator for RAM bank labels (#17) — @maihcx
-- Normalize CPU name format (#16) — @maihcx
-- Add link support to InfoRow and update AboutPage (#12) — @maihcx
-- Make InfoRow label width configurable (#11) — @maihcx
-- Add MaxColumns support to gallery panels (#10) — @maihcx
-- Update Wpf.Ui.dll binary (#9) — @maihcx
-
-## 🧹 Maintenance
-
-- Reduce OpenPaneLength in MainWindow.xaml (#15) — @maihcx
-- Tighten spacing and layout across pages (#14) — @maihcx
-- Remove 'trang' from Vietnamese page summaries (#13) — @maihcx
-- Update license text in About page (#8) — @maihcx
-
-
----
-
 ## v0.2.0
 
 ## 🚀 Changelog
