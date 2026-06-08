@@ -48,7 +48,7 @@
                            IsBackButtonVisible="Visible"
                            IsPaneToggleVisible="True"
                            MenuItemsSource="{Binding ViewModel.MenuItems, Mode=OneWay}"
-                           OpenPaneLength="310"
+                           OpenPaneLength="240"
                            PaneDisplayMode="Left"
                            Transition="FadeInWithSlideAuto"
                            TitleBar="{Binding ElementName=TitleBar, Mode=OneWay}">
