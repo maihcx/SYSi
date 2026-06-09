@@ -29,10 +29,21 @@
                     <ItemsControl>
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <UniformGrid Margin="0,-8,-4,-8"
-                                             Columns="{Binding ActualWidth,
-                                    RelativeSource={RelativeSource AncestorType=ItemsControl},
-                                    Converter={StaticResource WidthToColumnsConverter}}" />
+                                <UniformGrid Margin="0,-8,-4,-8">
+                                    <UniformGrid.Columns>
+                                        <MultiBinding Converter="{StaticResource WidthToColumnsConverter}">
+                                            <!-- ActualWidth của ItemsControl -->
+                                            <Binding Path="ActualWidth"
+                                                     RelativeSource="{RelativeSource AncestorType=ItemsControl}" />
+
+                                            <!-- MinCardWidth -->
+                                            <Binding Source="190" />
+
+                                            <!-- MaxColumns -->
+                                            <Binding Source="4" />
+                                        </MultiBinding>
+                                    </UniformGrid.Columns>
+                                </UniformGrid>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
 
