@@ -5,7 +5,7 @@
         public WindowBackdropType GetBackdropType()
         {
             return (WindowBackdropType)Enum.Parse(
-                typeof(WindowBackdropType), 
+                typeof(WindowBackdropType),
                 UserDataStore.GetValue<string>("IWindowBackdropType")
             );
         }
@@ -16,7 +16,7 @@
 
         public Window MainWindowHandle { get; private set; }
 
-        public bool IsWatcher {  get; set; }
+        public bool IsWatcher { get; set; }
 
         public ApplicationThemeManagerService(Window mainWindow)
         {
@@ -79,7 +79,9 @@
         }
 
         private int globalCornerRadius = UserDataStore.GetValue<int>("ObjectCornerRadius");
-        public int GlobalCornerRadius { get => globalCornerRadius; 
+        public int GlobalCornerRadius
+        {
+            get => globalCornerRadius;
             set
             {
                 if (globalCornerRadius == value) return;
@@ -91,8 +93,8 @@
             }
         }
 
-        public void SetApplicationTheme(ThemeConfigs.IThemeType _IThemeType) 
-        { 
+        public void SetApplicationTheme(ThemeConfigs.IThemeType _IThemeType)
+        {
             UnWatch();
             UserDataStore.SetValue("IThemeType", _IThemeType.ToString());
             ThemeType applicationTheme = GetSysApplicationTheme();

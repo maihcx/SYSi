@@ -1,20 +1,38 @@
 ﻿namespace SYSi.Helpers
 {
-    public class WidthToColumnsConverter : IValueConverter
+    public class WidthToColumnsConverter : IMultiValueConverter
     {
-        public double MinCardWidth { get; set; } = 190;
-
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(
+            object[] values,
+            Type targetType,
+            object parameter,
+            CultureInfo culture)
         {
-            if (value is not double width || width <= 0)
+            if (values.Length < 3)
+            {
                 return 1;
+            }
 
-            var columns = (int)Math.Floor(width / MinCardWidth);
+            if (values[0] is not double width || width <= 0)
+            {
+                return 1;
+            }
 
-            return Math.Clamp(columns, 1, 4);
+            double minCardWidth = double.Parse(values[1].ToString()!);
+            int maxColumns = int.Parse(values[2].ToString()!);
+
+            var columns = (int)Math.Floor(width / minCardWidth);
+
+            return Math.Clamp(columns, 1, maxColumns);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => throw new NotSupportedException();
+        public object[] ConvertBack(
+            object value,
+            Type[] targetTypes,
+            object parameter,
+            CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
     }
 }

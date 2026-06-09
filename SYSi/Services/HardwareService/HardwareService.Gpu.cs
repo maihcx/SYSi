@@ -10,20 +10,20 @@ public sealed partial class HardwareService
         try
         {
             var displayGuid = new Guid("4D36E968-E325-11CE-BFC1-08002BE10318");
-            IntPtr devInfo  = NativeMethods.SetupDiGetClassDevs(
+            IntPtr devInfo = NativeMethods.SetupDiGetClassDevs(
                 ref displayGuid, IntPtr.Zero, IntPtr.Zero, NativeMethods.DIGCF_PRESENT);
 
             if (devInfo == new IntPtr(-1)) return list;
             try
             {
                 var devData = new NativeMethods.SP_DEVINFO_DATA
-                    { cbSize = (uint)Marshal.SizeOf<NativeMethods.SP_DEVINFO_DATA>() };
+                { cbSize = (uint)Marshal.SizeOf<NativeMethods.SP_DEVINFO_DATA>() };
 
                 for (uint i = 0; NativeMethods.SetupDiEnumDeviceInfo(devInfo, i, ref devData); i++)
                 {
-                    string name      = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_DEVICEDESC);
-                    string mfg       = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_MFG);
-                    string hwId      = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_HARDWAREID);
+                    string name = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_DEVICEDESC);
+                    string mfg = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_MFG);
+                    string hwId = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_HARDWAREID);
                     string driverKey = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_DRIVER);
 
                     var gpu = new GpuInfo
@@ -55,7 +55,7 @@ public sealed partial class HardwareService
         try
         {
             string regPath = $@"SYSTEM\CurrentControlSet\Control\Class\{driverKey}";
-            using var key  = Registry.LocalMachine.OpenSubKey(regPath);
+            using var key = Registry.LocalMachine.OpenSubKey(regPath);
             if (key == null) return;
 
             gpu.DriverVersion = key.GetValue("DriverVersion")?.ToString() ?? "N/A";
@@ -90,10 +90,10 @@ public sealed partial class HardwareService
         object? qw = key.GetValue("HardwareInformation.qwMemorySize");
         long bytes = qw switch
         {
-            long l              => l,
+            long l => l,
             byte[] b when b.Length >= 8 => (long)BitConverter.ToUInt64(b, 0),
-            int i               => (long)(uint)i,
-            _                   => 0,
+            int i => (long)(uint)i,
+            _ => 0,
         };
 
         // Fallback: DWORD MemorySize
@@ -122,7 +122,7 @@ public sealed partial class HardwareService
         try
         {
             var dd = new NativeMethods.DISPLAY_DEVICE
-                { cb = (uint)Marshal.SizeOf<NativeMethods.DISPLAY_DEVICE>() };
+            { cb = (uint)Marshal.SizeOf<NativeMethods.DISPLAY_DEVICE>() };
 
             for (uint i = 0; NativeMethods.EnumDisplayDevices(null, i, ref dd, 0); i++)
             {
@@ -155,11 +155,12 @@ public sealed partial class HardwareService
     // ── GPU usage via PDH ────────────────────────────────────────────────────
 
     private static readonly object _gpuPdhLock = new();
-    private static IntPtr _gpuQuery   = IntPtr.Zero;
+    private static IntPtr _gpuQuery = IntPtr.Zero;
     private static IntPtr _gpuCounter = IntPtr.Zero;
-    private static bool   _gpuPdhReady;
+    private static bool _gpuPdhReady;
+    private static Dictionary<int, int> _physToGpuIndex = [];
 
-    public void InitGpuPdh()
+    public void InitGpuPdh(List<GpuInfo> gpus)
     {
         lock (_gpuPdhLock)
         {
@@ -176,17 +177,76 @@ public sealed partial class HardwareService
 
                 if (r != 0) return;
 
-                // First collect seeds the delta — second collect in RefreshGpuUsage gives real data.
                 NativeMethods.PdhCollectQueryData(_gpuQuery);
                 _gpuPdhReady = true;
+
+                // Build phys → gpu index map ngay sau lần collect đầu
+                _physToGpuIndex = BuildPhysToGpuMap(gpus);
             }
             catch { }
         }
     }
 
+    private static Dictionary<int, int> BuildPhysToGpuMap(List<GpuInfo> gpus)
+    {
+        // Lấy tất cả instance names của counter GPU Engine
+        // PdhEnumObjectItems để lấy instance list
+        var result = new Dictionary<int, int>();
+
+        try
+        {
+            // Collect thêm 1 lần để có data
+            NativeMethods.PdhCollectQueryData(_gpuQuery);
+
+            uint bufSize = 0, itemCount = 0;
+            NativeMethods.PdhGetFormattedCounterArray(
+                _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
+                ref bufSize, out itemCount, IntPtr.Zero);
+
+            if (bufSize == 0) return result;
+
+            IntPtr buf = Marshal.AllocHGlobal((int)bufSize);
+            try
+            {
+                NativeMethods.PdhGetFormattedCounterArray(
+                    _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
+                    ref bufSize, out itemCount, buf);
+
+                int ptrSize = IntPtr.Size;
+                int itemSize = ptrSize + 16;
+
+                // Collect unique phys indices
+                var physIndices = new HashSet<int>();
+                for (int j = 0; j < (int)itemCount; j++)
+                {
+                    IntPtr itemPtr = IntPtr.Add(buf, j * itemSize);
+                    IntPtr namePtr = Marshal.ReadIntPtr(itemPtr);
+                    string name = namePtr != IntPtr.Zero
+                        ? Marshal.PtrToStringUni(namePtr) ?? "" : "";
+
+                    int phys = ParsePhysIndex(name);
+                    if (phys >= 0) physIndices.Add(phys);
+                }
+
+                // Map: phys_N → gpus[N] nếu count khớp,
+                // hoặc fallback theo thứ tự sorted
+                var sorted = physIndices.Order().ToList();
+                for (int i = 0; i < sorted.Count; i++)
+                {
+                    if (i < gpus.Count)
+                        result[sorted[i]] = i;
+                }
+            }
+            finally { Marshal.FreeHGlobal(buf); }
+        }
+        catch { }
+
+        return result;
+    }
+
     public void RefreshGpuUsage(List<GpuInfo> gpus)
     {
-        if (!_gpuPdhReady) InitGpuPdh();
+        if (!_gpuPdhReady) InitGpuPdh(gpus);  // pass gpus vào
         if (!_gpuPdhReady || _gpuCounter == IntPtr.Zero) return;
 
         try
@@ -195,10 +255,7 @@ public sealed partial class HardwareService
             {
                 NativeMethods.PdhCollectQueryData(_gpuQuery);
 
-                uint bufSize = 0;
-                uint itemCount = 0;
-
-                // 1st call — get required size (returns PDH_MORE_DATA = 0x800007D2)
+                uint bufSize = 0, itemCount = 0;
                 NativeMethods.PdhGetFormattedCounterArray(
                     _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
                     ref bufSize, out itemCount, IntPtr.Zero);
@@ -212,31 +269,21 @@ public sealed partial class HardwareService
                         _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
                         ref bufSize, out itemCount, buf);
 
-                    // PDH_CSTATUS_VALID_DATA = 0, PDH_MORE_DATA = 0x800007D2
                     if (r != 0 && r != 0x800007D2) return;
 
+                    // Sum usage per phys index
                     var physUsage = new Dictionary<int, double>();
 
-                    // PDH_FMT_COUNTERVALUE_ITEM_W layout (Windows actual):
-                    //   szName  : pointer to wide string  (8 bytes on x64, 4 on x86)
-                    //   CStatus : uint   (4 bytes)
-                    //   padding : uint   (4 bytes, alignment)
-                    //   Value   : double (8 bytes)
-                    // Total per item: IntPtr.Size + 16 bytes
-                    int ptrSize = IntPtr.Size;          // 8 (x64) or 4 (x86)
-                    int itemSize = ptrSize + 16;          // szName ptr + CStatus + pad + double
+                    int ptrSize = IntPtr.Size;
+                    int itemSize = ptrSize + 16;
 
                     for (int j = 0; j < (int)itemCount; j++)
                     {
                         IntPtr itemPtr = IntPtr.Add(buf, j * itemSize);
-
-                        // szName là pointer trỏ vào tên instance (nằm đâu đó trong buf)
                         IntPtr namePtr = Marshal.ReadIntPtr(itemPtr);
                         string name = namePtr != IntPtr.Zero
-                            ? Marshal.PtrToStringUni(namePtr) ?? ""
-                            : "";
+                            ? Marshal.PtrToStringUni(namePtr) ?? "" : "";
 
-                        // double value nằm ở offset: ptrSize + 8 (CStatus uint + 4 pad)
                         double value = Marshal.PtrToStructure<double>(
                             IntPtr.Add(itemPtr, ptrSize + 8));
 
@@ -247,9 +294,16 @@ public sealed partial class HardwareService
                         physUsage[physIdx] = cur + value;
                     }
 
-                    foreach (var (idx, usage) in physUsage)
-                        if (idx < gpus.Count)
-                            gpus[idx].UsagePercent = Math.Round(Math.Clamp(usage, 0, 100), 1);
+                    // Dùng map thay vì assume phys == list index
+                    foreach (var (physIdx, usage) in physUsage)
+                    {
+                        if (_physToGpuIndex.TryGetValue(physIdx, out int gpuIdx)
+                            && gpuIdx < gpus.Count)
+                        {
+                            gpus[gpuIdx].UsagePercent =
+                                Math.Round(Math.Clamp(usage, 0, 100), 1);
+                        }
+                    }
                 }
                 finally { Marshal.FreeHGlobal(buf); }
             }
@@ -278,7 +332,7 @@ public sealed partial class HardwareService
         if (pos < 0) return -1;
 
         int start = pos + marker.Length;
-        int end   = instanceName.IndexOf('_', start);
+        int end = instanceName.IndexOf('_', start);
         string num = end < 0 ? instanceName[start..] : instanceName[start..end];
         return int.TryParse(num, out int n) ? n : -1;
     }
@@ -288,9 +342,9 @@ public sealed partial class HardwareService
         foreach (string s in new[] { mfg, name })
         {
             if (s.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase)) return "NVIDIA";
-            if (s.Contains("Intel",  StringComparison.OrdinalIgnoreCase)) return "Intel";
-            if (s.Contains("AMD",    StringComparison.OrdinalIgnoreCase) ||
-                s.Contains("ATI",    StringComparison.OrdinalIgnoreCase)) return "AMD";
+            if (s.Contains("Intel", StringComparison.OrdinalIgnoreCase)) return "Intel";
+            if (s.Contains("AMD", StringComparison.OrdinalIgnoreCase) ||
+                s.Contains("ATI", StringComparison.OrdinalIgnoreCase)) return "AMD";
         }
         return string.IsNullOrWhiteSpace(mfg) ? "N/A" : mfg;
     }
@@ -399,12 +453,14 @@ public sealed partial class HardwareService
         {
             return dev switch
             {
+                // RDNA 4
+                (0x7550 or 0x7551 or 0x7480 or 0x7590 or 0x75A0) or
                 // RDNA 3
-                >= 0x7440 and <= 0x745F => "GDDR6",
+                (>= 0x7440 and <= 0x745F) or
                 // RDNA 2
-                >= 0x73A0 and <= 0x73FF => "GDDR6",
+                (>= 0x73A0 and <= 0x73FF) or
                 // RDNA 1
-                >= 0x7310 and <= 0x734F => "GDDR6",
+                (>= 0x7310 and <= 0x734F) => "GDDR6",
                 // Radeon Pro VII / Vega 20 → HBM2
                 >= 0x66A0 and <= 0x66AF => "HBM2",
                 // Vega 10

@@ -37,8 +37,8 @@ public class NavigationCard : INotifyPropertyChanged
 
     public string Description
     {
-        get => string.IsNullOrEmpty(DescriptionKey) 
-            ? string.Empty 
+        get => string.IsNullOrEmpty(DescriptionKey)
+            ? string.Empty
             : TranslationSource.Instance[DescriptionKey];
     }
 

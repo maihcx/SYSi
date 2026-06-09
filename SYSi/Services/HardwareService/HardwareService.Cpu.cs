@@ -65,7 +65,7 @@ public sealed partial class HardwareService
 
         info.Name         = ParseCpuName(key.GetValue("ProcessorNameString")?.ToString()?.Trim() ?? "N/A");
         info.Manufacturer = key.GetValue("VendorIdentifier")?.ToString() ?? "N/A";
-        double mhz        = Convert.ToDouble(key.GetValue("~MHz") ?? 0);
+        double mhz = Convert.ToDouble(key.GetValue("~MHz") ?? 0);
         info.BaseSpeedGHz = $"{Math.Round(mhz / 1000.0, 2)} GHz";
         info.MaxSpeedGHz  = info.BaseSpeedGHz;
     }
@@ -95,7 +95,7 @@ public sealed partial class HardwareService
                 if (!NativeMethods.GetLogicalProcessorInformation(buf, ref len))
                     return Environment.ProcessorCount;
 
-                int size  = Marshal.SizeOf<NativeMethods.SYSTEM_LOGICAL_PROCESSOR_INFORMATION>();
+                int size = Marshal.SizeOf<NativeMethods.SYSTEM_LOGICAL_PROCESSOR_INFORMATION>();
                 int count = 0;
                 for (int i = 0; i + size <= (int)len; i += size)
                 {
@@ -114,12 +114,12 @@ public sealed partial class HardwareService
         NativeMethods.GetNativeSystemInfo(out var si);
         return si.ProcessorArchitecture switch
         {
-            0  => "x86",
-            5  => "ARM",
-            6  => "Itanium",
-            9  => "x64",
+            0 => "x86",
+            5 => "ARM",
+            6 => "Itanium",
+            9 => "x64",
             12 => "ARM64",
-            _  => $"Unknown ({si.ProcessorArchitecture})",
+            _ => $"Unknown ({si.ProcessorArchitecture})",
         };
     }
 
@@ -146,8 +146,8 @@ public sealed partial class HardwareService
 
                 while (offset < len)
                 {
-                    IntPtr cur    = IntPtr.Add(buf, (int)offset);
-                    var    header = Marshal.PtrToStructure<NativeMethods.SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(cur);
+                    IntPtr cur = IntPtr.Add(buf, (int)offset);
+                    var header = Marshal.PtrToStructure<NativeMethods.SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(cur);
 
                     if (header.Relationship == NativeMethods.LOGICAL_PROCESSOR_RELATIONSHIP.RelationCache)
                     {
@@ -176,16 +176,16 @@ public sealed partial class HardwareService
         if (!X86Base.IsSupported) return (0, 0, 0, "N/A");
 
         var cpuid = X86Base.CpuId(1, 0);
-        int eax   = cpuid.Eax;
+        int eax = cpuid.Eax;
 
-        int stepping  = eax & 0xF;
-        int model     = (eax >> 4)  & 0xF;
-        int family    = (eax >> 8)  & 0xF;
-        int extModel  = (eax >> 16) & 0xF;
+        int stepping = eax & 0xF;
+        int model = (eax >> 4)  & 0xF;
+        int family = (eax >> 8)  & 0xF;
+        int extModel = (eax >> 16) & 0xF;
         int extFamily = (eax >> 20) & 0xFF;
 
         int displayFamily = family == 0xF ? family + extFamily : family;
-        int displayModel  = (family == 0x6 || family == 0xF)
+        int displayModel = (family == 0x6 || family == 0xF)
             ? model + (extModel << 4) : model;
 
         return (displayFamily, displayModel, stepping,
@@ -204,9 +204,9 @@ public sealed partial class HardwareService
         info.Architecture = GetCpuArchitecture();
 
         var sig = GetCpuSignature();
-        info.Family      = sig.Family    > 0 ? $"{sig.Family:X}"    : "N/A";
-        info.Model       = sig.Model     > 0 ? $"{sig.Model:X}"     : "N/A";
-        info.Stepping    = sig.Stepping  > 0 ? $"{sig.Stepping:X}"  : "N/A";
+        info.Family      = sig.Family    > 0 ? $"{sig.Family:X}" : "N/A";
+        info.Model       = sig.Model     > 0 ? $"{sig.Model:X}" : "N/A";
+        info.Stepping    = sig.Stepping  > 0 ? $"{sig.Stepping:X}" : "N/A";
         info.ProcessorId = sig.ProcessorId;
     }
 

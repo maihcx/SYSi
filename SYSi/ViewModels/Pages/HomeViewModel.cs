@@ -8,6 +8,8 @@ namespace SYSi.ViewModels.Pages
 
         private readonly HardwareHostService hardwareHostService;
 
+        private readonly OsHostService osHostService;
+
         private DispatcherTimer? _timer;
 
         static string loadingText = LanguageBase.GetLangValue("loading_title");
@@ -15,35 +17,38 @@ namespace SYSi.ViewModels.Pages
         private INavigationService navigationService;
 
         [ObservableProperty]
-        private ICollection<NavigationCard> _navigationCards = NavigationHandle.GetNavigationCards(["SYSi.Views.Pages", "SYSi.Views.PagesBottom"], typeof(HomePage), typeof(CpuPage), typeof(GpuPage), typeof(MemoryPage));
+        private ICollection<NavigationCard> _navigationCards = NavigationHandle.GetNavigationCards(["SYSi.Views.Pages", "SYSi.Views.PagesBottom"], typeof(HomePage), typeof(CpuPage), typeof(GpuPage), typeof(MemoryPage), typeof(OSPage));
 
-        public HomeViewModel(INavigationService navigationService, HardwareHostService hardwareHostService)
+        public HomeViewModel(
+            INavigationService navigationService, 
+            HardwareHostService hardwareHostService, 
+            OsHostService osHostService)
         {
             this.navigationService = navigationService;
             this.hardwareHostService = hardwareHostService;
+            this.osHostService = osHostService;
         }
 
-        public async Task OnNavigatedToAsync()
+        public Task OnNavigatedToAsync()
         {
             if (!_isInitialized)
             {
-                await InitializeViewModel();
+                InitializeViewModel();
             }
-
-            StartTimer();
-        }
-
-        public Task OnNavigatedFromAsync() {
-            StopTimer();
 
             return Task.CompletedTask;
         }
 
-        private async Task InitializeViewModel()
+        public Task OnNavigatedFromAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        private void InitializeViewModel()
         {
             _isInitialized = true;
 
-            await LoadStaticInfo();
+            LoadStaticInfo();
         }
 
         [ObservableProperty]
@@ -62,12 +67,6 @@ namespace SYSi.ViewModels.Pages
         private string _appDescription = AppInfoHelper.AppDescription;
 
         [ObservableProperty]
-        private string _osName = loadingText;
-
-        [ObservableProperty]
-        private string _uptime = loadingText;
-
-        [ObservableProperty]
         private ObservableCollection<GpuInfo> _gpuList = [];
 
         [ObservableProperty]
@@ -75,6 +74,9 @@ namespace SYSi.ViewModels.Pages
 
         [ObservableProperty]
         private RamInfo _ramInfo = new RamInfo();
+
+        [ObservableProperty]
+        private OsInfo _osInfo = new OsInfo();
 
         [RelayCommand]
         private void NavigateCPU()
@@ -94,66 +96,23 @@ namespace SYSi.ViewModels.Pages
             navigationService.Navigate(typeof(MemoryPage));
         }
 
-        private async Task LoadStaticInfo()
+        [RelayCommand]
+        private void NavigateOS()
+        {
+            navigationService.Navigate(typeof(OSPage));
+        }
+
+        private void LoadStaticInfo()
         {
             try
             {
-                var osTask = Task.Run(() =>
-                {
-                    try
-                    {
-                        using var searcher =
-                            new ManagementObjectSearcher(
-                                "SELECT * FROM Win32_OperatingSystem");
+                OsInfo = osHostService.OsInfo;
 
-                        foreach (ManagementObject obj in searcher.Get())
-                        {
-                            return obj["Caption"]?.ToString()?.Trim() ?? "N/A";
-                        }
-                    }
-                    catch
-                    {
-                    }
-
-                    return "Windows";
-                });
-
-                await Task.WhenAll(osTask);
-
-                OsName = await osTask;
-                GpuList = new ObservableCollection<GpuInfo>(hardwareHostService?.Gpus ?? new());
-
-                CpuInfo = hardwareHostService?.CpuInfo ?? new CpuInfo();
-                RamInfo = hardwareHostService?.RamInfo ?? new RamInfo();
-
+                GpuList  = new ObservableCollection<GpuInfo>(hardwareHostService?.Gpus ?? []);
+                CpuInfo  = hardwareHostService?.CpuInfo ?? new();
+                RamInfo  = hardwareHostService?.RamInfo ?? new();
             }
-            catch
-            {
-            }
-        }
-
-        private async Task RefreshDynamic()
-        {
-            Uptime = GetUptime();
-        }
-
-        private static string GetUptime()
-        {
-            var ts = TimeSpan.FromMilliseconds(Environment.TickCount64);
-            return $"{(int)ts.TotalDays}d {ts.Hours:D2}h {ts.Minutes:D2}m";
-        }
-
-        public void StartTimer()
-        {
-            _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-            _timer.Tick += (s, e) => _ = RefreshDynamic();
-            _timer.Start();
-        }
-
-        public void StopTimer()
-        {
-            _timer?.Stop();
-            _timer = null;
+            catch { }
         }
     }
 }

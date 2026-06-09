@@ -1,8 +1,4 @@
-﻿using System.Globalization;
-using System.Windows.Data;
-using System.Windows.Media;
-
-namespace SYSi.Helpers
+﻿namespace SYSi.Helpers
 {
     internal class BoolToStatusText : IValueConverter
     {

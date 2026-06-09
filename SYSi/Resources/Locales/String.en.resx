@@ -471,4 +471,55 @@
   <data name="report_issue_title" xml:space="preserve">
     <value>Report an issue</value>
   </data>
+  <data name="page_os_title" xml:space="preserve">
+    <value>Operating System (OS)</value>
+  </data>
+  <data name="page_os_summary" xml:space="preserve">
+    <value>Go to Operating System (OS)</value>
+  </data>
+  <data name="os_name_title" xml:space="preserve">
+    <value>OS Name</value>
+  </data>
+  <data name="last_boot_title" xml:space="preserve">
+    <value>Last boot</value>
+  </data>
+  <data name="install_date_title" xml:space="preserve">
+    <value>Install date</value>
+  </data>
+  <data name="system_identity_title" xml:space="preserve">
+    <value>System identity</value>
+  </data>
+  <data name="hostname_title" xml:space="preserve">
+    <value>hostname_title</value>
+  </data>
+  <data name="username_title" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="system_status_title" xml:space="preserve">
+    <value>System status</value>
+  </data>
+  <data name="activation_title" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="edition_title" xml:space="preserve">
+    <value>Edition</value>
+  </data>
+  <data name="windows_update_title" xml:space="preserve">
+    <value>Windows Update</value>
+  </data>
+  <data name="environment_title" xml:space="preserve">
+    <value>Environment</value>
+  </data>
+  <data name="system_root_title" xml:space="preserve">
+    <value>System root</value>
+  </data>
+  <data name="user_profile_title" xml:space="preserve">
+    <value>User profile</value>
+  </data>
+  <data name="locale_title" xml:space="preserve">
+    <value>Locale</value>
+  </data>
+  <data name="time_zone_title" xml:space="preserve">
+    <value>Time zone</value>
+  </data>
 </root>

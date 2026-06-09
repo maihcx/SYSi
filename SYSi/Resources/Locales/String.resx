@@ -471,4 +471,55 @@
   <data name="report_issue_title" xml:space="preserve">
     <value>report_issue_title</value>
   </data>
+  <data name="page_os_title" xml:space="preserve">
+    <value>page_os_title</value>
+  </data>
+  <data name="page_os_summary" xml:space="preserve">
+    <value>page_os_summary</value>
+  </data>
+  <data name="os_name_title" xml:space="preserve">
+    <value>os_name_title</value>
+  </data>
+  <data name="last_boot_title" xml:space="preserve">
+    <value>last_boot_title</value>
+  </data>
+  <data name="install_date_title" xml:space="preserve">
+    <value>install_date_title</value>
+  </data>
+  <data name="system_identity_title" xml:space="preserve">
+    <value>system_identity_title</value>
+  </data>
+  <data name="hostname_title" xml:space="preserve">
+    <value>hostname_title</value>
+  </data>
+  <data name="username_title" xml:space="preserve">
+    <value>username_title</value>
+  </data>
+  <data name="system_status_title" xml:space="preserve">
+    <value>system_status_title</value>
+  </data>
+  <data name="activation_title" xml:space="preserve">
+    <value>activation_title</value>
+  </data>
+  <data name="edition_title" xml:space="preserve">
+    <value>edition_title</value>
+  </data>
+  <data name="windows_update_title" xml:space="preserve">
+    <value>windows_update_title</value>
+  </data>
+  <data name="environment_title" xml:space="preserve">
+    <value>environment_title</value>
+  </data>
+  <data name="system_root_title" xml:space="preserve">
+    <value>system_root_title</value>
+  </data>
+  <data name="user_profile_title" xml:space="preserve">
+    <value>user_profile_title</value>
+  </data>
+  <data name="locale_title" xml:space="preserve">
+    <value>locale_title</value>
+  </data>
+  <data name="time_zone_title" xml:space="preserve">
+    <value>time_zone_title</value>
+  </data>
 </root>

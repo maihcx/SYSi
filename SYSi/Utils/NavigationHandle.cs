@@ -124,7 +124,7 @@
                                     (excludePageType == null || !excludePageType.Contains(t)))
                         .OrderBy(t => t.GetCustomAttribute<PageMetaAttribute>()?.SortIndex)
                         .Select(pageType =>
-                        {   
+                        {
                             var attr = pageType.GetCustomAttribute<PageMetaAttribute>();
                             return new NavigationCard()
                             {

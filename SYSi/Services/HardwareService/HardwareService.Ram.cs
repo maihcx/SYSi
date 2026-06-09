@@ -19,13 +19,13 @@ public sealed partial class HardwareService
     private static void ReadRamUsage(RamInfo info)
     {
         var status = new NativeMethods.MEMORYSTATUSEX
-            { dwLength = (uint)Marshal.SizeOf<NativeMethods.MEMORYSTATUSEX>() };
+        { dwLength = (uint)Marshal.SizeOf<NativeMethods.MEMORYSTATUSEX>() };
 
         if (!NativeMethods.GlobalMemoryStatusEx(ref status)) return;
 
         ulong total = status.ullTotalPhys;
         ulong avail = status.ullAvailPhys;
-        ulong used  = total - avail;
+        ulong used = total - avail;
 
         info.TotalText     = FormatBytes((long)total);
         info.AvailableText = FormatBytes((long)avail);
@@ -94,7 +94,7 @@ public sealed partial class HardwareService
         0x20 => "LPDDR4",
         0x22 => "DDR5",
         0x23 => "LPDDR5",
-        _    => t > 0 ? $"Type {t}" : "N/A",
+        _ => t > 0 ? $"Type {t}" : "N/A",
     };
 
     private static string ParseFormFactor(byte f) => f switch
@@ -103,6 +103,6 @@ public sealed partial class HardwareService
         0x0D => "SO-DIMM",
         0x0F => "RIMM",
         0x11 => "FB-DIMM",
-        _    => f > 0 ? $"Type {f}" : "N/A",
+        _ => f > 0 ? $"Type {f}" : "N/A",
     };
 }
