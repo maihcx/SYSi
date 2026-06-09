@@ -29,7 +29,7 @@
                     <ItemsControl>
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <UniformGrid Margin="0,0,-8,-8"
+                                <UniformGrid Margin="0,-8,-4,-8"
                                              Columns="{Binding ActualWidth,
                                     RelativeSource={RelativeSource AncestorType=ItemsControl},
                                     Converter={StaticResource WidthToColumnsConverter}}" />
@@ -40,12 +40,12 @@
                             <Style TargetType="ui:Card"
                                    BasedOn="{StaticResource {x:Type ui:Card}}">
                                 <Setter Property="Margin"
-                                        Value="0,0,8,8" />
+                                        Value="0,0,4,4" />
                             </Style>
                         </ItemsControl.Resources>
 
                         <!-- CPU -->
-                        <ui:CardAction Margin="0 0 8 8"
+                        <ui:CardAction Margin="0 0 4 4"
                                        Command="{Binding ViewModel.NavigateCPUCommand}"
                                        IsChevronVisible="False">
                             <StackPanel Height="104">
@@ -92,11 +92,18 @@
                         </ui:CardAction>
 
                         <!-- GPU card -->
-                        <ui:CardAction Margin="0 0 8 8"
+                        <ui:CardAction Margin="0 0 4 4"
                                        Command="{Binding ViewModel.NavigateGPUCommand}"
                                        IsChevronVisible="False">
-                            <StackPanel Height="104">
-                                <Grid HorizontalAlignment="Stretch">
+                            <Grid Height="104">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0"
+                                      HorizontalAlignment="Stretch">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
@@ -118,7 +125,8 @@
                                                    FontSize="20" />
                                 </Grid>
 
-                                <TextBlock Text="{utils:Localization loading_title}"
+                                <TextBlock Grid.Row="1"
+                                           Text="{utils:Localization loading_title}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            FontSize="12"
                                            FontWeight="SemiBold">
@@ -137,42 +145,75 @@
                                     </TextBlock.Style>
                                 </TextBlock>
 
-                                <ItemsControl ItemsSource="{Binding ViewModel.GpuList, Mode=OneWay}"
-                                              AlternationCount="10"
-                                              Margin="0 8 0 0">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Grid Margin="0,0,0,4">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
+                                <ui:DynamicScrollViewer Grid.Row="2"
+                                                        VerticalScrollBarVisibility="Auto"
+                                                        HorizontalScrollBarVisibility="Disabled"
+                                                        Margin="0 8 0 -4"
+                                                        ui:SmoothScrollBehavior.IsEnabled="True"
+                                                        IsHitTestVisible="False">
+                                    <ItemsControl ItemsSource="{Binding ViewModel.GpuList, Mode=OneWay}"
+                                                  AlternationCount="10">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,4">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="*" />
+                                                        <RowDefinition Height="*" />
+                                                    </Grid.RowDefinitions>
+                                                    <Grid Grid.Row="0"
+                                                          Margin="0,0,0,2">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
 
-                                                <!-- GPU 0: -->
-                                                <TextBlock Grid.Column="0"
-                                                           FontSize="12"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
-                                                    <Run Text="GPU" />
-                                                    <Run Text="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex), Mode=OneWay}" /><Run Text=": " />
-                                                </TextBlock>
+                                                        <TextBlock Grid.Column="0"
+                                                                   FontSize="12"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
+                                                            <Run Text="GPU" />
+                                                            <Run Text="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex), Mode=OneWay}" /><Run Text=": " />
+                                                        </TextBlock>
 
-                                                <!-- Tên GPU -->
-                                                <TextBlock Grid.Column="1"
-                                                           FontSize="12"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                           Text="{Binding Name}"
-                                                           TextWrapping="Wrap" />
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
+                                                        <TextBlock Grid.Column="1"
+                                                                   FontSize="12"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                   Text="{Binding Name}"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   TextWrapping="NoWrap" />
+                                                    </Grid>
+                                                    <Grid Grid.Row="1"
+                                                          VerticalAlignment="Center">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="8" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <ProgressBar Grid.Column="0"
+                                                                     Value="{Binding UsagePercent}"
+                                                                     Maximum="100"
+                                                                     Height="12" />
+                                                        <TextBlock Grid.Column="2"
+                                                                   Margin="0 0 4 0"
+                                                                   HorizontalAlignment="Right"
+                                                                   FontWeight="Bold"
+                                                                   FontSize="11"
+                                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
+                                                            <Run Text="{Binding UsagePercent, StringFormat={}{0:F1}}" />
+                                                            <Run Text="%" />
+                                                        </TextBlock>
+                                                    </Grid>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ui:DynamicScrollViewer>
+                            </Grid>
                         </ui:CardAction>
 
                         <!-- RAM -->
-                        <ui:CardAction Margin="0 0 8 8"
+                        <ui:CardAction Margin="0 0 4 4"
                                        Command="{Binding ViewModel.NavigateMemoryCommand}"
                                        IsChevronVisible="False">
                             <StackPanel Height="104">
@@ -232,7 +273,7 @@
                         </ui:CardAction>
 
                         <!-- OS / Uptime -->
-                        <ui:CardAction Margin="0 0 8 8"
+                        <ui:CardAction Margin="0 0 4 4"
                                        IsChevronVisible="False">
                             <StackPanel Height="104">
                                 <StackPanel Orientation="Horizontal"
