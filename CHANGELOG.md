@@ -1,3 +1,14 @@
+## v0.4.1
+
+## 🚀 Changelog
+## 🧹 Maintenance
+
+- Localize OS activation and update statuses (#42) — @maihcx
+- Refactor GPU service and add DXGI LUID map (#41) — @maihcx
+
+
+---
+
 ## v0.4.0
 
 ## 🚀 Changelog
