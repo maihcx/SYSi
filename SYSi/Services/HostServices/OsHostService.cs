@@ -13,7 +13,7 @@ namespace SYSi.Services.HostServices
 
         public OsHostService()
         {
-            LoadStaticInfo();
+            Task.Run(LoadStaticInfo);
 
             _timer = new System.Timers.Timer(1000);
             _timer.Elapsed += TimerElapsed;
@@ -22,28 +22,63 @@ namespace SYSi.Services.HostServices
 
         private void LoadStaticInfo()
         {
+            var wmiTask = Task.Run(LoadFromWmi);
+            var activationTask = Task.Run(LoadActivationStatus);
+            var updateTask = Task.Run(LoadWindowsUpdateStatus);
+
+            LoadFromEnvironment();
+            OnPropertyChanged(nameof(OsInfo));
+
+            Task.WaitAll(wmiTask, activationTask, updateTask);
+            OnPropertyChanged(nameof(OsInfo));
+        }
+
+        private void LoadFromWmi()
+        {
             try
             {
                 using var searcher = new ManagementObjectSearcher(
-                    "SELECT Caption, Version, OSArchitecture, InstallDate, LastBootUpTime "
-                    + "FROM Win32_OperatingSystem");
+                    "SELECT Caption, Version, OSArchitecture, InstallDate, LastBootUpTime " +
+                    "FROM Win32_OperatingSystem");
 
                 foreach (ManagementObject obj in searcher.Get())
                 {
-                    OsInfo.OsName         = obj["Caption"]?.ToString()?.Trim()         ?? "Windows";
-                    OsInfo.OsVersion      = obj["Version"]?.ToString()?.Trim()         ?? "N/A";
-                    OsInfo.OsArchitecture = obj["OSArchitecture"]?.ToString()?.Trim()  ?? "N/A";
-                    OsInfo.InstallDate    = ParseWmiDate(obj["InstallDate"]?.ToString());
-                    OsInfo.LastBoot       = ParseWmiDate(obj["LastBootUpTime"]?.ToString());
+                    string version = obj["Version"]?.ToString()?.Trim() ?? "N/A";
+                    var dtInstall = ManagementDateTimeConverter.ToDateTime(obj["InstallDate"]?.ToString() ?? "");
+                    var dtLastBoot = ManagementDateTimeConverter.ToDateTime(obj["LastBootUpTime"]?.ToString() ?? "");
+
+                    OsInfo.OsName         = ParseOsName(obj["Caption"]?.ToString());
+                    OsInfo.OsVersion      = version;
+                    OsInfo.BuildNumber    = ParseBuildNumber(version);
+                    OsInfo.OsArchitecture = obj["OSArchitecture"]?.ToString()?.Trim() ?? "N/A";
+
+                    OsInfo.InstallDate    = dtInstall.ToString("dd/MM/yyyy");
+                    OsInfo.InstallTime    = dtInstall.ToString("HH:mm");
+
+                    OsInfo.LastBoot       = dtLastBoot.ToString("dd/MM/yyyy HH:mm");
+                    OsInfo.LastBootDate   = dtLastBoot.ToString("dd/MM/yyyy");
+                    OsInfo.LastBootTime   = dtLastBoot.ToString("HH:mm");
                     break;
                 }
             }
-            catch { OsInfo.OsName = "Windows"; }
+            catch
+            {
+                OsInfo.OsName = "Windows";
+            }
+        }
 
-            OsInfo.Hostname = Environment.MachineName;
-            OsInfo.Username = Environment.UserName;
+        private void LoadFromEnvironment()
+        {
+            OsInfo.Hostname    = Environment.MachineName;
+            OsInfo.Username    = Environment.UserName;
+            OsInfo.SystemRoot  = Environment.GetEnvironmentVariable("SystemRoot")  ?? "N/A";
+            OsInfo.UserProfile = Environment.GetEnvironmentVariable("USERPROFILE") ?? "N/A";
+            OsInfo.Locale      = CultureInfo.CurrentCulture.Name;
+            OsInfo.TimeZone    = TimeZoneInfo.Local.DisplayName;
 
-            OnPropertyChanged(nameof(OsInfo));
+            using var key = Registry.LocalMachine.OpenSubKey(
+                @"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+            OsInfo.OsEdition = key?.GetValue("EditionID")?.ToString() ?? "N/A";
         }
 
         private void TimerElapsed(object? sender, ElapsedEventArgs e)
@@ -62,19 +97,73 @@ namespace SYSi.Services.HostServices
             return $"{(int)ts.TotalDays}d {ts.Hours:D2}h {ts.Minutes:D2}m {ts.Seconds:D2}s";
         }
 
-        /// <summary>
-        /// WMI date format: "20240115123045.000000+420" → "15/01/2024 12:30"
-        /// </summary>
-        private static string ParseWmiDate(string? wmi)
+        private void LoadActivationStatus()
         {
-            if (string.IsNullOrWhiteSpace(wmi) || wmi.Length < 14)
-                return "N/A";
             try
             {
-                var dt = ManagementDateTimeConverter.ToDateTime(wmi);
-                return dt.ToString("dd/MM/yyyy HH:mm");
+                using var searcher = new ManagementObjectSearcher(
+                    "SELECT LicenseStatus FROM SoftwareLicensingProduct " +
+                    "WHERE PartialProductKey IS NOT NULL " +
+                    "AND ApplicationId = '55c92734-d682-4d71-983e-d6ec3f16059f'");
+
+                foreach (ManagementObject obj in searcher.Get())
+                {
+                    uint status = (uint)(obj["LicenseStatus"] ?? 0u);
+                    OsInfo.IsActivated       = status == 1;
+                    OsInfo.ActivationStatus  = status == 1 ? "Activated" : "Not activated";
+                    return;
+                }
             }
-            catch { return "N/A"; }
+            catch { }
+
+            OsInfo.ActivationStatus = "N/A";
+        }
+
+        private void LoadWindowsUpdateStatus()
+        {
+            try
+            {
+                using var rebootKey = Registry.LocalMachine.OpenSubKey(
+                    @"SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired");
+
+                if (rebootKey != null)
+                {
+                    OsInfo.IsUpToDate           = false;
+                    OsInfo.WindowsUpdateStatus  = "Restart required";
+                    return;
+                }
+
+                using var pendingKey = Registry.LocalMachine.OpenSubKey(
+                    @"SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RequestedUpdates");
+
+                if (pendingKey?.GetSubKeyNames().Length > 0)
+                {
+                    OsInfo.IsUpToDate           = false;
+                    OsInfo.WindowsUpdateStatus  = "Updates available";
+                    return;
+                }
+
+                OsInfo.IsUpToDate          = true;
+                OsInfo.WindowsUpdateStatus = "Up to date";
+            }
+            catch
+            {
+                OsInfo.WindowsUpdateStatus = "N/A";
+            }
+        }
+
+        private static string ParseOsName(string? raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return "Windows";
+            return raw.Replace("Microsoft Windows", "Windows")
+                      .Replace("Microsoft", "")
+                      .Trim();
+        }
+
+        private static string ParseBuildNumber(string version)
+        {
+            var parts = version.Split('.');
+            return parts.Length >= 3 ? parts[2] : "N/A";
         }
 
         private void OnPropertyChanged([CallerMemberName] string? name = null)

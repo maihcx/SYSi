@@ -159,7 +159,7 @@
                                 <ui:DynamicScrollViewer Grid.Row="2"
                                                         VerticalScrollBarVisibility="Auto"
                                                         HorizontalScrollBarVisibility="Disabled"
-                                                        Margin="0 8 0 -4"
+                                                        Margin="0 4 0 -4"
                                                         ui:SmoothScrollBehavior.IsEnabled="True"
                                                         IsHitTestVisible="False">
                                     <ItemsControl ItemsSource="{Binding ViewModel.GpuList, Mode=OneWay}"
@@ -285,22 +285,33 @@
 
                         <!-- OS / Uptime -->
                         <ui:CardAction Margin="0 0 4 4"
+                                       Command="{Binding ViewModel.NavigateOSCommand}"
                                        IsChevronVisible="False">
                             <StackPanel Height="104">
-                                <StackPanel Orientation="Horizontal"
-                                            Margin="0,0,0,6">
-                                    <ui:SymbolIcon Symbol="DesktopPulse24"
+                                <Grid HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <ui:SymbolIcon Grid.Column="0"
+                                                   Symbol="DesktopPulse24"
                                                    FontSize="20"
                                                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
-                                    <TextBlock Text="{utils:Localization os_title}"
-                                               FontSize="13"
+                                    <TextBlock Grid.Column="1"
+                                               Text="{utils:Localization os_title}"
+                                               FontSize="12"
                                                FontWeight="Medium"
                                                VerticalAlignment="Center"
                                                Margin="8,0,0,0" />
-                                </StackPanel>
+                                    <ui:SymbolIcon Grid.Column="2"
+                                                   Symbol="ChevronCircleRight24"
+                                                   FontSize="20" />
+                                </Grid>
 
                                 <StackPanel Orientation="Vertical"
-                                            Margin="0,0,0,4">
+                                            Margin="0,4,0,4">
                                     <TextBlock FontSize="13"
                                                FontWeight="SemiBold"
                                                TextWrapping="Wrap"
