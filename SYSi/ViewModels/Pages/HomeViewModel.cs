@@ -10,10 +10,6 @@ namespace SYSi.ViewModels.Pages
 
         private readonly OsHostService osHostService;
 
-        private DispatcherTimer? _timer;
-
-        static string loadingText = LanguageBase.GetLangValue("loading_title");
-
         private INavigationService navigationService;
 
         [ObservableProperty]
