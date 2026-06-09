@@ -33,7 +33,8 @@ namespace SYSi.ViewModels.Pages
             StartTimer();
         }
 
-        public Task OnNavigatedFromAsync() {
+        public Task OnNavigatedFromAsync()
+        {
             StopTimer();
 
             return Task.CompletedTask;

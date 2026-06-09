@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Timers;
+﻿using System.Timers;
 
-namespace SYSi.Services
+namespace SYSi.Services.HostServices
 {
     public sealed class HardwareHostService : INotifyPropertyChanged, IDisposable
     {

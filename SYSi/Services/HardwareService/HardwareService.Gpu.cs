@@ -10,20 +10,20 @@ public sealed partial class HardwareService
         try
         {
             var displayGuid = new Guid("4D36E968-E325-11CE-BFC1-08002BE10318");
-            IntPtr devInfo  = NativeMethods.SetupDiGetClassDevs(
+            IntPtr devInfo = NativeMethods.SetupDiGetClassDevs(
                 ref displayGuid, IntPtr.Zero, IntPtr.Zero, NativeMethods.DIGCF_PRESENT);
 
             if (devInfo == new IntPtr(-1)) return list;
             try
             {
                 var devData = new NativeMethods.SP_DEVINFO_DATA
-                    { cbSize = (uint)Marshal.SizeOf<NativeMethods.SP_DEVINFO_DATA>() };
+                { cbSize = (uint)Marshal.SizeOf<NativeMethods.SP_DEVINFO_DATA>() };
 
                 for (uint i = 0; NativeMethods.SetupDiEnumDeviceInfo(devInfo, i, ref devData); i++)
                 {
-                    string name      = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_DEVICEDESC);
-                    string mfg       = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_MFG);
-                    string hwId      = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_HARDWAREID);
+                    string name = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_DEVICEDESC);
+                    string mfg = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_MFG);
+                    string hwId = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_HARDWAREID);
                     string driverKey = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_DRIVER);
 
                     var gpu = new GpuInfo
@@ -55,7 +55,7 @@ public sealed partial class HardwareService
         try
         {
             string regPath = $@"SYSTEM\CurrentControlSet\Control\Class\{driverKey}";
-            using var key  = Registry.LocalMachine.OpenSubKey(regPath);
+            using var key = Registry.LocalMachine.OpenSubKey(regPath);
             if (key == null) return;
 
             gpu.DriverVersion = key.GetValue("DriverVersion")?.ToString() ?? "N/A";
@@ -90,10 +90,10 @@ public sealed partial class HardwareService
         object? qw = key.GetValue("HardwareInformation.qwMemorySize");
         long bytes = qw switch
         {
-            long l              => l,
+            long l => l,
             byte[] b when b.Length >= 8 => (long)BitConverter.ToUInt64(b, 0),
-            int i               => (long)(uint)i,
-            _                   => 0,
+            int i => (long)(uint)i,
+            _ => 0,
         };
 
         // Fallback: DWORD MemorySize
@@ -122,7 +122,7 @@ public sealed partial class HardwareService
         try
         {
             var dd = new NativeMethods.DISPLAY_DEVICE
-                { cb = (uint)Marshal.SizeOf<NativeMethods.DISPLAY_DEVICE>() };
+            { cb = (uint)Marshal.SizeOf<NativeMethods.DISPLAY_DEVICE>() };
 
             for (uint i = 0; NativeMethods.EnumDisplayDevices(null, i, ref dd, 0); i++)
             {
@@ -155,9 +155,9 @@ public sealed partial class HardwareService
     // ── GPU usage via PDH ────────────────────────────────────────────────────
 
     private static readonly object _gpuPdhLock = new();
-    private static IntPtr _gpuQuery   = IntPtr.Zero;
+    private static IntPtr _gpuQuery = IntPtr.Zero;
     private static IntPtr _gpuCounter = IntPtr.Zero;
-    private static bool   _gpuPdhReady;
+    private static bool _gpuPdhReady;
 
     public void InitGpuPdh()
     {
@@ -278,7 +278,7 @@ public sealed partial class HardwareService
         if (pos < 0) return -1;
 
         int start = pos + marker.Length;
-        int end   = instanceName.IndexOf('_', start);
+        int end = instanceName.IndexOf('_', start);
         string num = end < 0 ? instanceName[start..] : instanceName[start..end];
         return int.TryParse(num, out int n) ? n : -1;
     }
@@ -288,9 +288,9 @@ public sealed partial class HardwareService
         foreach (string s in new[] { mfg, name })
         {
             if (s.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase)) return "NVIDIA";
-            if (s.Contains("Intel",  StringComparison.OrdinalIgnoreCase)) return "Intel";
-            if (s.Contains("AMD",    StringComparison.OrdinalIgnoreCase) ||
-                s.Contains("ATI",    StringComparison.OrdinalIgnoreCase)) return "AMD";
+            if (s.Contains("Intel", StringComparison.OrdinalIgnoreCase)) return "Intel";
+            if (s.Contains("AMD", StringComparison.OrdinalIgnoreCase) ||
+                s.Contains("ATI", StringComparison.OrdinalIgnoreCase)) return "AMD";
         }
         return string.IsNullOrWhiteSpace(mfg) ? "N/A" : mfg;
     }

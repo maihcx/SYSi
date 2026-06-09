@@ -1,8 +1,4 @@
-﻿using System.Globalization;
-using System.Windows.Data;
-using Wpf.Ui.Appearance;
-
-namespace SYSi.Helpers
+﻿namespace SYSi.Helpers
 {
     internal class EnumToBooleanConverter : IValueConverter
     {

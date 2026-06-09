@@ -1,4 +1,4 @@
-﻿namespace SYSi.Services
+﻿namespace SYSi.Services.HostServices
 {
     /// <summary>
     /// Managed host of the application.

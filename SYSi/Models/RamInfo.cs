@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SYSi.Models
+﻿namespace SYSi.Models
 {
     public partial class RamSlotInfo : ObservableObject
     {

@@ -28,7 +28,7 @@
             Family = loadingText,
             L1Cache = loadingText,
             L2Cache = loadingText,
-            L3Cache = loadingText,  
+            L3Cache = loadingText,
             Manufacturer = loadingText,
             Model = loadingText,
             Socket = loadingText,

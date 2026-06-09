@@ -25,9 +25,9 @@ public sealed partial class HardwareService
 
     private static StorageDriveInfo BuildDriveInfo(DriveInfo drive)
     {
-        string root    = drive.Name;
-        var    volName = new StringBuilder(261);
-        var    fsName  = new StringBuilder(261);
+        string root = drive.Name;
+        var volName = new StringBuilder(261);
+        var fsName = new StringBuilder(261);
 
         NativeMethods.GetVolumeInformation(
             root, volName, 261, out _, out _, out _, fsName, 261);
@@ -44,7 +44,7 @@ public sealed partial class HardwareService
 
         if (NativeMethods.GetDiskFreeSpaceEx(root, out ulong freeAvail, out ulong total, out _))
         {
-            long used         = (long)(total - freeAvail);
+            long used = (long)(total - freeAvail);
             info.TotalText    = FormatBytes((long)total);
             info.FreeText     = FormatBytes((long)freeAvail);
             info.UsedText     = FormatBytes(used);

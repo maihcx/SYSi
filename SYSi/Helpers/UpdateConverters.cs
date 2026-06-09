@@ -1,6 +1,3 @@
-using System.Globalization;
-using System.Windows.Data;
-
 namespace SYSi.Helpers
 {
     [ValueConversion(typeof(bool), typeof(Visibility))]

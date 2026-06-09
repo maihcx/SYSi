@@ -20,7 +20,7 @@
 
         private void setLoading()
         {
-            
+
         }
 
         public Task OnNavigatedToAsync()
