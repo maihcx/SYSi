@@ -24,6 +24,7 @@
             <helpers:BooleanToString x:Key="BooleanToString" />
             <helpers:WidthToColumnsConverter x:Key="WidthToColumnsConverter" />
             <helpers:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" />
+            <helpers:BoolToBadgeBrushConverter x:Key="BoolToBadgeBrushConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

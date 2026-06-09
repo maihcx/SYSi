@@ -471,4 +471,55 @@
   <data name="report_issue_title" xml:space="preserve">
     <value>Báo cáo sự cố?</value>
   </data>
+  <data name="page_os_title" xml:space="preserve">
+    <value>Hệ điều hành (OS)</value>
+  </data>
+  <data name="page_os_summary" xml:space="preserve">
+    <value>Đi đến Hệ Điều Hành (OS)</value>
+  </data>
+  <data name="os_name_title" xml:space="preserve">
+    <value>Tên OS</value>
+  </data>
+  <data name="last_boot_title" xml:space="preserve">
+    <value>Lần khởi động cuối</value>
+  </data>
+  <data name="install_date_title" xml:space="preserve">
+    <value>Ngày cài đặt</value>
+  </data>
+  <data name="system_identity_title" xml:space="preserve">
+    <value>Nhận dạng hệ thống</value>
+  </data>
+  <data name="hostname_title" xml:space="preserve">
+    <value>Tên máy chủ</value>
+  </data>
+  <data name="username_title" xml:space="preserve">
+    <value>Tên người dùng</value>
+  </data>
+  <data name="system_status_title" xml:space="preserve">
+    <value>Trạng thái hệ thống</value>
+  </data>
+  <data name="activation_title" xml:space="preserve">
+    <value>Kích hoạt</value>
+  </data>
+  <data name="edition_title" xml:space="preserve">
+    <value>Phiên bản</value>
+  </data>
+  <data name="windows_update_title" xml:space="preserve">
+    <value>Windows Update</value>
+  </data>
+  <data name="environment_title" xml:space="preserve">
+    <value>Môi trường</value>
+  </data>
+  <data name="system_root_title" xml:space="preserve">
+    <value>System root</value>
+  </data>
+  <data name="user_profile_title" xml:space="preserve">
+    <value>Hồ sơ người dùng</value>
+  </data>
+  <data name="locale_title" xml:space="preserve">
+    <value>Ngôn ngữ</value>
+  </data>
+  <data name="time_zone_title" xml:space="preserve">
+    <value>Múi giờ</value>
+  </data>
 </root>
