@@ -131,6 +131,18 @@ namespace SYSi.Utils
             out uint lpBytesReturned,
             IntPtr lpOverlapped);
 
+        [DllImport("dxgi.dll")]
+        public static extern int CreateDXGIFactory1(ref Guid riid, out IntPtr ppFactory);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public delegate int EnumAdapters1Delegate(IntPtr factory, uint index, out IntPtr adapter);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public delegate int GetDesc1Delegate(IntPtr adapter, ref DXGI_ADAPTER_DESC1 desc);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public delegate uint ReleaseDelegate(IntPtr obj);
+
         // ── Structs ─────────────────────────────────────────────────────────────
 
         [StructLayout(LayoutKind.Sequential)]
@@ -306,6 +318,29 @@ namespace SYSi.Utils
         {
             public uint NumberOfDiskExtents;
             public DISK_EXTENT Extents;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct DXGI_ADAPTER_DESC1
+        {
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
+            public char[] Description;
+            public uint VendorId;
+            public uint DeviceId;
+            public uint SubSysId;
+            public uint Revision;
+            public nuint DedicatedVideoMemory;
+            public nuint DedicatedSystemMemory;
+            public nuint SharedSystemMemory;
+            public LUID AdapterLuid;
+            public uint Flags;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct LUID
+        {
+            public uint LowPart;
+            public uint HighPart;
         }
     }
 }
