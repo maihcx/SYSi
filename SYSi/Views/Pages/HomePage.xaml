@@ -294,7 +294,7 @@
                                                FontWeight="SemiBold"
                                                TextWrapping="Wrap"
                                                Margin="0,0,0,4"
-                                               Text="{Binding ViewModel.OsName}" />
+                                               Text="{Binding ViewModel.OsInfo.OsName}" />
                                     <TextBlock FontSize="12"
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                TextWrapping="Wrap">
@@ -302,7 +302,7 @@
                                         <Run Text="{utils:Localization uptime_title}" /><Run Text=":" />
 
                                         <InlineUIContainer>
-                                            <TextBlock Text="{Binding ViewModel.Uptime}"
+                                            <TextBlock Text="{Binding ViewModel.OsInfo.Uptime}"
                                                        TextWrapping="NoWrap" />
                                         </InlineUIContainer>
 
