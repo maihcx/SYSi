@@ -144,20 +144,66 @@
                                      Background="{DynamicResource ControlFillColorDefaultBrush}"
                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                      Margin="0,0,0,32">
+
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="Margin"
+                                                Value="4" />
+                                        <Setter Property="Padding"
+                                                Value="0" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ListBoxItem">
+                                                    <Border x:Name="Border"
+                                                            CornerRadius="8"
+                                                            Background="{TemplateBinding Background}"
+                                                            Padding="4">
+                                                        <ContentPresenter />
+                                                    </Border>
+
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver"
+                                                                 Value="True">
+                                                            <Setter TargetName="Border"
+                                                                    Property="Background"
+                                                                    Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+                                                        </Trigger>
+
+                                                        <Trigger Property="IsSelected"
+                                                                 Value="True">
+                                                            <Setter TargetName="Border"
+                                                                    Property="Background"
+                                                                    Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                                                            <Setter Property="Foreground"
+                                                                    Value="{DynamicResource ListBoxItemSelectedForegroundThemeBrush}" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" Margin="2">
+                                        <StackPanel Orientation="Horizontal"
+                                                    Margin="8,6">
                                             <TextBlock Text="{Binding NativeName}"
                                                        FontSize="15"
-                                                       VerticalAlignment="Center"/>
-                                            <TextBlock Text=" - " Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
+                                                       VerticalAlignment="Center" />
+
+                                            <TextBlock Text=" - "
+                                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                       VerticalAlignment="Center" />
+
                                             <TextBlock Text="{Binding EnglishName}"
                                                        FontSize="13"
                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                       VerticalAlignment="Center"/>
+                                                       VerticalAlignment="Center" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
+
                             </ListBox>
 
                             <ui:Button

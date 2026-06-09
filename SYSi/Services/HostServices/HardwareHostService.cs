@@ -40,6 +40,8 @@ namespace SYSi.Services.HostServices
 
             Motherboard = _hardware.GetMotherboardInfo();
 
+            _hardware.InitGpuPdh(Gpus);
+
             NotifyAll();
         }
 
@@ -55,8 +57,11 @@ namespace SYSi.Services.HostServices
                 RamInfo.AvailableText = ram.AvailableText;
                 RamInfo.UsedText = ram.UsedText;
 
+                _hardware.RefreshGpuUsage(Gpus);
+
                 OnPropertyChanged(nameof(CpuInfo));
                 OnPropertyChanged(nameof(RamInfo));
+                OnPropertyChanged(nameof(Gpus));
             }
             catch
             {

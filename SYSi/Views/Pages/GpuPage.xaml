@@ -31,6 +31,24 @@
                               MinWidth="300" />
                 </StackPanel>
             </ui:Card>
+            
+            <ui:Card Margin="0,0,0,8">
+                <StackPanel>
+                    <Grid Margin="0,0,0,8">
+                        <TextBlock Text="{Binding ViewModel.GpuInfo.Name}"
+                                   FontWeight="Medium" />
+                        <TextBlock HorizontalAlignment="Right"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
+                            <Run Text="{Binding ViewModel.GpuInfo.UsagePercent, StringFormat={}{0:F1}}" />
+                            <Run Text="%" />
+                        </TextBlock>
+                    </Grid>
+                    <ProgressBar Value="{Binding ViewModel.GpuInfo.UsagePercent}"
+                                 Maximum="100"
+                                 Height="12" />
+                </StackPanel>
+            </ui:Card>
 
             <!-- Info -->
             <Grid>

@@ -158,8 +158,9 @@ public sealed partial class HardwareService
     private static IntPtr _gpuQuery = IntPtr.Zero;
     private static IntPtr _gpuCounter = IntPtr.Zero;
     private static bool _gpuPdhReady;
+    private static Dictionary<int, int> _physToGpuIndex = [];
 
-    public void InitGpuPdh()
+    public void InitGpuPdh(List<GpuInfo> gpus)
     {
         lock (_gpuPdhLock)
         {
@@ -176,17 +177,76 @@ public sealed partial class HardwareService
 
                 if (r != 0) return;
 
-                // First collect seeds the delta — second collect in RefreshGpuUsage gives real data.
                 NativeMethods.PdhCollectQueryData(_gpuQuery);
                 _gpuPdhReady = true;
+
+                // Build phys → gpu index map ngay sau lần collect đầu
+                _physToGpuIndex = BuildPhysToGpuMap(gpus);
             }
             catch { }
         }
     }
 
+    private static Dictionary<int, int> BuildPhysToGpuMap(List<GpuInfo> gpus)
+    {
+        // Lấy tất cả instance names của counter GPU Engine
+        // PdhEnumObjectItems để lấy instance list
+        var result = new Dictionary<int, int>();
+
+        try
+        {
+            // Collect thêm 1 lần để có data
+            NativeMethods.PdhCollectQueryData(_gpuQuery);
+
+            uint bufSize = 0, itemCount = 0;
+            NativeMethods.PdhGetFormattedCounterArray(
+                _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
+                ref bufSize, out itemCount, IntPtr.Zero);
+
+            if (bufSize == 0) return result;
+
+            IntPtr buf = Marshal.AllocHGlobal((int)bufSize);
+            try
+            {
+                NativeMethods.PdhGetFormattedCounterArray(
+                    _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
+                    ref bufSize, out itemCount, buf);
+
+                int ptrSize = IntPtr.Size;
+                int itemSize = ptrSize + 16;
+
+                // Collect unique phys indices
+                var physIndices = new HashSet<int>();
+                for (int j = 0; j < (int)itemCount; j++)
+                {
+                    IntPtr itemPtr = IntPtr.Add(buf, j * itemSize);
+                    IntPtr namePtr = Marshal.ReadIntPtr(itemPtr);
+                    string name = namePtr != IntPtr.Zero
+                        ? Marshal.PtrToStringUni(namePtr) ?? "" : "";
+
+                    int phys = ParsePhysIndex(name);
+                    if (phys >= 0) physIndices.Add(phys);
+                }
+
+                // Map: phys_N → gpus[N] nếu count khớp,
+                // hoặc fallback theo thứ tự sorted
+                var sorted = physIndices.Order().ToList();
+                for (int i = 0; i < sorted.Count; i++)
+                {
+                    if (i < gpus.Count)
+                        result[sorted[i]] = i;
+                }
+            }
+            finally { Marshal.FreeHGlobal(buf); }
+        }
+        catch { }
+
+        return result;
+    }
+
     public void RefreshGpuUsage(List<GpuInfo> gpus)
     {
-        if (!_gpuPdhReady) InitGpuPdh();
+        if (!_gpuPdhReady) InitGpuPdh(gpus);  // pass gpus vào
         if (!_gpuPdhReady || _gpuCounter == IntPtr.Zero) return;
 
         try
@@ -195,10 +255,7 @@ public sealed partial class HardwareService
             {
                 NativeMethods.PdhCollectQueryData(_gpuQuery);
 
-                uint bufSize = 0;
-                uint itemCount = 0;
-
-                // 1st call — get required size (returns PDH_MORE_DATA = 0x800007D2)
+                uint bufSize = 0, itemCount = 0;
                 NativeMethods.PdhGetFormattedCounterArray(
                     _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
                     ref bufSize, out itemCount, IntPtr.Zero);
@@ -212,31 +269,21 @@ public sealed partial class HardwareService
                         _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
                         ref bufSize, out itemCount, buf);
 
-                    // PDH_CSTATUS_VALID_DATA = 0, PDH_MORE_DATA = 0x800007D2
                     if (r != 0 && r != 0x800007D2) return;
 
+                    // Sum usage per phys index
                     var physUsage = new Dictionary<int, double>();
 
-                    // PDH_FMT_COUNTERVALUE_ITEM_W layout (Windows actual):
-                    //   szName  : pointer to wide string  (8 bytes on x64, 4 on x86)
-                    //   CStatus : uint   (4 bytes)
-                    //   padding : uint   (4 bytes, alignment)
-                    //   Value   : double (8 bytes)
-                    // Total per item: IntPtr.Size + 16 bytes
-                    int ptrSize = IntPtr.Size;          // 8 (x64) or 4 (x86)
-                    int itemSize = ptrSize + 16;          // szName ptr + CStatus + pad + double
+                    int ptrSize = IntPtr.Size;
+                    int itemSize = ptrSize + 16;
 
                     for (int j = 0; j < (int)itemCount; j++)
                     {
                         IntPtr itemPtr = IntPtr.Add(buf, j * itemSize);
-
-                        // szName là pointer trỏ vào tên instance (nằm đâu đó trong buf)
                         IntPtr namePtr = Marshal.ReadIntPtr(itemPtr);
                         string name = namePtr != IntPtr.Zero
-                            ? Marshal.PtrToStringUni(namePtr) ?? ""
-                            : "";
+                            ? Marshal.PtrToStringUni(namePtr) ?? "" : "";
 
-                        // double value nằm ở offset: ptrSize + 8 (CStatus uint + 4 pad)
                         double value = Marshal.PtrToStructure<double>(
                             IntPtr.Add(itemPtr, ptrSize + 8));
 
@@ -247,9 +294,16 @@ public sealed partial class HardwareService
                         physUsage[physIdx] = cur + value;
                     }
 
-                    foreach (var (idx, usage) in physUsage)
-                        if (idx < gpus.Count)
-                            gpus[idx].UsagePercent = Math.Round(Math.Clamp(usage, 0, 100), 1);
+                    // Dùng map thay vì assume phys == list index
+                    foreach (var (physIdx, usage) in physUsage)
+                    {
+                        if (_physToGpuIndex.TryGetValue(physIdx, out int gpuIdx)
+                            && gpuIdx < gpus.Count)
+                        {
+                            gpus[gpuIdx].UsagePercent =
+                                Math.Round(Math.Clamp(usage, 0, 100), 1);
+                        }
+                    }
                 }
                 finally { Marshal.FreeHGlobal(buf); }
             }
