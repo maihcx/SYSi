@@ -33,27 +33,40 @@
                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                           FontSize="12"
                                           VerticalAlignment="Center" />
-                            <ui:HyperlinkButton Grid.Column="1"
+
+                            <ContentPresenter x:Name="PART_ValueContent"
+                                              Grid.Column="1"
+                                              Content="{TemplateBinding ValueContent}"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="{TemplateBinding ValueHorizontalAlign}"
+                                              Margin="0"
+                                              Visibility="Collapsed" />
+
+                            <ui:HyperlinkButton x:Name="PART_HyperlinkButton"
+                                                Grid.Column="1"
+                                                HorizontalAlignment="{TemplateBinding ValueHorizontalAlign}"
                                                 NavigateUri="{TemplateBinding NavigateUri}">
                                 <ui:HyperlinkButton.Visibility>
                                     <Binding Path="NavigateUri"
                                              RelativeSource="{RelativeSource TemplatedParent}"
                                              Converter="{StaticResource NullToCollapsedConverter}" />
                                 </ui:HyperlinkButton.Visibility>
-
                                 <ui:TextBlock Text="{TemplateBinding ValueText}"
                                               FontSize="12"
                                               FontWeight="Medium"
                                               VerticalAlignment="Center"
                                               TextTrimming="CharacterEllipsis" />
                             </ui:HyperlinkButton>
-                            <ui:TextBlock Grid.Column="1"
+
+                            <ui:TextBlock x:Name="PART_ValueText"
+                                          Grid.Column="1"
+                                          HorizontalAlignment="{TemplateBinding ValueHorizontalAlign}"
                                           Text="{TemplateBinding ValueText}"
                                           FontSize="12"
                                           FontWeight="Medium"
                                           VerticalAlignment="Center"
                                           TextTrimming="CharacterEllipsis"
-                                          Padding="11 5">
+                                          Padding="11,5">
                                 <ui:TextBlock.Visibility>
                                     <Binding Path="NavigateUri"
                                              RelativeSource="{RelativeSource TemplatedParent}"
@@ -61,6 +74,7 @@
                                              ConverterParameter="invert" />
                                 </ui:TextBlock.Visibility>
                             </ui:TextBlock>
+
                             <ui:Button x:Name="PART_CopyButton"
                                        Grid.Column="2"
                                        ToolTip="Copy"
