@@ -31,8 +31,8 @@
 
                     <ui:Image Grid.Column="0"
                               Source="pack://application:,,,/Assets/logo_256.png"
-                              Width="80"
-                              Height="80" />
+                              Width="60"
+                              Height="60" />
                     <StackPanel  Grid.Column="2"
                                  HorizontalAlignment="Stretch"
                                  VerticalAlignment="Center">

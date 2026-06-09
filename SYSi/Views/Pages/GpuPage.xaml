@@ -60,10 +60,17 @@
 
                 <ui:Card Grid.Column="0">
                     <StackPanel>
-                        <TextBlock Text="{utils:Localization gen_info_title}"
-                                   FontWeight="SemiBold"
-                                   FontSize="14"
-                                   Margin="0,0,0,12" />
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,0,12">
+                            <ui:SymbolIcon Symbol="Info24"
+                                           FontSize="15"
+                                           Margin="0 0 8 0" />
+                            <TextBlock Text="{utils:Localization gen_info_title}"
+                                       FontWeight="SemiBold"
+                                       FontSize="14" />
+                        </StackPanel>
+                        
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization gpu_name_title}"
                                           ValueText="{Binding ViewModel.GpuInfo.Name}" />
@@ -87,10 +94,17 @@
                 </ui:Card>
                 <ui:Card Grid.Column="2">
                     <StackPanel>
-                        <TextBlock Text="{utils:Localization display_title}"
-                                   FontWeight="SemiBold"
-                                   FontSize="14"
-                                   Margin="0,0,0,12" />
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,0,12">
+                            <ui:SymbolIcon Symbol="ShareScreenPerson24"
+                                           FontSize="15"
+                                           Margin="0 0 8 0" />
+                            <TextBlock Text="{utils:Localization display_title}"
+                                       FontWeight="SemiBold"
+                                       FontSize="14" />
+                        </StackPanel>
+                        
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization resolution_title}"
                                           ValueText="{Binding ViewModel.GpuInfo.Resolution}" />
