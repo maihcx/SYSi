@@ -522,4 +522,19 @@
   <data name="time_zone_title" xml:space="preserve">
     <value>Time zone</value>
   </data>
+  <data name="wus_up_to_date_title" xml:space="preserve">
+    <value>Up to date</value>
+  </data>
+  <data name="wus_updates_available_title" xml:space="preserve">
+    <value>Updates available</value>
+  </data>
+  <data name="wus_restart_required_title" xml:space="preserve">
+    <value>Restart required</value>
+  </data>
+  <data name="wactiv_actived_title" xml:space="preserve">
+    <value>Activated</value>
+  </data>
+  <data name="wactiv_inactived_title" xml:space="preserve">
+    <value>Not activated</value>
+  </data>
 </root>
