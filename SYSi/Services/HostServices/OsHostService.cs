@@ -31,6 +31,16 @@ namespace SYSi.Services.HostServices
 
             Task.WaitAll(wmiTask, activationTask, updateTask);
             OnPropertyChanged(nameof(OsInfo));
+
+            LanguageBase.LanguageChanged += async (lang) =>
+            {
+                await Task.WhenAll(
+                    Task.Run(LoadActivationStatus),
+                    Task.Run(LoadWindowsUpdateStatus)
+                );
+
+                OnPropertyChanged(nameof(OsInfo));
+            };
         }
 
         private void LoadFromWmi()
@@ -110,7 +120,7 @@ namespace SYSi.Services.HostServices
                 {
                     uint status = (uint)(obj["LicenseStatus"] ?? 0u);
                     OsInfo.IsActivated       = status == 1;
-                    OsInfo.ActivationStatus  = status == 1 ? "Activated" : "Not activated";
+                    OsInfo.ActivationStatus  = status == 1 ? LanguageBase.GetLangValue("wactiv_actived_title") : LanguageBase.GetLangValue("wactiv_inactived_title");
                     return;
                 }
             }
@@ -129,7 +139,7 @@ namespace SYSi.Services.HostServices
                 if (rebootKey != null)
                 {
                     OsInfo.IsUpToDate           = false;
-                    OsInfo.WindowsUpdateStatus  = "Restart required";
+                    OsInfo.WindowsUpdateStatus  = LanguageBase.GetLangValue("wus_restart_required_title");
                     return;
                 }
 
@@ -139,12 +149,12 @@ namespace SYSi.Services.HostServices
                 if (pendingKey?.GetSubKeyNames().Length > 0)
                 {
                     OsInfo.IsUpToDate           = false;
-                    OsInfo.WindowsUpdateStatus  = "Updates available";
+                    OsInfo.WindowsUpdateStatus  = LanguageBase.GetLangValue("wus_updates_available_title");
                     return;
                 }
 
                 OsInfo.IsUpToDate          = true;
-                OsInfo.WindowsUpdateStatus = "Up to date";
+                OsInfo.WindowsUpdateStatus = LanguageBase.GetLangValue("wus_up_to_date_title");
             }
             catch
             {

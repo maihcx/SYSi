@@ -522,4 +522,19 @@
   <data name="time_zone_title" xml:space="preserve">
     <value>Múi giờ</value>
   </data>
+  <data name="wus_up_to_date_title" xml:space="preserve">
+    <value>Đã cập nhật</value>
+  </data>
+  <data name="wus_updates_available_title" xml:space="preserve">
+    <value>Cập nhật có sẵn</value>
+  </data>
+  <data name="wus_restart_required_title" xml:space="preserve">
+    <value>Yêu cầu khởi động lại</value>
+  </data>
+  <data name="wactiv_actived_title" xml:space="preserve">
+    <value>Đã kích hoạt</value>
+  </data>
+  <data name="wactiv_inactived_title" xml:space="preserve">
+    <value>Chưa kích hoạt</value>
+  </data>
 </root>
