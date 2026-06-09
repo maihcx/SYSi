@@ -1,7 +1,27 @@
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Text.RegularExpressions;
+using Microsoft.Win32;
+using SYSi.Utils;
+
 namespace SYSi.Services.HardwareService;
 
 public sealed partial class HardwareService
 {
+    // ── Constants ────────────────────────────────────────────────────────────
+
+    private static readonly Guid DisplayClassGuid = new("4D36E968-E325-11CE-BFC1-08002BE10318");
+    private static readonly Guid DxgiFactory1Guid = new("7b7166ec-21c7-44ae-b21a-c9ae321ae369");
+    private const uint MirroringFlag = 0x00000008;
+
+    // ── PDH state ────────────────────────────────────────────────────────────
+
+    private static readonly object _pdhLock = new();
+    private static IntPtr _gpuQuery = IntPtr.Zero;
+    private static IntPtr _gpuCounter = IntPtr.Zero;
+    private static bool _pdhReady;
+    private static Dictionary<(uint hi, uint lo), int> _luidToGpuIndex = [];
+
     // ── Public API ───────────────────────────────────────────────────────────
 
     public List<GpuInfo> GetGpuInfoList()
@@ -9,9 +29,9 @@ public sealed partial class HardwareService
         var list = new List<GpuInfo>();
         try
         {
-            var displayGuid = new Guid("4D36E968-E325-11CE-BFC1-08002BE10318");
             IntPtr devInfo = NativeMethods.SetupDiGetClassDevs(
-                ref displayGuid, IntPtr.Zero, IntPtr.Zero, NativeMethods.DIGCF_PRESENT);
+                ref Unsafe.AsRef(in DisplayClassGuid),
+                IntPtr.Zero, IntPtr.Zero, NativeMethods.DIGCF_PRESENT);
 
             if (devInfo == new IntPtr(-1)) return list;
             try
@@ -20,75 +40,63 @@ public sealed partial class HardwareService
                 { cbSize = (uint)Marshal.SizeOf<NativeMethods.SP_DEVINFO_DATA>() };
 
                 for (uint i = 0; NativeMethods.SetupDiEnumDeviceInfo(devInfo, i, ref devData); i++)
-                {
-                    string name = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_DEVICEDESC);
-                    string mfg = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_MFG);
-                    string hwId = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_HARDWAREID);
-                    string driverKey = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_DRIVER);
-
-                    var gpu = new GpuInfo
-                    {
-                        Name        = name,
-                        Manufacturer = ParseGpuManufacturer(mfg, name),
-                        PnpDeviceId  = hwId.Split('\0')[0],  // MULTI_SZ — first string only
-                    };
-
-                    EnrichGpuFromRegistry(gpu, driverKey);
-
-                    list.Add(gpu);
-                }
+                    list.Add(BuildGpuInfo(devInfo, ref devData));
             }
             finally { NativeMethods.SetupDiDestroyDeviceInfoList(devInfo); }
 
-            EnrichGpuWithDisplayInfo(list);
+            EnrichWithDisplayInfo(list);
             RefreshGpuUsage(list);
         }
         catch { }
         return list;
     }
 
+    // ── Build ────────────────────────────────────────────────────────────────
+
+    private static GpuInfo BuildGpuInfo(IntPtr devInfo, ref NativeMethods.SP_DEVINFO_DATA devData)
+    {
+        string name = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_DEVICEDESC);
+        string mfg = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_MFG);
+        string hwId = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_HARDWAREID);
+        string driverKey = GetDeviceProperty(devInfo, ref devData, NativeMethods.SPDRP_DRIVER);
+
+        var gpu = new GpuInfo
+        {
+            Name         = name,
+            Manufacturer = ParseManufacturer(mfg, name),
+            PnpDeviceId  = hwId.Split('\0')[0],   // MULTI_SZ — first entry only
+        };
+
+        EnrichFromRegistry(gpu, driverKey);
+        return gpu;
+    }
+
     // ── Registry enrichment ──────────────────────────────────────────────────
 
-    private static void EnrichGpuFromRegistry(GpuInfo gpu, string driverKey)
+    private static void EnrichFromRegistry(GpuInfo gpu, string driverKey)
     {
         if (driverKey == "N/A") return;
         try
         {
-            string regPath = $@"SYSTEM\CurrentControlSet\Control\Class\{driverKey}";
-            using var key = Registry.LocalMachine.OpenSubKey(regPath);
+            using var key = Registry.LocalMachine
+                .OpenSubKey($@"SYSTEM\CurrentControlSet\Control\Class\{driverKey}");
             if (key == null) return;
 
             gpu.DriverVersion = key.GetValue("DriverVersion")?.ToString() ?? "N/A";
             gpu.DriverDate    = key.GetValue("DriverDate")?.ToString()    ?? "N/A";
-
-            gpu.VramText       = ReadVram(key);
+            gpu.VramText      = ReadVram(key);
             gpu.VideoProcessor = RegistryString(key.GetValue("HardwareInformation.ChipType"));
 
-            var (vendorId, deviceId) = ParsePciIds(gpu.PnpDeviceId);
-            gpu.VideoArchitecture = LookupGpuArchitecture(vendorId, deviceId);
-
-            object? memTypeObj = key.GetValue("HardwareInformation.MemoryType");
-            gpu.VideoMemoryType = memTypeObj switch
-            {
-                string s => s,
-                byte[] b => Encoding.Unicode.GetString(b).TrimEnd('\0'),
-                int n when n > 0 => ParseVideoMemoryType(n),
-                _ => "N/A",
-            };
-
-            if (gpu.VideoMemoryType == "N/A" || string.IsNullOrEmpty(gpu.VideoMemoryType))
-            {
-                gpu.VideoMemoryType = LookupVramType(vendorId, deviceId);
-            }
+            var (vendor, device) = ParsePciIds(gpu.PnpDeviceId);
+            gpu.VideoArchitecture = LookupArchitecture(vendor, device);
+            gpu.VideoMemoryType   = ReadMemoryType(key, vendor, device);
         }
         catch { }
     }
 
     private static string ReadVram(RegistryKey key)
     {
-        // Try QWORD first (8-byte binary or long)
-        object? qw = key.GetValue("HardwareInformation.qwMemorySize");
-        long bytes = qw switch
+        long bytes = key.GetValue("HardwareInformation.qwMemorySize") switch
         {
             long l => l,
             byte[] b when b.Length >= 8 => (long)BitConverter.ToUInt64(b, 0),
@@ -96,14 +104,10 @@ public sealed partial class HardwareService
             _ => 0,
         };
 
-        // Fallback: DWORD MemorySize
-        if (bytes <= 0)
-        {
-            object? dw = key.GetValue("HardwareInformation.MemorySize");
-            if (dw is int di) bytes = (long)(uint)di;
-        }
+        if (bytes <= 0 && key.GetValue("HardwareInformation.MemorySize") is int dw)
+            bytes = (long)(uint)dw;
 
-        // Fallback: Intel shared memory stored under subkey "0000"
+        // Intel iGPU stores size under the "0000" subkey
         if (bytes <= 0)
         {
             using var sub = key.OpenSubKey("0000");
@@ -114,9 +118,22 @@ public sealed partial class HardwareService
         return bytes > 0 ? FormatBytes(bytes) : "Shared";
     }
 
-    // ── Display info (resolution, refresh rate, bit depth) ───────────────────
+    private static string ReadMemoryType(RegistryKey key, string vendor, string device)
+    {
+        string? fromReg = key.GetValue("HardwareInformation.MemoryType") switch
+        {
+            string s => s,
+            byte[] b => Encoding.Unicode.GetString(b).TrimEnd('\0'),
+            int n when n > 0 => MapMemoryTypeCode(n),
+            _ => null,
+        };
 
-    private static void EnrichGpuWithDisplayInfo(List<GpuInfo> gpus)
+        return !string.IsNullOrEmpty(fromReg) ? fromReg : LookupVramType(vendor, device);
+    }
+
+    // ── Display info ─────────────────────────────────────────────────────────
+
+    private static void EnrichWithDisplayInfo(List<GpuInfo> gpus)
     {
         if (gpus.Count == 0) return;
         try
@@ -126,20 +143,18 @@ public sealed partial class HardwareService
 
             for (uint i = 0; NativeMethods.EnumDisplayDevices(null, i, ref dd, 0); i++)
             {
-                const uint MIRRORING = 0x00000008;
-                if ((dd.StateFlags & MIRRORING) != 0) continue;
+                if ((dd.StateFlags & MirroringFlag) != 0) continue;
 
                 var dm = default(NativeMethods.DEVMODE);
                 dm.dmSize = (ushort)Marshal.SizeOf<NativeMethods.DEVMODE>();
 
-                if (!NativeMethods.EnumDisplaySettings(dd.DeviceName, NativeMethods.ENUM_CURRENT_SETTINGS, ref dm))
-                    continue;
+                if (!NativeMethods.EnumDisplaySettings(
+                        dd.DeviceName, NativeMethods.ENUM_CURRENT_SETTINGS, ref dm)) continue;
 
-                // Match by name; fall back to first GPU when there is only one adapter
-                string adapterName = dd.DeviceString.Trim();
+                string adapter = dd.DeviceString.Trim();
                 var match = gpus.FirstOrDefault(g =>
-                    adapterName.Contains(g.Name, StringComparison.OrdinalIgnoreCase) ||
-                    g.Name.Contains(adapterName, StringComparison.OrdinalIgnoreCase))
+                        adapter.Contains(g.Name, StringComparison.OrdinalIgnoreCase) ||
+                        g.Name.Contains(adapter, StringComparison.OrdinalIgnoreCase))
                     ?? (gpus.Count == 1 ? gpus[0] : null);
 
                 if (match == null || !string.IsNullOrEmpty(match.Resolution)) continue;
@@ -152,19 +167,13 @@ public sealed partial class HardwareService
         catch { }
     }
 
-    // ── GPU usage via PDH ────────────────────────────────────────────────────
-
-    private static readonly object _gpuPdhLock = new();
-    private static IntPtr _gpuQuery = IntPtr.Zero;
-    private static IntPtr _gpuCounter = IntPtr.Zero;
-    private static bool _gpuPdhReady;
-    private static Dictionary<int, int> _physToGpuIndex = [];
+    // ── GPU usage (PDH + DXGI LUID mapping) ──────────────────────────────────
 
     public void InitGpuPdh(List<GpuInfo> gpus)
     {
-        lock (_gpuPdhLock)
+        lock (_pdhLock)
         {
-            if (_gpuPdhReady) return;
+            if (_pdhReady) return;
             try
             {
                 if (NativeMethods.PdhOpenQuery(null, IntPtr.Zero, out _gpuQuery) != 0) return;
@@ -178,80 +187,22 @@ public sealed partial class HardwareService
                 if (r != 0) return;
 
                 NativeMethods.PdhCollectQueryData(_gpuQuery);
-                _gpuPdhReady = true;
+                _pdhReady = true;
 
-                // Build phys → gpu index map ngay sau lần collect đầu
-                _physToGpuIndex = BuildPhysToGpuMap(gpus);
+                _luidToGpuIndex = BuildLuidMap(gpus);
             }
             catch { }
         }
     }
 
-    private static Dictionary<int, int> BuildPhysToGpuMap(List<GpuInfo> gpus)
-    {
-        // Lấy tất cả instance names của counter GPU Engine
-        // PdhEnumObjectItems để lấy instance list
-        var result = new Dictionary<int, int>();
-
-        try
-        {
-            // Collect thêm 1 lần để có data
-            NativeMethods.PdhCollectQueryData(_gpuQuery);
-
-            uint bufSize = 0, itemCount = 0;
-            NativeMethods.PdhGetFormattedCounterArray(
-                _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
-                ref bufSize, out itemCount, IntPtr.Zero);
-
-            if (bufSize == 0) return result;
-
-            IntPtr buf = Marshal.AllocHGlobal((int)bufSize);
-            try
-            {
-                NativeMethods.PdhGetFormattedCounterArray(
-                    _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
-                    ref bufSize, out itemCount, buf);
-
-                int ptrSize = IntPtr.Size;
-                int itemSize = ptrSize + 16;
-
-                // Collect unique phys indices
-                var physIndices = new HashSet<int>();
-                for (int j = 0; j < (int)itemCount; j++)
-                {
-                    IntPtr itemPtr = IntPtr.Add(buf, j * itemSize);
-                    IntPtr namePtr = Marshal.ReadIntPtr(itemPtr);
-                    string name = namePtr != IntPtr.Zero
-                        ? Marshal.PtrToStringUni(namePtr) ?? "" : "";
-
-                    int phys = ParsePhysIndex(name);
-                    if (phys >= 0) physIndices.Add(phys);
-                }
-
-                // Map: phys_N → gpus[N] nếu count khớp,
-                // hoặc fallback theo thứ tự sorted
-                var sorted = physIndices.Order().ToList();
-                for (int i = 0; i < sorted.Count; i++)
-                {
-                    if (i < gpus.Count)
-                        result[sorted[i]] = i;
-                }
-            }
-            finally { Marshal.FreeHGlobal(buf); }
-        }
-        catch { }
-
-        return result;
-    }
-
     public void RefreshGpuUsage(List<GpuInfo> gpus)
     {
-        if (!_gpuPdhReady) InitGpuPdh(gpus);  // pass gpus vào
-        if (!_gpuPdhReady || _gpuCounter == IntPtr.Zero) return;
+        if (!_pdhReady) InitGpuPdh(gpus);
+        if (!_pdhReady || _gpuCounter == IntPtr.Zero) return;
 
         try
         {
-            lock (_gpuPdhLock)
+            lock (_pdhLock)
             {
                 NativeMethods.PdhCollectQueryData(_gpuQuery);
 
@@ -269,13 +220,15 @@ public sealed partial class HardwareService
                         _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
                         ref bufSize, out itemCount, buf);
 
-                    if (r != 0 && r != 0x800007D2) return;
+                    if (r != 0 && r != 0x800007D2) return;   // PDH_MORE_DATA is acceptable
 
-                    // Sum usage per phys index
-                    var physUsage = new Dictionary<int, double>();
-
-                    int ptrSize = IntPtr.Size;
-                    int itemSize = ptrSize + 16;
+                    // PDH_FMT_COUNTERVALUE_ITEM_W layout (x64):
+                    //   szName  : IntPtr  (8 bytes — pointer into buf)
+                    //   CStatus : uint    (4 bytes)
+                    //   padding : uint    (4 bytes)
+                    //   Value   : double  (8 bytes)
+                    int itemSize = IntPtr.Size + 16;
+                    var luidUsage = new Dictionary<(uint, uint), double>();
 
                     for (int j = 0; j < (int)itemCount; j++)
                     {
@@ -285,24 +238,19 @@ public sealed partial class HardwareService
                             ? Marshal.PtrToStringUni(namePtr) ?? "" : "";
 
                         double value = Marshal.PtrToStructure<double>(
-                            IntPtr.Add(itemPtr, ptrSize + 8));
+                            IntPtr.Add(itemPtr, IntPtr.Size + 8));
 
-                        int physIdx = ParsePhysIndex(name);
-                        if (physIdx < 0) physIdx = 0;
+                        var luid = ParseLuid(name);
+                        if (luid == null) continue;
 
-                        physUsage.TryGetValue(physIdx, out double cur);
-                        physUsage[physIdx] = cur + value;
+                        luidUsage.TryGetValue(luid.Value, out double cur);
+                        luidUsage[luid.Value] = cur + value;
                     }
 
-                    // Dùng map thay vì assume phys == list index
-                    foreach (var (physIdx, usage) in physUsage)
+                    foreach (var (luid, usage) in luidUsage)
                     {
-                        if (_physToGpuIndex.TryGetValue(physIdx, out int gpuIdx)
-                            && gpuIdx < gpus.Count)
-                        {
-                            gpus[gpuIdx].UsagePercent =
-                                Math.Round(Math.Clamp(usage, 0, 100), 1);
-                        }
+                        if (_luidToGpuIndex.TryGetValue(luid, out int idx) && idx < gpus.Count)
+                            gpus[idx].UsagePercent = Math.Round(Math.Clamp(usage, 0, 100), 1);
                     }
                 }
                 finally { Marshal.FreeHGlobal(buf); }
@@ -313,33 +261,192 @@ public sealed partial class HardwareService
 
     private static void DisposeGpuPdh()
     {
-        lock (_gpuPdhLock)
+        lock (_pdhLock)
         {
             if (_gpuQuery == IntPtr.Zero) return;
             NativeMethods.PdhCloseQuery(_gpuQuery);
-            _gpuQuery    = IntPtr.Zero;
-            _gpuPdhReady = false;
+            _gpuQuery = IntPtr.Zero;
+            _pdhReady = false;
         }
+    }
+
+    // ── LUID mapping (DXGI) ──────────────────────────────────────────────────
+
+    /// <summary>
+    /// Enumerates DXGI adapters to build a LUID → gpus-list-index map.
+    /// Called once during PDH init; used every refresh cycle.
+    /// </summary>
+    private static Dictionary<(uint hi, uint lo), int> BuildLuidMap(List<GpuInfo> gpus)
+    {
+        var map = new Dictionary<(uint, uint), int>();
+        try
+        {
+            var guid = DxgiFactory1Guid;
+            if (NativeMethods.CreateDXGIFactory1(ref guid, out IntPtr factory) != 0
+                || factory == IntPtr.Zero) return map;
+
+            // IDXGIFactory1::EnumAdapters1 is vtable slot 12
+            var enumAdapters1 = VTableDelegate<NativeMethods.EnumAdapters1Delegate>(factory, 12);
+
+            for (uint idx = 0; ; idx++)
+            {
+                if (enumAdapters1(factory, idx, out IntPtr adapter) == unchecked((int)0x887A0002))
+                    break;   // DXGI_ERROR_NOT_FOUND
+
+                if (adapter == IntPtr.Zero) break;
+                try
+                {
+                    // IDXGIAdapter1::GetDesc1 is vtable slot 10
+                    var getDesc1 = VTableDelegate<NativeMethods.GetDesc1Delegate>(adapter, 10);
+                    var desc = new NativeMethods.DXGI_ADAPTER_DESC1();
+
+                    if (getDesc1(adapter, ref desc) == 0 && (desc.Flags & 2) == 0)
+                    {
+                        var luid = ((uint)desc.AdapterLuid.HighPart, desc.AdapterLuid.LowPart);
+                        string descName = new string(desc.Description).TrimEnd('\0');
+
+                        int gpuIdx = gpus.FindIndex(g =>
+                            descName.Contains(g.Name, StringComparison.OrdinalIgnoreCase) ||
+                            g.Name.Contains(descName, StringComparison.OrdinalIgnoreCase));
+
+                        if (gpuIdx < 0 && (int)idx < gpus.Count)
+                            gpuIdx = (int)idx;   // position fallback
+
+                        if (gpuIdx >= 0) map[luid] = gpuIdx;
+                    }
+                }
+                finally { ComRelease(adapter); }
+            }
+
+            ComRelease(factory);
+        }
+        catch { }
+        return map;
+    }
+
+    // ── COM / vtable helpers ─────────────────────────────────────────────────
+
+    private static T VTableDelegate<T>(IntPtr comObj, int slot) where T : Delegate
+    {
+        IntPtr vtable = Marshal.ReadIntPtr(comObj);
+        IntPtr fn = Marshal.ReadIntPtr(vtable, slot * IntPtr.Size);
+        return Marshal.GetDelegateForFunctionPointer<T>(fn);
+    }
+
+    private static void ComRelease(IntPtr comObj)
+    {
+        IntPtr vtable = Marshal.ReadIntPtr(comObj);
+        IntPtr releaseFn = Marshal.ReadIntPtr(vtable, 2 * IntPtr.Size);
+        Marshal.GetDelegateForFunctionPointer<NativeMethods.ReleaseDelegate>(releaseFn)(comObj);
+    }
+
+    // ── Parsing helpers ──────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Extracts the LUID from a PDH GPU Engine instance name.
+    /// Format: "pid_XXX_luid_0xHHHHHHHH_0xLLLLLLLL_phys_N_eng_M_engtype_3D"
+    /// </summary>
+    private static (uint hi, uint lo)? ParseLuid(string name)
+    {
+        var m = Regex.Match(name,
+            @"luid_0x([0-9A-Fa-f]+)_0x([0-9A-Fa-f]+)",
+            RegexOptions.IgnoreCase);
+
+        if (!m.Success) return null;
+
+        return uint.TryParse(m.Groups[1].Value, System.Globalization.NumberStyles.HexNumber, null, out uint hi)
+            && uint.TryParse(m.Groups[2].Value, System.Globalization.NumberStyles.HexNumber, null, out uint lo)
+            ? (hi, lo) : null;
+    }
+
+    /// <summary>Parses "VEN_XXXX&amp;DEV_XXXX" from a PnP hardware ID string.</summary>
+    private static (string vendor, string device) ParsePciIds(string pnpId)
+    {
+        var m = Regex.Match(pnpId,
+            @"VEN_([0-9A-Fa-f]{4})&DEV_([0-9A-Fa-f]{4})",
+            RegexOptions.IgnoreCase);
+
+        return m.Success
+            ? (m.Groups[1].Value.ToUpperInvariant(), m.Groups[2].Value.ToUpperInvariant())
+            : ("", "");
+    }
+
+    // ── Lookup tables ────────────────────────────────────────────────────────
+
+    private static string LookupArchitecture(string vendor, string deviceId)
+    {
+        if (!int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber, null, out int dev))
+            return "N/A";
+
+        return vendor switch
+        {
+            "1002" => dev switch // AMD
+            {
+                0x7550 or 0x7551 or 0x7480
+                    or 0x7590 or 0x75A0 => "RDNA 4",
+                >= 0x1580 and <= 0x15BF => "RDNA 3.5",
+                >= 0x7440 and <= 0x745F => "RDNA 3",
+                >= 0x73A0 and <= 0x73FF => "RDNA 2",
+                (>= 0x7310 and <= 0x731F) or (>= 0x7340 and <= 0x734F) => "RDNA 1",
+                (>= 0x6860 and <= 0x687F) or (>= 0x66A0 and <= 0x66AF) => "GCN 5 (Vega)",
+                (>= 0x67C0 and <= 0x67FF) or (>= 0x6980 and <= 0x699F) => "GCN 4 (Polaris)",
+                _ => "AMD GCN",
+            },
+            "10DE" => dev switch // NVIDIA
+            {
+                >= 0x2600 and <= 0x27FF => "Ada Lovelace",
+                (>= 0x2200 and <= 0x25FF) or (>= 0x2480 and <= 0x249F) => "Ampere",
+                (>= 0x1E00 and <= 0x1FFF) or (>= 0x2180 and <= 0x21FF) => "Turing",
+                (>= 0x1B00 and <= 0x1B80) or (>= 0x1C00 and <= 0x1C8F) => "Pascal",
+                _ => "NVIDIA GPU",
+            },
+            "8086" => dev switch // Intel
+            {
+                (>= 0x4F80 and <= 0x4F90) or (>= 0x5690 and <= 0x56BF) => "Xe HPG (Arc)",
+                >= 0x9A40 and <= 0x9A7F => "Xe LP (Tiger Lake)",
+                >= 0x4C8A and <= 0x4C9A => "Xe LP (Rocket Lake)",
+                _ => "Intel Graphics",
+            },
+            _ => "N/A",
+        };
+    }
+
+    private static string LookupVramType(string vendor, string deviceId)
+    {
+        if (!int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber, null, out int dev))
+            return "N/A";
+
+        return vendor switch
+        {
+            "1002" => dev switch // AMD
+            {
+                // RDNA 4 / 3 / 2 / 1
+                (0x7550 or 0x7551 or 0x7480 or 0x7590 or 0x75A0)
+                    or (>= 0x7440 and <= 0x745F)
+                    or (>= 0x73A0 and <= 0x73FF)
+                    or (>= 0x7310 and <= 0x734F) => "GDDR6",
+                (>= 0x6860 and <= 0x687F) or (>= 0x66A0 and <= 0x66AF) => "HBM2",
+                >= 0x67C0 and <= 0x67FF => "GDDR5",
+                _ => "GDDR",
+            },
+            "10DE" => dev switch // NVIDIA
+            {
+                >= 0x2600 and <= 0x27FF => "GDDR6X",  // Ada
+                >= 0x2200 and <= 0x25FF => "GDDR6",   // Ampere
+                >= 0x1E00 and <= 0x21FF => "GDDR6",   // Turing
+                >= 0x1B00 and <= 0x1C8F => "GDDR5X",  // Pascal
+                _ => "GDDR",
+            },
+            "8086" => "Shared",
+            _ => "N/A",
+        };
     }
 
     // ── Small helpers ────────────────────────────────────────────────────────
 
-    /// <summary>Parses the "phys_N" segment from a PDH GPU Engine instance name.</summary>
-    private static int ParsePhysIndex(string instanceName)
+    private static string ParseManufacturer(string mfg, string name)
     {
-        const string marker = "_phys_";
-        int pos = instanceName.IndexOf(marker, StringComparison.Ordinal);
-        if (pos < 0) return -1;
-
-        int start = pos + marker.Length;
-        int end = instanceName.IndexOf('_', start);
-        string num = end < 0 ? instanceName[start..] : instanceName[start..end];
-        return int.TryParse(num, out int n) ? n : -1;
-    }
-
-    private static string ParseGpuManufacturer(string mfg, string name)
-    {
-        foreach (string s in new[] { mfg, name })
+        foreach (string s in (string[])[mfg, name])
         {
             if (s.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase)) return "NVIDIA";
             if (s.Contains("Intel", StringComparison.OrdinalIgnoreCase)) return "Intel";
@@ -349,7 +456,7 @@ public sealed partial class HardwareService
         return string.IsNullOrWhiteSpace(mfg) ? "N/A" : mfg;
     }
 
-    private static string ParseVideoMemoryType(int val) => val switch
+    private static string MapMemoryTypeCode(int code) => code switch
     {
         1 => "Other",
         2 => "Unknown",
@@ -364,127 +471,6 @@ public sealed partial class HardwareService
         11 => "3DRAM",
         12 => "SDRAM",
         13 => "SGRAM",
-        _ => $"Type {val}",
+        _ => $"Type {code}",
     };
-
-    // "PCI\VEN_1002&DEV_66AF&..." → vendor="1002", device="66AF"
-    private static (string vendor, string device) ParsePciIds(string pnpId)
-    {
-        string vendor = "", dev = "";
-        var m = System.Text.RegularExpressions.Regex.Match(
-            pnpId, @"VEN_([0-9A-Fa-f]{4})&DEV_([0-9A-Fa-f]{4})",
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        if (m.Success) { vendor = m.Groups[1].Value.ToUpper(); dev = m.Groups[2].Value.ToUpper(); }
-        return (vendor, dev);
-    }
-
-    private static string LookupGpuArchitecture(string vendor, string deviceId)
-    {
-        // AMD: VEN_1002
-        if (vendor == "1002")
-        {
-            if (!int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber, null, out int dev))
-                return "N/A";
-            return dev switch
-            {
-                // Navi 48: RX 9070 / 9070 XT / 9070 GRE  → 0x7550, 0x7551, 0x7480
-                // Navi 44: RX 9060 / 9060 XT             → 0x7590, 0x75A0
-                0x7550 or 0x7551 or 0x7480 or 0x7590 or 0x75A0 => "RDNA 4",
-                // RDNA 3.5 (Navi 3x mobile/APU)
-                >= 0x1580 and <= 0x15BF => "RDNA 3.5",
-                // RDNA 3 (Navi 3x)
-                >= 0x7440 and <= 0x745F => "RDNA 3",
-                // RDNA 2 (Navi 2x)
-                (0x73BF or 0x73A5 or 0x73AF) or (>= 0x73A0 and <= 0x73FF) => "RDNA 2",
-                // RDNA 1 (Navi 1x)
-                (>= 0x7310 and <= 0x731F) or (>= 0x7340 and <= 0x734F) => "RDNA 1",
-                // Vega / GCN 5
-                // ← Radeon Pro VII = 0x66AF
-                (>= 0x6860 and <= 0x687F) or (>= 0x66A0 and <= 0x66AF) => "GCN 5 (Vega)",
-                // Polaris / GCN 4
-                (>= 0x67C0 and <= 0x67FF) or (>= 0x6980 and <= 0x699F) => "GCN 4 (Polaris)",
-                _ => "AMD GCN"
-            };
-        }
-
-        // NVIDIA: VEN_10DE
-        if (vendor == "10DE")
-        {
-            if (!int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber, null, out int dev))
-                return "N/A";
-            return dev switch
-            {
-                // Ada Lovelace (RTX 40)
-                >= 0x2600 and <= 0x27FF => "Ada Lovelace",
-                // Ampere (RTX 30)
-                (>= 0x2200 and <= 0x25FF) or (>= 0x2480 and <= 0x249F) => "Ampere",
-                // Turing (RTX 20 / GTX 16)
-                (>= 0x1E00 and <= 0x1FFF) or (>= 0x2180 and <= 0x21FF) => "Turing",
-                // Pascal (GTX 10)
-                (>= 0x1B00 and <= 0x1B80) or (>= 0x1C00 and <= 0x1C8F) => "Pascal",
-                _ => "NVIDIA GPU"
-            };
-        }
-
-        // Intel: VEN_8086
-        if (vendor == "8086")
-        {
-            if (!int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber, null, out int dev))
-                return "N/A";
-            return dev switch
-            {
-                >= 0x4F80 and <= 0x4F90 => "Xe HPG (Arc)",
-                >= 0x5690 and <= 0x56BF => "Xe HPG (Arc)",
-                >= 0x9A40 and <= 0x9A7F => "Xe LP (Tiger Lake)",
-                >= 0x4C8A and <= 0x4C9A => "Xe LP (Rocket Lake)",
-                _ => "Intel Graphics"
-            };
-        }
-
-        return "N/A";
-    }
-
-    private static string LookupVramType(string vendor, string deviceId)
-    {
-        if (!int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber, null, out int dev))
-            return "N/A";
-
-        if (vendor == "1002") // AMD
-        {
-            return dev switch
-            {
-                // RDNA 4
-                (0x7550 or 0x7551 or 0x7480 or 0x7590 or 0x75A0) or
-                // RDNA 3
-                (>= 0x7440 and <= 0x745F) or
-                // RDNA 2
-                (>= 0x73A0 and <= 0x73FF) or
-                // RDNA 1
-                (>= 0x7310 and <= 0x734F) => "GDDR6",
-                // Radeon Pro VII / Vega 20 → HBM2
-                >= 0x66A0 and <= 0x66AF => "HBM2",
-                // Vega 10
-                >= 0x6860 and <= 0x687F => "HBM2",
-                // Polaris
-                >= 0x67C0 and <= 0x67FF => "GDDR5",
-                _ => "GDDR"
-            };
-        }
-
-        if (vendor == "10DE") // NVIDIA
-        {
-            return dev switch
-            {
-                >= 0x2600 and <= 0x27FF => "GDDR6X",  // Ada
-                >= 0x2200 and <= 0x25FF => "GDDR6",   // Ampere
-                >= 0x1E00 and <= 0x21FF => "GDDR6",   // Turing
-                >= 0x1B00 and <= 0x1C8F => "GDDR5X",  // Pascal high-end
-                _ => "GDDR"
-            };
-        }
-
-        if (vendor == "8086") return "Shared";
-
-        return "N/A";
-    }
 }
