@@ -22,10 +22,17 @@
             <!-- Board info -->
             <ui:Card Margin="0 0 0 8">
                 <StackPanel>
-                    <TextBlock Text="{utils:Localization motherboard_title}"
-                                FontWeight="SemiBold"
-                                FontSize="14"
-                                Margin="0,0,0,12" />
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="0,0,0,12">
+                        <ui:SymbolIcon Symbol="Board24"
+                                       FontSize="15"
+                                       Margin="0 0 8 0" />
+                        <TextBlock Text="{utils:Localization motherboard_title}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14" />
+                    </StackPanel>
+                    
                     <controls:InfoRow LabelText="{utils:Localization manu_title}"
                                         ValueText="{Binding ViewModel.MotherboardInfo.Manufacturer}" />
                     <controls:InfoRow LabelText="{utils:Localization product_title}"
@@ -45,10 +52,17 @@
                 <!-- BIOS info -->
             <ui:Card>
                 <StackPanel>
-                    <TextBlock Text="{utils:Localization bios_title}"
-                               FontWeight="SemiBold"
-                               FontSize="14"
-                               Margin="0,0,0,12" />
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="0,0,0,12">
+                        <ui:SymbolIcon Symbol="InfoShield20"
+                                       FontSize="15"
+                                       Margin="0 0 8 0" />
+                        <TextBlock Text="{utils:Localization bios_title}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14" />
+                    </StackPanel>
+                    
                     <controls:InfoRow LabelText="{utils:Localization bios_manu_title}"
                                       ValueText="{Binding ViewModel.MotherboardInfo.BiosManufacturer}" />
                     <controls:InfoRow LabelText="{utils:Localization bios_ver_title}"
