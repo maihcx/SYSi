@@ -40,12 +40,12 @@ public sealed partial class HardwareService
         while (offset < raw.Length - 4)
         {
             byte curType = raw[offset];
-            byte length  = raw[offset + 1];
+            byte length = raw[offset + 1];
             if (length < 4 || offset + length > raw.Length) break;
 
             // Locate double-null string terminator
             int strStart = offset + length;
-            int strEnd   = strStart;
+            int strEnd = strStart;
             while (strEnd < raw.Length - 1)
             {
                 if (raw[strEnd] == 0 && raw[strEnd + 1] == 0) { strEnd += 2; break; }
@@ -78,7 +78,7 @@ public sealed partial class HardwareService
 
     internal record SmbiosStruct(byte[] Raw, int Offset, int Length, List<string> Strings)
     {
-        public byte   Byte(int fieldOffset) => Raw[Offset + fieldOffset];
+        public byte Byte(int fieldOffset) => Raw[Offset + fieldOffset];
         public ushort Word(int fieldOffset) => BitConverter.ToUInt16(Raw, Offset + fieldOffset);
 
         public string Str(int fieldOffset)

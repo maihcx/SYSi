@@ -66,7 +66,6 @@
 
                 NavigationHandle.SetupPageViewModelPairs(services, "SYSi.Views.Pages", "SYSi.ViewModels.Pages");
                 NavigationHandle.SetupPageViewModelPairs(services, "SYSi.Views.PagesBottom", "SYSi.ViewModels.PagesBottom");
-                NavigationHandle.SetupPageViewModelPairs(services, "SYSi.Views.Pages.SystemConfigPages", "SYSi.ViewModels.Pages.SystemConfigViewModels");
             }).Build();
 
         /// <summary>

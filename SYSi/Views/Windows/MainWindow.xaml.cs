@@ -1,11 +1,4 @@
-﻿using SYSi.ViewModels.Windows;
-using System.Reflection.Metadata;
-using Wpf.Ui;
-using Wpf.Ui.Abstractions;
-using Wpf.Ui.Appearance;
-using Wpf.Ui.Controls;
-
-namespace SYSi.Views.Windows
+﻿namespace SYSi.Views.Windows
 {
     public partial class MainWindow : INavigationWindow
     {

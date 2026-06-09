@@ -1,6 +1,6 @@
 ﻿using SYSi.Services.UpdateService;
 
-namespace SYSi.Services
+namespace SYSi.Services.HostServices
 {
     public sealed class UpdateHostService : INotifyPropertyChanged, IDisposable
     {

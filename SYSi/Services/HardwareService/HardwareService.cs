@@ -48,7 +48,7 @@ public sealed partial class HardwareService : IDisposable
     internal static string FormatNetworkSpeed(long bps)
     {
         if (bps >= 1_000_000_000) return $"{bps / 1_000_000_000.0:F0} Gbps";
-        if (bps >= 1_000_000)     return $"{bps / 1_000_000:F0} Mbps";
+        if (bps >= 1_000_000) return $"{bps / 1_000_000:F0} Mbps";
         return $"{bps / 1000} Kbps";
     }
 
@@ -64,10 +64,10 @@ public sealed partial class HardwareService : IDisposable
     /// </summary>
     internal static string RegistryString(object? value) => value switch
     {
-        string s  => s,
-        byte[] b  => Encoding.Unicode.GetString(b).TrimEnd('\0'),
-        int i     => i.ToString(),
-        long l    => l.ToString(),
-        _         => "N/A",
+        string s => s,
+        byte[] b => Encoding.Unicode.GetString(b).TrimEnd('\0'),
+        int i => i.ToString(),
+        long l => l.ToString(),
+        _ => "N/A",
     };
 }
