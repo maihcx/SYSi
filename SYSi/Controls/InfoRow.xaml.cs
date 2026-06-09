@@ -29,6 +29,8 @@ public class InfoRow : ContentControl
         {
             _copyButton.Click += CopyButton_Click;
         }
+
+        UpdateValueVisibility();
     }
 
     public static readonly DependencyProperty LabelTextProperty = DependencyProperty.Register(
@@ -66,6 +68,20 @@ public class InfoRow : ContentControl
         new PropertyMetadata((double)120)
     );
 
+    public static readonly DependencyProperty ValueContentProperty = DependencyProperty.Register(
+        nameof(ValueContent),
+        typeof(object),
+        typeof(InfoRow),
+        new PropertyMetadata(null, OnValueContentChanged)
+    );
+
+    public static readonly DependencyProperty ValueHorizontalAlignProperty = DependencyProperty.Register(
+        nameof(ValueHorizontalAlign),
+        typeof(HorizontalAlignment),
+        typeof(InfoRow),
+        new PropertyMetadata(HorizontalAlignment.Left)
+    );
+
     public string? LabelText
     {
         get => (string)GetValue(LabelTextProperty);
@@ -96,9 +112,48 @@ public class InfoRow : ContentControl
         set => SetValue(LabelWidthProperty, value);
     }
 
+    public object? ValueContent
+    {
+        get => GetValue(ValueContentProperty);
+        set => SetValue(ValueContentProperty, value);
+    }
+
+    public HorizontalAlignment ValueHorizontalAlign
+    {
+        get => (HorizontalAlignment)GetValue(ValueHorizontalAlignProperty);
+        set => SetValue(ValueHorizontalAlignProperty, value);
+    }
+
     private void CopyButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!string.IsNullOrWhiteSpace(ValueText))
-            Clipboard.SetText(ValueText);
+        string? text = ValueContent as string ?? ValueText;
+        if (!string.IsNullOrWhiteSpace(text))
+            Clipboard.SetText(text);
+    }
+
+    private static void OnValueContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is InfoRow row)
+        {
+            row.UpdateValueVisibility();
+        }
+    }
+
+    private void UpdateValueVisibility()
+    {
+        var contentPresenter = GetTemplateChild("PART_ValueContent") as ContentPresenter;
+        var valueText = GetTemplateChild("PART_ValueText")    as FrameworkElement;
+        var hyperlinkBtn = GetTemplateChild("PART_HyperlinkButton") as FrameworkElement;
+
+        bool hasContent = ValueContent != null;
+
+        if (contentPresenter != null)
+            contentPresenter.Visibility = hasContent ? Visibility.Visible : Visibility.Collapsed;
+
+        if (valueText != null)
+            valueText.Visibility = hasContent ? Visibility.Collapsed : valueText.Visibility;
+
+        if (hyperlinkBtn != null)
+            hyperlinkBtn.Visibility = hasContent ? Visibility.Collapsed : hyperlinkBtn.Visibility;
     }
 }
