@@ -20,8 +20,9 @@
     <Grid Margin="0 0 0 30">
         <StackPanel>
             <!-- Multi-GPU selector -->
-            <ui:Card Margin="0,0,0,8"
-                     Visibility="{Binding ViewModel.NoneGpus, Converter={StaticResource InvertedBoolToVisibilityConverter}}">
+            <ui:CardAction Margin="0,0,0,8"
+                           IsChevronVisible="False"
+                           Visibility="{Binding ViewModel.NoneGpus, Converter={StaticResource InvertedBoolToVisibilityConverter}}">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="{utils:Localization gpu_multiple_title}"
                                VerticalAlignment="Center"
@@ -30,9 +31,10 @@
                               SelectedItem="{Binding ViewModel.SelectedGpuName, Mode=TwoWay}"
                               MinWidth="300" />
                 </StackPanel>
-            </ui:Card>
-            
-            <ui:Card Margin="0,0,0,8">
+            </ui:CardAction>
+
+            <ui:CardAction Margin="0,0,0,8"
+                           IsChevronVisible="False">
                 <StackPanel>
                     <Grid Margin="0,0,0,8">
                         <TextBlock Text="{Binding ViewModel.GpuInfo.Name}"
@@ -48,17 +50,32 @@
                                  Maximum="100"
                                  Height="12" />
                 </StackPanel>
-            </ui:Card>
+            </ui:CardAction>
 
             <!-- Info -->
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="8" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+            <ItemsControl Margin="0 0 0 0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Margin="0,0,-8,-8">
+                            <UniformGrid.Columns>
+                                <MultiBinding Converter="{StaticResource WidthToColumnsConverter}">
+                                    <!-- ActualWidth của ItemsControl -->
+                                    <Binding Path="ActualWidth"
+                                             RelativeSource="{RelativeSource AncestorType=ItemsControl}" />
 
-                <ui:Card Grid.Column="0">
+                                    <!-- MinCardWidth -->
+                                    <Binding Source="250" />
+
+                                    <!-- MaxColumns -->
+                                    <Binding Source="2" />
+                                </MultiBinding>
+                            </UniformGrid.Columns>
+                        </UniformGrid>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ui:CardAction Margin="0 0 8 8"
+                               IsChevronVisible="False">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center"
@@ -73,26 +90,33 @@
                         
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization gpu_name_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.Name}" />
+                                          ValueText="{Binding ViewModel.GpuInfo.Name}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization manu_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.Manufacturer}" />
+                                          ValueText="{Binding ViewModel.GpuInfo.Manufacturer}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization vram_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.VramText}" />
+                                          ValueText="{Binding ViewModel.GpuInfo.VramText}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization driver_ver_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.DriverVersion}" />
+                                          ValueText="{Binding ViewModel.GpuInfo.DriverVersion}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization driver_date_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.DriverDate}" />
+                                          ValueText="{Binding ViewModel.GpuInfo.DriverDate}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelText=""
                                           ValueText=""
                                           Visibility="Hidden"
                                           IsLast="True" />
                     </StackPanel>
-                </ui:Card>
-                <ui:Card Grid.Column="2">
+                </ui:CardAction>
+
+                <ui:CardAction Margin="0 0 8 8"
+                               IsChevronVisible="False">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center"
@@ -107,26 +131,32 @@
                         
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization resolution_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.Resolution}" />
+                                          ValueText="{Binding ViewModel.GpuInfo.Resolution}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization refresh_rate_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.RefreshRate}" />
+                                          ValueText="{Binding ViewModel.GpuInfo.RefreshRate}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization color_depth_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.BitsPerPixel}" />
+                                          ValueText="{Binding ViewModel.GpuInfo.BitsPerPixel}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization arch_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.VideoArchitecture}" />
+                                          ValueText="{Binding ViewModel.GpuInfo.VideoArchitecture}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization mem_type_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.VideoMemoryType}" />
+                                          ValueText="{Binding ViewModel.GpuInfo.VideoMemoryType}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization pnp_label}"
                                           ValueText="{Binding ViewModel.GpuInfo.PnpDeviceId}"
+                                          ValueHorizontalAlign="Right"
                                           IsLast="True" />
                     </StackPanel>
-                </ui:Card>
-            </Grid>
+                </ui:CardAction>
+            </ItemsControl>
         </StackPanel>
     </Grid>
 </Page>
