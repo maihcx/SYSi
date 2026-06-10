@@ -54,18 +54,6 @@
             MessengerService.ShowSnackbar("sys_notification_title", LanguageBase.GetLangValue("update_available_summary", tagName), ControlAppearance.Caution, new SymbolIcon(SymbolRegular.ArrowDownload24), TimeSpan.FromSeconds(15));
         }
 
-        #region INavigationWindow methods
-
-        public INavigationView GetNavigation() => RootNavigation;
-
-        public bool Navigate(Type pageType) => RootNavigation.Navigate(pageType);
-
-        public void ShowWindow() => Show();
-
-        public void CloseWindow() => Close();
-
-        #endregion INavigationWindow methods
-
         private void RootNavigation_Navigated(NavigationView sender, NavigatedEventArgs args)
         {
             if (args?.Page is not FrameworkElement page)
@@ -197,17 +185,6 @@
                 this.SizeChanged -= MainWindow_SizeChanged;
                 RootNavigation.IsPaneOpen = ViewModel.IsPaneOpen;
             }
-        }
-
-        /// <summary>
-        /// Raises the closed event.
-        /// </summary>
-        protected override void OnClosed(EventArgs e)
-        {
-            base.OnClosed(e);
-
-            // Make sure that closing this window will begin the process of closing the application.
-            Application.Current.Shutdown();
         }
     }
 }
