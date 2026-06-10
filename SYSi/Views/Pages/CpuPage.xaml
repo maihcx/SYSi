@@ -20,7 +20,7 @@
     <Grid Margin="0 0 0 30">
         <StackPanel>
             <!-- Usage Bar -->
-            <ui:CardAction Margin="0 0 8 8"
+            <ui:CardAction Margin="0 0 0 8"
                            IsChevronVisible="False">
                 <StackPanel>
                     <Grid Margin="0,0,0,8">
@@ -61,9 +61,10 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
 
-                <ui:CardAction Margin="0 0 8 0"
+                <ui:CardAction Margin="0 0 8 8"
                                IsChevronVisible="False"
-                               VerticalAlignment="Stretch">
+                               VerticalAlignment="Stretch"
+                               VerticalContentAlignment="Top">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center"
@@ -113,9 +114,10 @@
                 </ui:CardAction>
 
                 <!-- Performance -->
-                <ui:CardAction Margin="0 0 8 0"
+                <ui:CardAction Margin="0 0 8 8"
                                IsChevronVisible="False"
-                               VerticalAlignment="Stretch">
+                               VerticalAlignment="Stretch"
+                               VerticalContentAlignment="Top">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center"
@@ -155,11 +157,8 @@
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization l3_title}"
                                           ValueText="{Binding ViewModel.CpuInfo.L3Cache}"
-                                          ValueHorizontalAlign="Right" />
-                        <controls:InfoRow LabelText=""
-                                          ValueText=""
-                                          IsLast="True"
-                                          Visibility="Hidden" />
+                                          ValueHorizontalAlign="Right"
+                                          IsLast="True" />
                     </StackPanel>
                 </ui:CardAction>
             </ItemsControl>
