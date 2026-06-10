@@ -12,7 +12,11 @@ namespace SYSi.Services.HardwareService;
 /// </summary>
 public sealed partial class HardwareService : IDisposable
 {
-    public void Dispose() => DisposeGpuPdh();
+    public void Dispose()
+    {
+        DisposeGpuPdh();
+        DisposeCpuClockPdh();
+    }
 
     // ── Registry helper ──────────────────────────────────────────────────────
 

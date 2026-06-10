@@ -20,7 +20,8 @@
     <Grid Margin="0 0 0 30">
         <StackPanel>
             <!-- Usage Bar -->
-            <ui:Card Margin="0,0,0,8">
+            <ui:CardAction Margin="0 0 8 8"
+                           IsChevronVisible="False">
                 <StackPanel>
                     <Grid Margin="0,0,0,8">
                         <TextBlock Text="{Binding ViewModel.CpuInfo.Name}"
@@ -36,19 +37,33 @@
                                  Maximum="100"
                                  Height="12" />
                 </StackPanel>
-            </ui:Card>
+            </ui:CardAction>
 
             <!-- Info Grid -->
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="8" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+            <ItemsControl Margin="0 0 0 0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Margin="0,0,-8,-8">
+                            <UniformGrid.Columns>
+                                <MultiBinding Converter="{StaticResource WidthToColumnsConverter}">
+                                    <!-- ActualWidth của ItemsControl -->
+                                    <Binding Path="ActualWidth"
+                                             RelativeSource="{RelativeSource AncestorType=ItemsControl}" />
 
-                <!-- General -->
-                <ui:Card Grid.Column="0"
-                         VerticalAlignment="Stretch">
+                                    <!-- MinCardWidth -->
+                                    <Binding Source="250" />
+
+                                    <!-- MaxColumns -->
+                                    <Binding Source="2" />
+                                </MultiBinding>
+                            </UniformGrid.Columns>
+                        </UniformGrid>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ui:CardAction Margin="0 0 8 0"
+                               IsChevronVisible="False"
+                               VerticalAlignment="Stretch">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center"
@@ -60,38 +75,47 @@
                                        FontWeight="SemiBold"
                                        FontSize="14" />
                         </StackPanel>
-                        
-                        <controls:InfoRow LabelWidth="90"
+
+                        <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization cpu_name_title}"
-                                          ValueText="{Binding ViewModel.CpuInfo.Name}" />
-                        <controls:InfoRow LabelWidth="90"
+                                          ValueText="{Binding ViewModel.CpuInfo.Name}"
+                                          ValueHorizontalAlign="Right" />
+                        <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization manu_title}"
-                                          ValueText="{Binding ViewModel.CpuInfo.Manufacturer}" />
-                        <controls:InfoRow LabelWidth="90"
+                                          ValueText="{Binding ViewModel.CpuInfo.Manufacturer}"
+                                          ValueHorizontalAlign="Right" />
+                        <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization arch_title}"
-                                          ValueText="{Binding ViewModel.CpuInfo.Architecture}" />
-                        <controls:InfoRow LabelWidth="90"
+                                          ValueText="{Binding ViewModel.CpuInfo.Architecture}"
+                                          ValueHorizontalAlign="Right" />
+                        <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization socket_title}"
-                                          ValueText="{Binding ViewModel.CpuInfo.Socket}" />
-                        <controls:InfoRow LabelWidth="90"
+                                          ValueText="{Binding ViewModel.CpuInfo.Socket}"
+                                          ValueHorizontalAlign="Right" />
+                        <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization family_cpu_title}"
-                                          ValueText="{Binding ViewModel.CpuInfo.Family}" />
-                        <controls:InfoRow LabelWidth="90"
+                                          ValueText="{Binding ViewModel.CpuInfo.Family}"
+                                          ValueHorizontalAlign="Right" />
+                        <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization stepping_title}"
-                                          ValueText="{Binding ViewModel.CpuInfo.Stepping}" />
-                        <controls:InfoRow LabelWidth="90"
+                                          ValueText="{Binding ViewModel.CpuInfo.Stepping}"
+                                          ValueHorizontalAlign="Right" />
+                        <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization virt_title}"
-                                          ValueText="{Binding ViewModel.CpuInfo.VirtualizationEnabled}" />
-                        <controls:InfoRow LabelWidth="90"
+                                          ValueText="{Binding ViewModel.CpuInfo.VirtualizationEnabled}"
+                                          ValueHorizontalAlign="Right" />
+                        <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization proc_id_title}"
                                           ValueText="{Binding ViewModel.CpuInfo.ProcessorId}"
+                                          ValueHorizontalAlign="Right"
                                           IsLast="True" />
                     </StackPanel>
-                </ui:Card>
+                </ui:CardAction>
 
                 <!-- Performance -->
-                <ui:Card Grid.Column="2"
-                         VerticalAlignment="Stretch">
+                <ui:CardAction Margin="0 0 8 0"
+                               IsChevronVisible="False"
+                               VerticalAlignment="Stretch">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center"
@@ -106,32 +130,39 @@
                         
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization cores_title}"
-                                          ValueText="{Binding ViewModel.CpuInfo.PhysicalCores}" />
+                                          ValueText="{Binding ViewModel.CpuInfo.PhysicalCores}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization threads_title}"
-                                          ValueText="{Binding ViewModel.CpuInfo.LogicalProcessors}" />
+                                          ValueText="{Binding ViewModel.CpuInfo.LogicalProcessors}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
-                                          LabelText="{utils:Localization base_speed_title}"
-                                          ValueText="{Binding ViewModel.CpuInfo.BaseSpeedGHz}" />
+                                          LabelText="{utils:Localization base_clock_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.BaseClockGHz}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
-                                          LabelText="{utils:Localization max_speed_title}"
-                                          ValueText="{Binding ViewModel.CpuInfo.MaxSpeedGHz}" />
+                                          LabelText="{utils:Localization current_clock_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.CurrentClockGHz}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization l1_title}"
-                                          ValueText="{Binding ViewModel.CpuInfo.L1Cache}" />
+                                          ValueText="{Binding ViewModel.CpuInfo.L1Cache}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization l2_title}"
-                                          ValueText="{Binding ViewModel.CpuInfo.L2Cache}" />
+                                          ValueText="{Binding ViewModel.CpuInfo.L2Cache}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization l3_title}"
-                                          ValueText="{Binding ViewModel.CpuInfo.L3Cache}" />
+                                          ValueText="{Binding ViewModel.CpuInfo.L3Cache}"
+                                          ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelText=""
                                           ValueText=""
                                           IsLast="True"
                                           Visibility="Hidden" />
                     </StackPanel>
-                </ui:Card>
-            </Grid>
+                </ui:CardAction>
+            </ItemsControl>
         </StackPanel>
     </Grid>
 </Page>

@@ -309,11 +309,11 @@
   <data name="threads_title" xml:space="preserve">
     <value>Logical Processors</value>
   </data>
-  <data name="base_speed_title" xml:space="preserve">
-    <value>Base Speed</value>
+  <data name="base_clock_title" xml:space="preserve">
+    <value>Base Clock Speed</value>
   </data>
-  <data name="max_speed_title" xml:space="preserve">
-    <value>Max Speed</value>
+  <data name="current_clock_title" xml:space="preserve">
+    <value>Current Clock Speed</value>
   </data>
   <data name="l1_title" xml:space="preserve">
     <value>L1 Cache</value>

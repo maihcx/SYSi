@@ -309,11 +309,11 @@
   <data name="threads_title" xml:space="preserve">
     <value>Luồng xử lý</value>
   </data>
-  <data name="base_speed_title" xml:space="preserve">
-    <value>Tốc độ cơ bản</value>
+  <data name="base_clock_title" xml:space="preserve">
+    <value>Xung nhịp cơ bản</value>
   </data>
-  <data name="max_speed_title" xml:space="preserve">
-    <value>Tốc độ tối đa</value>
+  <data name="current_clock_title" xml:space="preserve">
+    <value>Xung nhịp hiện tại</value>
   </data>
   <data name="l1_title" xml:space="preserve">
     <value>Bộ nhớ đệm L1</value>
