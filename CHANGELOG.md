@@ -1,3 +1,16 @@
+## v0.4.2
+
+## 🚀 Changelog
+## 🧹 Maintenance
+
+- Use CardAction and make GPU layout responsive (#49) — @maihcx
+- Add PDH CPU clock, refresh and UI updates (#47) — @maihcx
+- Use dynamic ControlCornerRadius for list items (#45) — @maihcx
+- Remove unused timer and loadingText fields (#44) — @maihcx
+
+
+---
+
 ## v0.4.1
 
 ## 🚀 Changelog
