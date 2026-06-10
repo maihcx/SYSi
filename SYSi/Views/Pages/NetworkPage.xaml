@@ -1,0 +1,215 @@
+﻿<Page x:Class="SYSi.Views.Pages.NetworkPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="clr-namespace:SYSi.Views.Pages"
+      xmlns:controls="clr-namespace:SYSi.Controls"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:utils="clr-namespace:SYSi.Utils"
+      Title="NetworkPage"
+      d:DataContext="{d:DesignInstance local:NetworkPage,
+                                     IsDesignTimeCreatable=False}"
+      d:DesignHeight="450"
+      d:DesignWidth="800"
+      ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+      ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+      mc:Ignorable="d"
+      ScrollViewer.CanContentScroll="False">
+
+    <Grid Margin="0 0 0 30">
+        <ListBox ItemsSource="{Binding ViewModel.Adapters}"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 ScrollViewer.CanContentScroll="True"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 ui:SmoothScrollBehavior.IsEnabled="True">
+
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="HorizontalContentAlignment"
+                            Value="Stretch" />
+                    <Setter Property="Padding"
+                            Value="0" />
+                    <Setter Property="Margin"
+                            Value="0" />
+                    <Setter Property="Focusable"
+                            Value="False" />
+                    <Setter Property="FocusVisualStyle"
+                            Value="{x:Null}" />
+
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListBoxItem">
+                                <ContentPresenter />
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListBox.ItemContainerStyle>
+
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <ui:CardAction Margin="0,0,0,8"
+                                   IsChevronVisible="False"
+                                   HorizontalAlignment="Stretch">
+                        <StackPanel>
+
+                            <!-- Adapter header -->
+                            <Grid Margin="0,0,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="4" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                
+                                <Grid Grid.Column="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <ui:SymbolIcon Grid.Column="0" 
+                                                   Symbol="NetworkCheck24"
+                                                   FontSize="24"
+                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                    <StackPanel Grid.Column="1"
+                                                Margin="12,0,0,0">
+                                        <TextBlock Text="{Binding Name}"
+                                                   FontWeight="Bold"
+                                                   FontSize="15"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="{Binding AdapterType}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Connected badge -->
+                                <Border Grid.Column="2"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        CornerRadius="4"
+                                        Padding="8,3">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsConnected}"
+                                                             Value="True">
+                                                    <Setter Property="Background"
+                                                            Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsConnected}"
+                                                             Value="False">
+                                                    <Setter Property="Background"
+                                                            Value="{DynamicResource ControlFillColorDefaultBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock FontSize="11"
+                                               FontWeight="SemiBold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsConnected}"
+                                                                 Value="True">
+                                                        <Setter Property="Text"
+                                                                Value="{utils:Localization net_connected_title}" />
+                                                        <Setter Property="Foreground"
+                                                                Value="White" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsConnected}"
+                                                                 Value="False">
+                                                        <Setter Property="Text"
+                                                                Value="{utils:Localization net_disconnected_title}" />
+                                                        <Setter Property="Foreground"
+                                                                Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+                            </Grid>
+
+                            <!-- Info rows -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Left: addressing -->
+                                <StackPanel Grid.Column="0">
+                                    <StackPanel Orientation="Horizontal"
+                                                VerticalAlignment="Center"
+                                                Margin="0,0,0,12">
+                                        <ui:SymbolIcon Symbol="Globe24"
+                                                       FontSize="15"
+                                                       Margin="0 0 8 0" />
+                                        <TextBlock Text="{utils:Localization net_addressing_title}"
+                                                   FontWeight="SemiBold"
+                                                   FontSize="14" />
+                                    </StackPanel>
+
+                                    <controls:InfoRow LabelWidth="100"
+                                                      LabelText="{utils:Localization net_ipv4_title}"
+                                                      ValueText="{Binding IpAddress}" />
+                                    <controls:InfoRow LabelWidth="100"
+                                                      LabelText="{utils:Localization net_ipv6_title}"
+                                                      ValueText="{Binding Ipv6Address}" />
+                                    <controls:InfoRow LabelWidth="100"
+                                                      LabelText="{utils:Localization net_subnet_title}"
+                                                      ValueText="{Binding SubnetMask}" />
+                                    <controls:InfoRow LabelWidth="100"
+                                                      LabelText="{utils:Localization net_gateway_title}"
+                                                      ValueText="{Binding Gateway}" />
+                                    <controls:InfoRow LabelWidth="100"
+                                                      LabelText="{utils:Localization net_dns_title}"
+                                                      ValueText="{Binding DnsServers}"
+                                                      IsLast="True" />
+                                </StackPanel>
+
+                                <!-- Right: hardware -->
+                                <StackPanel Grid.Column="2">
+                                    <StackPanel Orientation="Horizontal"
+                                                VerticalAlignment="Center"
+                                                Margin="0,0,0,12">
+                                        <ui:SymbolIcon Symbol="NetworkAdapter16"
+                                                       FontSize="15"
+                                                       Margin="0 0 8 0" />
+                                        <TextBlock Text="{utils:Localization net_hardware_title}"
+                                                   FontWeight="SemiBold"
+                                                   FontSize="14" />
+                                    </StackPanel>
+
+                                    <controls:InfoRow LabelWidth="100"
+                                                      LabelText="{utils:Localization net_mac_title}"
+                                                      ValueText="{Binding MacAddress}" />
+                                    <controls:InfoRow LabelWidth="100"
+                                                      LabelText="{utils:Localization net_speed_title}"
+                                                      ValueText="{Binding LinkSpeed}" />
+                                    <controls:InfoRow LabelWidth="100"
+                                                      LabelText="{utils:Localization net_type_title}"
+                                                      ValueText="{Binding AdapterType}"
+                                                      IsLast="True" />
+                                </StackPanel>
+                            </Grid>
+
+                        </StackPanel>
+                    </ui:CardAction>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</Page>
