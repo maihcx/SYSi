@@ -9,7 +9,6 @@ public sealed partial class HardwareService
     private long _prevIdle, _prevKernel, _prevUser;
     private readonly object _cpuLock = new();
 
-    // PDH cho current clock
     private IntPtr _cpuClockQuery = IntPtr.Zero;
     private IntPtr _cpuClockCounter = IntPtr.Zero;
     private int _cpuBaseMHz;
@@ -30,7 +29,8 @@ public sealed partial class HardwareService
         {
             ReadBasicCpuInfo(info);
             info.LogicalProcessors = Environment.ProcessorCount;
-            info.PhysicalCores     = GetPhysicalCoreCount();
+            info.PhysicalCores = GetPhysicalCoreCount();
+            info.VirtualizationEnabled = GetVirtualizationEnabled();
             EnrichCpuFromSmbios(info);
         }
         catch { }
@@ -41,7 +41,7 @@ public sealed partial class HardwareService
 
     public void RefreshCPUInfo(CpuInfo info)
     {
-        info.UsagePercent   = GetCpuUsage();
+        info.UsagePercent = GetCpuUsage();
         info.CurrentClockGHz = GetCurrentCpuSpeedGHz();
     }
 
@@ -131,7 +131,9 @@ public sealed partial class HardwareService
                         _cpuClockCounter,
                         NativeMethods.PDH_FMT_DOUBLE,
                         out _, out value) != 0)
+                {
                     return string.Empty;
+                }
 
                 // % Processor Performance × base = current MHz
                 double currentMHz = value.doubleValue / 100.0 * _cpuBaseMHz;
@@ -354,6 +356,33 @@ public sealed partial class HardwareService
         info.Model       = sig.Model    > 0 ? $"{sig.Model:X}" : "N/A";
         info.Stepping    = sig.Stepping > 0 ? $"{sig.Stepping:X}" : "N/A";
         info.ProcessorId = sig.ProcessorId;
+    }
+
+    // ── Virtualization ───────────────────────────────────────────────────────
+
+    private static bool GetVirtualizationEnabled()
+    {
+        if (!X86Base.IsSupported) return false;
+
+        var (_, _, ecx, _) = X86Base.CpuId(1, 0);
+
+        bool vmxSupported = (ecx & (1 << 5)) != 0;
+        bool hypervisorPresent = (ecx & (1 << 31)) != 0;
+
+        bool svmSupported = false;
+        var (maxExt, _, _, _) = X86Base.CpuId(unchecked((int)0x80000000), 0);
+        if ((uint)maxExt >= 0x80000001)
+        {
+            var (_, _, ecxExt, _) = X86Base.CpuId(unchecked((int)0x80000001), 0);
+            svmSupported = (ecxExt & (1 << 2)) != 0;
+        }
+
+        if (hypervisorPresent)
+        {
+            return true;
+        }
+
+        return vmxSupported || svmSupported;
     }
 
     // ── Misc ─────────────────────────────────────────────────────────────────
