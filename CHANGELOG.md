@@ -1,3 +1,25 @@
+## v0.5.0
+
+## 🚀 Changelog
+## 🚀 Features
+
+- Persist navigation pane open state (#60) — @maihcx
+- Add Network page, viewmodel and localization (#52) — @maihcx
+
+## 🐛 Bug Fixes
+
+- Add CPU virtualization detection (#55) — @maihcx
+
+## 🧹 Maintenance
+
+- Introduce IWindow and refactor window hosting (#59) — @maihcx
+- Refactor XAML layout and spacing in pages (#57) — @maihcx
+- Add CPU ShortName and bind to UI (#56) — @maihcx
+- Update WPF UI library binaries (#51) — @maihcx
+
+
+---
+
 ## v0.4.2
 
 ## 🚀 Changelog
