@@ -28,7 +28,8 @@
                     <ColumnDefinition Width="8" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <ui:Card Grid.Column="0">
+                <ui:CardAction Grid.Column="0"
+                               IsChevronVisible="False">
                     <StackPanel>
                         <TextBlock Text="{utils:Localization memory_total_title}"
                                    FontSize="11"
@@ -38,8 +39,9 @@
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
                     </StackPanel>
-                </ui:Card>
-                <ui:Card Grid.Column="2">
+                </ui:CardAction>
+                <ui:CardAction Grid.Column="2"
+                               IsChevronVisible="False">
                     <StackPanel>
                         <TextBlock Text="{utils:Localization memory_used_title}"
                                    FontSize="11"
@@ -49,8 +51,9 @@
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
                     </StackPanel>
-                </ui:Card>
-                <ui:Card Grid.Column="4">
+                </ui:CardAction>
+                <ui:CardAction Grid.Column="4"
+                               IsChevronVisible="False">
                     <StackPanel>
                         <TextBlock Text="{utils:Localization memory_available_title}"
                                    FontSize="11"
@@ -60,11 +63,12 @@
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
                     </StackPanel>
-                </ui:Card>
+                </ui:CardAction>
             </Grid>
 
             <!-- Usage bar -->
-            <ui:Card Margin="0,0,0,20">
+            <ui:CardAction Margin="0,0,0,20"
+                           IsChevronVisible="False">
                 <StackPanel>
                     <Grid Margin="0,0,0,8">
                         <TextBlock Text="{utils:Localization memory_used_title}"
@@ -80,7 +84,7 @@
                                  Maximum="100"
                                  Height="12" />
                 </StackPanel>
-            </ui:Card>
+            </ui:CardAction>
 
             <!-- Slots -->
             <TextBlock Text="{utils:Localization memory_slots_title}"
@@ -91,7 +95,8 @@
             <ItemsControl ItemsSource="{Binding ViewModel.RamInfo.Slots}" Margin="0 0 0 -8">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <ui:Card Margin="0,0,0,8">
+                        <ui:CardAction Margin="0,0,0,8"
+                                       IsChevronVisible="False">
                             <StackPanel>
                                 <!-- Slot header -->
                                 <StackPanel Orientation="Horizontal"
@@ -173,7 +178,7 @@
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
-                        </ui:Card>
+                        </ui:CardAction>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

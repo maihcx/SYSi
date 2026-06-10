@@ -45,23 +45,22 @@ namespace SYSi.Services.HostServices
             NotifyAll();
         }
 
-        private void TimerElapsed(object? sender, ElapsedEventArgs e)
+        private async void TimerElapsed(object? sender, ElapsedEventArgs e)
         {
             try
             {
-                CpuInfo.UsagePercent = _hardware.GetCpuUsage();
+                await Task.WhenAll(
+                    Task.Run(() => _hardware.RefreshCPUInfo(CpuInfo)),
+                    Task.Run(() => _hardware.RefreshGpuUsage(Gpus)),
+                    Task.Run(() => _hardware.RefreshRamInfo(RamInfo))
+                );
 
-                var ram = _hardware.GetRamInfo();
-
-                RamInfo.UsagePercent = ram.UsagePercent;
-                RamInfo.AvailableText = ram.AvailableText;
-                RamInfo.UsedText = ram.UsedText;
-
-                _hardware.RefreshGpuUsage(Gpus);
-
-                OnPropertyChanged(nameof(CpuInfo));
-                OnPropertyChanged(nameof(RamInfo));
-                OnPropertyChanged(nameof(Gpus));
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    OnPropertyChanged(nameof(CpuInfo));
+                    OnPropertyChanged(nameof(Gpus));
+                    OnPropertyChanged(nameof(RamInfo));
+                });
             }
             catch
             {

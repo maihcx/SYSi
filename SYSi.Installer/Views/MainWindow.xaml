@@ -155,7 +155,7 @@
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="ListBoxItem">
                                                     <Border x:Name="Border"
-                                                            CornerRadius="8"
+                                                            CornerRadius="{DynamicResource ControlCornerRadius}"
                                                             Background="{TemplateBinding Background}"
                                                             Padding="4">
                                                         <ContentPresenter />

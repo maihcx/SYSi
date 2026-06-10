@@ -111,6 +111,20 @@ namespace SYSi.Utils
         [DllImport("pdh.dll")]
         public static extern uint PdhCloseQuery(IntPtr hQuery);
 
+        [DllImport("pdh.dll")]
+        public static extern uint PdhGetFormattedCounterValue(
+            IntPtr hCounter,
+            uint dwFormat,
+            out uint lpdwType,
+            out PDH_FMT_COUNTERVALUE pValue);
+
+        [DllImport("pdh.dll", CharSet = CharSet.Unicode)]
+        public static extern uint PdhAddEnglishCounter(
+            IntPtr hQuery,
+            string szFullCounterPath,
+            IntPtr dwUserData,
+            out IntPtr phCounter);
+
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateFile(
             string lpFileName,

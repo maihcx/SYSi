@@ -309,11 +309,11 @@
   <data name="threads_title" xml:space="preserve">
     <value>threads_title</value>
   </data>
-  <data name="base_speed_title" xml:space="preserve">
-    <value>base_speed_title</value>
+  <data name="base_clock_title" xml:space="preserve">
+    <value>base_clock_title</value>
   </data>
-  <data name="max_speed_title" xml:space="preserve">
-    <value>max_speed_title</value>
+  <data name="current_clock_title" xml:space="preserve">
+    <value>current_clock_title</value>
   </data>
   <data name="l1_title" xml:space="preserve">
     <value>l1_title</value>

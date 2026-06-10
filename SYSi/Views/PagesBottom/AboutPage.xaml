@@ -21,7 +21,8 @@
         <StackPanel HorizontalAlignment="Stretch">
 
             <!-- App Identity -->
-            <ui:Card Margin="0,0,0,8">
+            <ui:CardAction Margin="0,0,0,8"
+                           IsChevronVisible="False">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -46,10 +47,11 @@
                                    Margin="0,4,0,0" />
                     </StackPanel>
                 </Grid>
-            </ui:Card>
+            </ui:CardAction>
 
             <!-- Info card -->
-            <ui:Card Margin="0,0,0,8">
+            <ui:CardAction Margin="0,0,0,8"
+                     IsChevronVisible="False">
                 <StackPanel>
                     <controls:InfoRow LabelText="{utils:Localization version_title}"
                                       ValueText="{Binding ViewModel.AppVersion}"
@@ -62,7 +64,7 @@
                                       ValueText="GPL-3.0"
                                       IsLast="True" />
                 </StackPanel>
-            </ui:Card>
+            </ui:CardAction>
 
             <ui:InfoBar Title="SYSi"
                         Margin="0,0,0,8"
