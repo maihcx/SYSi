@@ -1,3 +1,17 @@
+## v0.5.1
+
+## 🚀 Changelog
+## 🐛 Bug Fixes
+
+- Use WMI for CPU base speed and remove SMBIOS (#63) — @maihcx
+
+## 🧹 Maintenance
+
+- Remove INavigationWindow methods and OnClosed (#62) — @maihcx
+
+
+---
+
 ## v0.5.0
 
 ## 🚀 Changelog
