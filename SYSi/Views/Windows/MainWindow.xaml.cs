@@ -95,8 +95,6 @@
             ApplicationThemeManager.Apply(ThemeManagerService.GetSysApplicationTheme(), ThemeManagerService.GetBackdropType(), true);
             ViewModel.OnNavigatedTo();
 
-            RootNavigation.IsPaneOpen = false;
-
             if (WindowHelper.IsAutoHideNavPanel)
             {
                 this.SizeChanged += MainWindow_SizeChanged;
@@ -197,7 +195,7 @@
             else
             {
                 this.SizeChanged -= MainWindow_SizeChanged;
-                RootNavigation.IsPaneOpen = true;
+                RootNavigation.IsPaneOpen = ViewModel.IsPaneOpen;
             }
         }
 
