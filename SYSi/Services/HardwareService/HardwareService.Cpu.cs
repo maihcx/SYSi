@@ -75,6 +75,7 @@ public sealed partial class HardwareService
     private static void ReadBasicCpuInfo(CpuInfo info)
     {
         info.Name         = GetCpuBrandViaCpuid();
+        info.ShortName    = ParseCpuName(info.Name);
         info.Manufacturer = GetCpuVendor();
 
         // Base speed: CPUID leaf 0x16 EAX → SMBIOS CurrentSpeed → N/A
@@ -191,7 +192,7 @@ public sealed partial class HardwareService
             AppendLeaf(sb, info.Ecx);
             AppendLeaf(sb, info.Edx);
         }
-        return ParseCpuName(sb.ToString().Trim());
+        return sb.ToString().Trim();
     }
 
     private static string GetCpuVendor()

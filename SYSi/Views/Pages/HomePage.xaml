@@ -81,7 +81,7 @@
                                                    Symbol="ChevronCircleRight24"
                                                    FontSize="20" />
                                 </Grid>
-                                <TextBlock Text="{Binding ViewModel.CpuInfo.Name}"
+                                <TextBlock Text="{Binding ViewModel.CpuInfo.ShortName}"
                                            FontSize="11"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            TextTrimming="CharacterEllipsis"
