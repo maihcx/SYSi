@@ -14,6 +14,11 @@ public sealed partial class HardwareService
         return info;
     }
 
+    public void RefreshRamInfo(RamInfo info)
+    {
+        ReadRamUsage(info);
+    }
+
     // ── Usage (GlobalMemoryStatusEx) ─────────────────────────────────────────
 
     private static void ReadRamUsage(RamInfo info)
