@@ -1,17 +1,3 @@
-## v0.5.0
-
-## 🚀 Changelog
-## 🚀 Features
-
-- Add Network page, viewmodel and localization (#52) — @maihcx
-
-## 🧹 Maintenance
-
-- Update WPF UI library binaries (#51) — @maihcx
-
-
----
-
 ## v0.4.2
 
 ## 🚀 Changelog
