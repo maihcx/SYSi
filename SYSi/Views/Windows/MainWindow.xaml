@@ -32,14 +32,7 @@
                             ScaleX="1"
                             ScaleY="1" />
         </Grid.RenderTransform>
-        <ui:TitleBar x:Name="TitleBar"
-                     Title="{Binding ViewModel.ApplicationTitle}"
-                     Grid.Row="0"
-                     CloseWindowByDoubleClickOnIcon="True">
-            <ui:TitleBar.Icon>
-                <ui:ImageIcon Source="pack://application:,,,/Assets/logo_256.png" />
-            </ui:TitleBar.Icon>
-        </ui:TitleBar>
+        
         <ui:NavigationView x:Name="RootNavigation"
                            Padding="42,0,42,0"
                            BreadcrumbBar="{Binding ElementName=BreadcrumbBar}"
@@ -47,6 +40,7 @@
                            FrameMargin="0"
                            IsBackButtonVisible="Visible"
                            IsPaneToggleVisible="True"
+                           IsPaneOpen="{Binding ViewModel.IsPaneOpen, Mode=TwoWay}"
                            MenuItemsSource="{Binding ViewModel.MenuItems, Mode=OneWay}"
                            OpenPaneLength="240"
                            PaneDisplayMode="Left"
@@ -79,6 +73,15 @@
         </ui:NavigationView>
         <ContentPresenter x:Name="RootContentDialog"
                           Grid.Row="0" />
+
+        <ui:TitleBar x:Name="TitleBar"
+                     Title="{Binding ViewModel.ApplicationTitle}"
+                     Grid.Row="0"
+                     CloseWindowByDoubleClickOnIcon="True">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/Assets/logo_256.png" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
 
         <ui:SnackbarPresenter x:Name="GlobalSnackbar" />
     </Grid>

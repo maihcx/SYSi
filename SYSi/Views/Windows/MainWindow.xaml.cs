@@ -1,6 +1,6 @@
 ﻿namespace SYSi.Views.Windows
 {
-    public partial class MainWindow : INavigationWindow
+    public partial class MainWindow : IWindow
     {
         public MainWindowViewModel ViewModel { get; }
 
@@ -8,8 +8,9 @@
 
         public MainWindow(
             MainWindowViewModel viewModel,
-            INavigationViewPageProvider navigationViewPageProvider,
             INavigationService navigationService,
+            IServiceProvider serviceProvider,
+            ISnackbarService snackbarService,
             UpdateHostService updateHostService
         )
         {
@@ -22,9 +23,10 @@
             ThemeManagerService.Watch();
 
             InitializeComponent();
-            SetPageService(navigationViewPageProvider);
 
+            snackbarService.SetSnackbarPresenter(GlobalSnackbar);
             navigationService.SetNavigationControl(RootNavigation);
+
             RootNavigation.Navigated += RootNavigation_Navigated;
 
             this.SourceInitialized += OnSourceInitialized;
@@ -32,8 +34,6 @@
 
             WindowHelper.OnAutoHideNavChanged += SharedVariable_OnAutoHideNavChanged;
 
-            SnackbarService snackbarService = new SnackbarService();
-            snackbarService.SetSnackbarPresenter(GlobalSnackbar);
             WindowHelper.GlobalSnackbar = snackbarService;
 
             TranslationSource.Instance.PropertyChanged += (s, e) =>
@@ -59,8 +59,6 @@
         public INavigationView GetNavigation() => RootNavigation;
 
         public bool Navigate(Type pageType) => RootNavigation.Navigate(pageType);
-
-        public void SetPageService(INavigationViewPageProvider navigationViewPageProvider) => RootNavigation.SetPageProviderService(navigationViewPageProvider);
 
         public void ShowWindow() => Show();
 
@@ -96,8 +94,6 @@
         {
             ApplicationThemeManager.Apply(ThemeManagerService.GetSysApplicationTheme(), ThemeManagerService.GetBackdropType(), true);
             ViewModel.OnNavigatedTo();
-
-            RootNavigation.IsPaneOpen = false;
 
             if (WindowHelper.IsAutoHideNavPanel)
             {
@@ -199,7 +195,7 @@
             else
             {
                 this.SizeChanged -= MainWindow_SizeChanged;
-                RootNavigation.IsPaneOpen = true;
+                RootNavigation.IsPaneOpen = ViewModel.IsPaneOpen;
             }
         }
 
@@ -212,16 +208,6 @@
 
             // Make sure that closing this window will begin the process of closing the application.
             Application.Current.Shutdown();
-        }
-
-        INavigationView INavigationWindow.GetNavigation()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetServiceProvider(IServiceProvider serviceProvider)
-        {
-            throw new NotImplementedException();
         }
     }
 }
