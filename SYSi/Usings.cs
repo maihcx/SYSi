@@ -9,6 +9,7 @@ global using SYSi.Models;
 global using SYSi.Resources;
 global using SYSi.Services;
 global using SYSi.Services.HostServices;
+global using SYSi.Services.Contracts;
 //global using SYSi.CFS;
 global using SYSi.Utils;
 global using SYSi.ViewModels.Pages;

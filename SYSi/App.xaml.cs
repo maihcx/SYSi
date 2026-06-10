@@ -45,19 +45,14 @@
 
                 services.AddHostedService<ApplicationHostService>();
 
-                // Theme manipulation
-                services.AddSingleton<IThemeService, ThemeService>();
-
-                // TaskBar manipulation
-                services.AddSingleton<ITaskBarService, TaskBarService>();
-
-                // Service containing navigation, same as INavigationWindow... but without window
-                services.AddSingleton<INavigationService, NavigationService>();
-
                 // Main window with navigation
-                services.AddSingleton<INavigationWindow, MainWindow>();
+                services.AddSingleton<IWindow, MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
+                services.AddSingleton<INavigationService, NavigationService>();
+                services.AddSingleton<ISnackbarService, SnackbarService>();
+                services.AddSingleton<WindowsProviderService>();
 
+                // Hardware Service
                 services.AddSingleton<Services.HardwareService.HardwareService>();
                 services.AddSingleton<HardwareHostService>();
 
