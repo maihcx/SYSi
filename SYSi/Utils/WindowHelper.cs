@@ -6,7 +6,7 @@
 
         public static Window? MainWindow;
 
-        public static SnackbarService? GlobalSnackbar;
+        public static ISnackbarService? GlobalSnackbar;
 
         public delegate void AutoHideNavPanelChanged(bool state);
         public static event AutoHideNavPanelChanged? OnAutoHideNavChanged;

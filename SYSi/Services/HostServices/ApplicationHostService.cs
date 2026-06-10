@@ -5,7 +5,7 @@
     /// </summary>
     public class ApplicationHostService : IHostedService
     {
-        private readonly IServiceProvider? _serviceProvider;
+        private readonly IServiceProvider _serviceProvider;
 
         private INavigationWindow? _navigationWindow;
 
@@ -35,20 +35,28 @@
         /// <summary>
         /// Creates main window during activation.
         /// </summary>
-        private async Task HandleActivationAsync()
+        private Task HandleActivationAsync()
         {
-            if (!Application.Current.Windows.OfType<MainWindow>().Any())
+            if (Application.Current.Windows.OfType<MainWindow>().Any())
             {
-                _navigationWindow = (
-                    _serviceProvider?.GetService(typeof(INavigationWindow)) as INavigationWindow
-                )!;
-                WindowHelper.BringToFront(App.Current.MainWindow);
-                _navigationWindow!.ShowWindow();
-
-                _navigationWindow.Navigate(typeof(Views.Pages.HomePage));
+                return Task.CompletedTask;
             }
 
-            await Task.CompletedTask;
+            IWindow mainWindow = _serviceProvider.GetRequiredService<IWindow>();
+            mainWindow.Loaded += OnMainWindowLoaded;
+            mainWindow?.Show();
+
+            return Task.CompletedTask;
+        }
+
+        private void OnMainWindowLoaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is not MainWindow mainWindow)
+            {
+                return;
+            }
+
+            _ = mainWindow.RootNavigation.Navigate(typeof(HomePage));
         }
     }
 }
