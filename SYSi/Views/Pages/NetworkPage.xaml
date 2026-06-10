@@ -58,9 +58,8 @@
 
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <ui:CardAction Margin="0,0,0,8"
-                                   IsChevronVisible="False"
-                                   HorizontalAlignment="Stretch">
+                    <ui:Card Margin="0,0,0,8"
+                             Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}">
                         <StackPanel>
 
                             <!-- Adapter header -->
@@ -142,72 +141,94 @@
                             </Grid>
 
                             <!-- Info rows -->
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="8" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
+                            <ItemsControl Margin="0 0 0 0">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Margin="0,0,-8,-8">
+                                            <UniformGrid.Columns>
+                                                <MultiBinding Converter="{StaticResource WidthToColumnsConverter}">
+                                                    <!-- ActualWidth của ItemsControl -->
+                                                    <Binding Path="ActualWidth"
+                                                             RelativeSource="{RelativeSource AncestorType=ItemsControl}" />
+
+                                                    <!-- MinCardWidth -->
+                                                    <Binding Source="250" />
+
+                                                    <!-- MaxColumns -->
+                                                    <Binding Source="2" />
+                                                </MultiBinding>
+                                            </UniformGrid.Columns>
+                                        </UniformGrid>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
 
                                 <!-- Left: addressing -->
-                                <StackPanel Grid.Column="0">
-                                    <StackPanel Orientation="Horizontal"
-                                                VerticalAlignment="Center"
-                                                Margin="0,0,0,12">
-                                        <ui:SymbolIcon Symbol="Globe24"
-                                                       FontSize="15"
-                                                       Margin="0 0 8 0" />
-                                        <TextBlock Text="{utils:Localization net_addressing_title}"
-                                                   FontWeight="SemiBold"
-                                                   FontSize="14" />
-                                    </StackPanel>
+                                <ui:CardAction Margin="0 0 8 8"
+                                               VerticalAlignment="Top"
+                                               IsChevronVisible="False">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,0,12">
+                                            <ui:SymbolIcon Symbol="Globe24"
+                                                           FontSize="15"
+                                                           Margin="0 0 8 0" />
+                                            <TextBlock Text="{utils:Localization net_addressing_title}"
+                                                       FontWeight="SemiBold"
+                                                       FontSize="14" />
+                                        </StackPanel>
 
-                                    <controls:InfoRow LabelWidth="100"
-                                                      LabelText="{utils:Localization net_ipv4_title}"
-                                                      ValueText="{Binding IpAddress}" />
-                                    <controls:InfoRow LabelWidth="100"
-                                                      LabelText="{utils:Localization net_ipv6_title}"
-                                                      ValueText="{Binding Ipv6Address}" />
-                                    <controls:InfoRow LabelWidth="100"
-                                                      LabelText="{utils:Localization net_subnet_title}"
-                                                      ValueText="{Binding SubnetMask}" />
-                                    <controls:InfoRow LabelWidth="100"
-                                                      LabelText="{utils:Localization net_gateway_title}"
-                                                      ValueText="{Binding Gateway}" />
-                                    <controls:InfoRow LabelWidth="100"
-                                                      LabelText="{utils:Localization net_dns_title}"
-                                                      ValueText="{Binding DnsServers}"
-                                                      IsLast="True" />
-                                </StackPanel>
+                                        <controls:InfoRow LabelWidth="100"
+                                                          LabelText="{utils:Localization net_ipv4_title}"
+                                                          ValueText="{Binding IpAddress}" />
+                                        <controls:InfoRow LabelWidth="100"
+                                                          LabelText="{utils:Localization net_ipv6_title}"
+                                                          ValueText="{Binding Ipv6Address}" />
+                                        <controls:InfoRow LabelWidth="100"
+                                                          LabelText="{utils:Localization net_subnet_title}"
+                                                          ValueText="{Binding SubnetMask}" />
+                                        <controls:InfoRow LabelWidth="100"
+                                                          LabelText="{utils:Localization net_gateway_title}"
+                                                          ValueText="{Binding Gateway}" />
+                                        <controls:InfoRow LabelWidth="100"
+                                                          LabelText="{utils:Localization net_dns_title}"
+                                                          ValueText="{Binding DnsServers}"
+                                                          IsLast="True" />
+                                    </StackPanel>
+                                </ui:CardAction>
 
                                 <!-- Right: hardware -->
-                                <StackPanel Grid.Column="2">
-                                    <StackPanel Orientation="Horizontal"
-                                                VerticalAlignment="Center"
-                                                Margin="0,0,0,12">
-                                        <ui:SymbolIcon Symbol="NetworkAdapter16"
-                                                       FontSize="15"
-                                                       Margin="0 0 8 0" />
-                                        <TextBlock Text="{utils:Localization net_hardware_title}"
-                                                   FontWeight="SemiBold"
-                                                   FontSize="14" />
+                                <ui:CardAction Margin="0 0 8 8"
+                                               VerticalAlignment="Stretch"
+                                               VerticalContentAlignment="Top"
+                                               IsChevronVisible="False">
+                                    <StackPanel VerticalAlignment="Top">
+                                        <StackPanel Orientation="Horizontal"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,0,12">
+                                            <ui:SymbolIcon Symbol="NetworkAdapter16"
+                                                           FontSize="15"
+                                                           Margin="0 0 8 0" />
+                                            <TextBlock Text="{utils:Localization net_hardware_title}"
+                                                       FontWeight="SemiBold"
+                                                       FontSize="14" />
+                                        </StackPanel>
+
+                                        <controls:InfoRow LabelWidth="100"
+                                                          LabelText="{utils:Localization net_mac_title}"
+                                                          ValueText="{Binding MacAddress}" />
+                                        <controls:InfoRow LabelWidth="100"
+                                                          LabelText="{utils:Localization net_speed_title}"
+                                                          ValueText="{Binding LinkSpeed}" />
+                                        <controls:InfoRow LabelWidth="100"
+                                                          LabelText="{utils:Localization net_type_title}"
+                                                          ValueText="{Binding AdapterType}"
+                                                          IsLast="True" />
                                     </StackPanel>
-
-                                    <controls:InfoRow LabelWidth="100"
-                                                      LabelText="{utils:Localization net_mac_title}"
-                                                      ValueText="{Binding MacAddress}" />
-                                    <controls:InfoRow LabelWidth="100"
-                                                      LabelText="{utils:Localization net_speed_title}"
-                                                      ValueText="{Binding LinkSpeed}" />
-                                    <controls:InfoRow LabelWidth="100"
-                                                      LabelText="{utils:Localization net_type_title}"
-                                                      ValueText="{Binding AdapterType}"
-                                                      IsLast="True" />
-                                </StackPanel>
-                            </Grid>
-
+                                </ui:CardAction>
+                            </ItemsControl>
                         </StackPanel>
-                    </ui:CardAction>
+                    </ui:Card>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

@@ -20,23 +20,23 @@
     <Grid Margin="0 0 0 30">
         <StackPanel>
             <!-- Multi-GPU selector -->
-            <ui:CardAction Margin="0,0,0,8"
+            <ui:CardAction Margin="0 0 0 8"
                            IsChevronVisible="False"
                            Visibility="{Binding ViewModel.NoneGpus, Converter={StaticResource InvertedBoolToVisibilityConverter}}">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="{utils:Localization gpu_multiple_title}"
                                VerticalAlignment="Center"
-                               Margin="0,0,12,0" />
+                               Margin="0 0 12 0" />
                     <ComboBox ItemsSource="{Binding ViewModel.GpuNames}"
                               SelectedItem="{Binding ViewModel.SelectedGpuName, Mode=TwoWay}"
                               MinWidth="300" />
                 </StackPanel>
             </ui:CardAction>
 
-            <ui:CardAction Margin="0,0,0,8"
+            <ui:CardAction Margin="0 0 0 8"
                            IsChevronVisible="False">
                 <StackPanel>
-                    <Grid Margin="0,0,0,8">
+                    <Grid Margin="0 0 0 8">
                         <TextBlock Text="{Binding ViewModel.GpuInfo.Name}"
                                    FontWeight="Medium" />
                         <TextBlock HorizontalAlignment="Right"
@@ -56,7 +56,7 @@
             <ItemsControl Margin="0 0 0 0">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <UniformGrid Margin="0,0,-8,-8">
+                        <UniformGrid Margin="0 0 -8 -8">
                             <UniformGrid.Columns>
                                 <MultiBinding Converter="{StaticResource WidthToColumnsConverter}">
                                     <!-- ActualWidth của ItemsControl -->
@@ -75,7 +75,9 @@
                 </ItemsControl.ItemsPanel>
 
                 <ui:CardAction Margin="0 0 8 8"
-                               IsChevronVisible="False">
+                               IsChevronVisible="False"
+                               VerticalAlignment="Stretch"
+                               VerticalContentAlignment="Top">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center"
@@ -107,16 +109,15 @@
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization driver_date_title}"
                                           ValueText="{Binding ViewModel.GpuInfo.DriverDate}"
-                                          ValueHorizontalAlign="Right" />
-                        <controls:InfoRow LabelText=""
-                                          ValueText=""
-                                          Visibility="Hidden"
+                                          ValueHorizontalAlign="Right"
                                           IsLast="True" />
                     </StackPanel>
                 </ui:CardAction>
 
                 <ui:CardAction Margin="0 0 8 8"
-                               IsChevronVisible="False">
+                               IsChevronVisible="False"
+                               VerticalAlignment="Stretch"
+                               VerticalContentAlignment="Top">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center"
