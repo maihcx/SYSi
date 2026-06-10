@@ -20,7 +20,8 @@
     <Grid Margin="0 0 0 30">
         <StackPanel>
             <!-- Board info -->
-            <ui:Card Margin="0 0 0 8">
+            <ui:CardAction Margin="0 0 0 8"
+                           IsChevronVisible="False">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal"
                                 VerticalAlignment="Center"
@@ -47,10 +48,10 @@
                                         ValueText="{Binding ViewModel.MotherboardInfo.SystemFamily}"
                                         IsLast="True" />
                 </StackPanel>
-            </ui:Card>
+            </ui:CardAction>
 
                 <!-- BIOS info -->
-            <ui:Card>
+            <ui:CardAction IsChevronVisible="False">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal"
                                 VerticalAlignment="Center"
@@ -71,7 +72,7 @@
                                       ValueText="{Binding ViewModel.MotherboardInfo.BiosDate}"
                                       IsLast="True" />
                 </StackPanel>
-            </ui:Card>
+            </ui:CardAction>
         </StackPanel>
     </Grid>
 </Page>

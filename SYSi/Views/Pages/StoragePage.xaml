@@ -21,7 +21,8 @@
         <ItemsControl ItemsSource="{Binding ViewModel.Drives}" Margin="0 0 0 -8">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <ui:Card Margin="0,0,0,8">
+                    <ui:CardAction Margin="0,0,0,8"
+                                   IsChevronVisible="False">
                         <StackPanel>
                             <!-- Drive header -->
                             <Grid Margin="0,0,0,14">
@@ -96,7 +97,7 @@
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
-                    </ui:Card>
+                    </ui:CardAction>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
