@@ -6,6 +6,9 @@
         public string _name = string.Empty;
 
         [ObservableProperty]
+        public string _shortName = string.Empty;
+
+        [ObservableProperty]
         public string _manufacturer = string.Empty;
 
         [ObservableProperty]
