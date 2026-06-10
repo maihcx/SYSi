@@ -537,4 +537,46 @@
   <data name="wactiv_inactived_title" xml:space="preserve">
     <value>Not activated</value>
   </data>
+  <data name="page_network_title" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="page_network_summary" xml:space="preserve">
+    <value>Go to Network</value>
+  </data>
+  <data name="net_connected_title" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="net_disconnected_title" xml:space="preserve">
+    <value>Disconnected</value>
+  </data>
+  <data name="net_addressing_title" xml:space="preserve">
+    <value>Addressing</value>
+  </data>
+  <data name="net_hardware_title" xml:space="preserve">
+    <value>Hardware</value>
+  </data>
+  <data name="net_ipv4_title" xml:space="preserve">
+    <value>IPv4</value>
+  </data>
+  <data name="net_ipv6_title" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="net_subnet_title" xml:space="preserve">
+    <value>Subnet mask</value>
+  </data>
+  <data name="net_gateway_title" xml:space="preserve">
+    <value>Gateway</value>
+  </data>
+  <data name="net_dns_title" xml:space="preserve">
+    <value>DNS servers</value>
+  </data>
+  <data name="net_mac_title" xml:space="preserve">
+    <value>MAC address</value>
+  </data>
+  <data name="net_speed_title" xml:space="preserve">
+    <value>Link speed</value>
+  </data>
+  <data name="net_type_title" xml:space="preserve">
+    <value>Adapter type</value>
+  </data>
 </root>
