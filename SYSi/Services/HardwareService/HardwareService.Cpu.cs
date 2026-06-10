@@ -1,3 +1,4 @@
+using System.Management;
 using System.Runtime.Intrinsics.X86;
 
 namespace SYSi.Services.HardwareService;
@@ -78,12 +79,14 @@ public sealed partial class HardwareService
         info.ShortName    = ParseCpuName(info.Name);
         info.Manufacturer = GetCpuVendor();
 
-        // Base speed: CPUID leaf 0x16 EAX → SMBIOS CurrentSpeed → N/A
         int baseMHz = GetCpuBaseSpeedViaCpuid();
         if (baseMHz == 0)
         {
-            var (smbiosBase, _) = GetCpuSpeedViaSmbios();
-            baseMHz = smbiosBase;
+            var searcher = new ManagementObjectSearcher("select CurrentClockSpeed from Win32_Processor");
+            foreach (var item in searcher.Get())
+            {
+                baseMHz = Convert.ToInt32((uint)item["CurrentClockSpeed"]);
+            }
         }
 
         info.BaseClockGHz = baseMHz > 0 ? $"{baseMHz / 1000.0:F2} GHz" : "N/A";
@@ -98,8 +101,11 @@ public sealed partial class HardwareService
             _cpuBaseMHz = GetCpuBaseSpeedViaCpuid();
             if (_cpuBaseMHz == 0)
             {
-                var (smbiosBase, _) = GetCpuSpeedViaSmbios();
-                _cpuBaseMHz = smbiosBase;
+                var searcher = new ManagementObjectSearcher("select CurrentClockSpeed from Win32_Processor");
+                foreach (var item in searcher.Get())
+                {
+                    _cpuBaseMHz = Convert.ToInt32((uint)item["CurrentClockSpeed"]);
+                }
             }
 
             if (_cpuBaseMHz == 0) return;
@@ -111,7 +117,7 @@ public sealed partial class HardwareService
                     _cpuClockQuery,
                     @"\Processor Information(_Total)\% Processor Performance",
                     0, out _cpuClockCounter);
-                NativeMethods.PdhCollectQueryData(_cpuClockQuery); // first sample
+                NativeMethods.PdhCollectQueryData(_cpuClockQuery);
             }
         }
         catch { }
@@ -165,18 +171,6 @@ public sealed partial class HardwareService
         if (maxLeaf < 0x16) return 0;
         var (eax, _, _, _) = X86Base.CpuId(0x16, 0);
         return eax & 0xFFFF;
-    }
-
-    private static (int baseMHz, int maxMHz) GetCpuSpeedViaSmbios()
-    {
-        foreach (var s in ParseSmbios(4))
-        {
-            if (s.Length <= 0x18) continue;
-            int max = s.Word(0x14);
-            int curr = s.Word(0x16);
-            if (curr > 0 || max > 0) return (curr, max);
-        }
-        return (0, 0);
     }
 
     // ── Brand / vendor ───────────────────────────────────────────────────────
@@ -355,7 +349,7 @@ public sealed partial class HardwareService
         var sig = GetCpuSignature();
         info.Family      = sig.Family   > 0 ? $"{sig.Family:X}" : "N/A";
         info.Model       = sig.Model    > 0 ? $"{sig.Model:X}" : "N/A";
-        info.Stepping    = sig.Stepping > 0 ? $"{sig.Stepping:X}" : "N/A";
+        info.Stepping    = $"{sig.Stepping:X}";
         info.ProcessorId = sig.ProcessorId;
     }
 
