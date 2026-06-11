@@ -11,13 +11,15 @@ namespace SYSi.Services.HostServices
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        private readonly int stockTimerInterval = 1000;
+
         public OsHostService()
         {
+            _timer = new System.Timers.Timer(stockTimerInterval);
+
             Task.Run(LoadStaticInfo);
 
-            _timer = new System.Timers.Timer(1000);
-            _timer.Elapsed += TimerElapsed;
-            _timer.Start();
+            TimerStart(stockTimerInterval);
         }
 
         private void LoadStaticInfo()
@@ -31,16 +33,6 @@ namespace SYSi.Services.HostServices
 
             Task.WaitAll(wmiTask, activationTask, updateTask);
             OnPropertyChanged(nameof(OsInfo));
-
-            LanguageBase.LanguageChanged += async (lang) =>
-            {
-                await Task.WhenAll(
-                    Task.Run(LoadActivationStatus),
-                    Task.Run(LoadWindowsUpdateStatus)
-                );
-
-                OnPropertyChanged(nameof(OsInfo));
-            };
         }
 
         private void LoadFromWmi()
@@ -50,8 +42,7 @@ namespace SYSi.Services.HostServices
                 using var searcher = new ManagementObjectSearcher(
                     "SELECT Caption, Version, OSArchitecture, InstallDate, LastBootUpTime " +
                     "FROM Win32_OperatingSystem");
-
-                foreach (ManagementObject obj in searcher.Get())
+                foreach (ManagementObject obj in searcher.Get().Cast<ManagementObject>())
                 {
                     string version = obj["Version"]?.ToString()?.Trim() ?? "N/A";
                     var dtInstall = ManagementDateTimeConverter.ToDateTime(obj["InstallDate"]?.ToString() ?? "");
@@ -70,6 +61,7 @@ namespace SYSi.Services.HostServices
                     OsInfo.LastBootTime   = dtLastBoot.ToString("HH:mm");
                     break;
                 }
+
             }
             catch
             {
@@ -115,57 +107,58 @@ namespace SYSi.Services.HostServices
                     "SELECT LicenseStatus FROM SoftwareLicensingProduct " +
                     "WHERE PartialProductKey IS NOT NULL " +
                     "AND ApplicationId = '55c92734-d682-4d71-983e-d6ec3f16059f'");
-
-                foreach (ManagementObject obj in searcher.Get())
+                foreach (ManagementObject obj in searcher.Get().Cast<ManagementObject>())
                 {
                     uint status = (uint)(obj["LicenseStatus"] ?? 0u);
                     OsInfo.IsActivated       = status == 1;
-                    OsInfo.ActivationStatus  = status == 1 ? LanguageBase.GetLangValue("wactiv_actived_title") : LanguageBase.GetLangValue("wactiv_inactived_title");
                     return;
                 }
             }
             catch { }
-
-            OsInfo.ActivationStatus = "N/A";
         }
 
         private void LoadWindowsUpdateStatus()
         {
             try
             {
-                using var rebootKey = Registry.LocalMachine.OpenSubKey(
-                    @"SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired");
-
-                if (rebootKey != null)
+                using (var rebootKey = Registry.LocalMachine.OpenSubKey(
+                    @"SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired"))
                 {
-                    OsInfo.IsUpToDate           = false;
-                    OsInfo.WindowsUpdateStatus  = LanguageBase.GetLangValue("wus_restart_required_title");
-                    return;
+                    if (rebootKey != null)
+                    {
+                        OsInfo.IsUpToDate           = false;
+                        OsInfo.WindowsUpdateType    = OsInfo.IUpdateType.RestartRequired;
+                        return;
+                    }
                 }
 
-                using var pendingKey = Registry.LocalMachine.OpenSubKey(
-                    @"SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RequestedUpdates");
 
-                if (pendingKey?.GetSubKeyNames().Length > 0)
+                using (var pendingKey = Registry.LocalMachine.OpenSubKey(
+                    @"SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RequestedUpdates"))
                 {
-                    OsInfo.IsUpToDate           = false;
-                    OsInfo.WindowsUpdateStatus  = LanguageBase.GetLangValue("wus_updates_available_title");
-                    return;
+                    if (pendingKey?.GetSubKeyNames().Length > 0)
+                    {
+                        OsInfo.IsUpToDate           = false;
+                        OsInfo.WindowsUpdateType    = OsInfo.IUpdateType.UpdatesAvailable;
+                        return;
+                    }
                 }
 
-                OsInfo.IsUpToDate          = true;
-                OsInfo.WindowsUpdateStatus = LanguageBase.GetLangValue("wus_up_to_date_title");
+
+                OsInfo.IsUpToDate = true;
+                OsInfo.WindowsUpdateType = OsInfo.IUpdateType.UpToDate;
             }
             catch
             {
-                OsInfo.WindowsUpdateStatus = "N/A";
+                OsInfo.WindowsUpdateType = OsInfo.IUpdateType.Unknown;
             }
         }
 
         private static string ParseOsName(string? raw)
         {
-            if (string.IsNullOrWhiteSpace(raw)) return "Windows";
-            return raw.Replace("Microsoft Windows", "Windows")
+            return string.IsNullOrWhiteSpace(raw)
+                ? "Windows"
+                : raw.Replace("Microsoft Windows", "Windows")
                       .Replace("Microsoft", "")
                       .Trim();
         }
@@ -179,10 +172,37 @@ namespace SYSi.Services.HostServices
         private void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
+        private void TimerStart(int _timerInterval)
+        {
+            _timer.Elapsed += TimerElapsed;
+            _timer.Interval = _timerInterval;
+            _timer.Start();
+        }
+
+        private void TimerStop()
+        {
+            _timer.Elapsed -= TimerElapsed;
+            _timer.Stop();
+        }
+
+        private void TimerDispose()
+        {
+            TimerStop();
+            _timer.Dispose();
+        }
+
+        public void SetRefreshInterval(int _timerInterval)
+        {
+            TimerStop();
+            if (_timerInterval > 0)
+            {
+                TimerStart(_timerInterval);
+            }
+        }
+
         public void Dispose()
         {
-            _timer.Stop();
-            _timer.Dispose();
+            TimerDispose();
         }
     }
 }

@@ -18,7 +18,7 @@
                 return 1;
             }
 
-            double minCardWidth = double.Parse(values[1].ToString()!);
+            double minCardWidth = double.Parse(values[1].ToString()!, CultureInfo.InvariantCulture);
             int maxColumns = int.Parse(values[2].ToString()!);
 
             var columns = (int)Math.Floor(width / minCardWidth);

@@ -20,7 +20,7 @@
             ThemeManagerService = new ApplicationThemeManagerService(this);
             WindowHelper.ThemeManagerService = ThemeManagerService;
             ThemeManagerService.InitCornerRadius();
-            ThemeManagerService.Watch();
+            ThemeManagerService.SetApplicationTheme(ThemeManagerService.GetApplicationTheme());
 
             InitializeComponent();
 
@@ -57,7 +57,9 @@
         private void RootNavigation_Navigated(NavigationView sender, NavigatedEventArgs args)
         {
             if (args?.Page is not FrameworkElement page)
+            {
                 return;
+            }
 
             var pageType = page.GetType();
 
@@ -80,19 +82,11 @@
 
         private void OnSourceInitialized(object? sender, EventArgs e)
         {
-            ApplicationThemeManager.Apply(ThemeManagerService.GetSysApplicationTheme(), ThemeManagerService.GetBackdropType(), true);
-            ViewModel.OnNavigatedTo();
-
             if (WindowHelper.IsAutoHideNavPanel)
             {
                 this.SizeChanged += MainWindow_SizeChanged;
                 MainWindow_SizeChanged(null, null);
             }
-
-            //ThemeManagerService.OnThemeChanged += (theme) =>
-            //{
-            //    Wpf.Ui.Appearance.Theme.Apply(theme, ThemeManagerService.GetBackdropType(), true);
-            //};
         }
 
         public void ShowWithEffect()

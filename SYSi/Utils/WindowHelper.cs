@@ -41,7 +41,10 @@
 
         public static void BringToFront(Window window)
         {
-            if (window == null) return;
+            if (window == null)
+            {
+                return;
+            }
 
             var handle = new WindowInteropHelper(window).Handle;
 
@@ -94,7 +97,10 @@
             get;
             set
             {
-                if (field == value) return;
+                if (field == value)
+                {
+                    return;
+                }
 
                 field = value;
                 UserDataStore.SetValue("IsAutoHideNavPanel", field);

@@ -12,8 +12,15 @@ public sealed partial class HardwareService
         {
             foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
             {
-                if (nic.NetworkInterfaceType == NetworkInterfaceType.Loopback) continue;
-                if (nic.OperationalStatus    == OperationalStatus.Unknown) continue;
+                if (nic.NetworkInterfaceType == NetworkInterfaceType.Loopback)
+                {
+                    continue;
+                }
+
+                if (nic.OperationalStatus    == OperationalStatus.Unknown)
+                {
+                    continue;
+                }
 
                 adapters.Add(BuildAdapterInfo(nic));
             }

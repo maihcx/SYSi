@@ -5,21 +5,25 @@ namespace SYSi.ViewModels.PagesBottom
 {
     public partial class SettingsViewModel : ObservableObject, INavigationAware
     {
-        private bool _isInitialized = false;
-
         public event Action? ScrollToUpdateRequested;
 
         private static ApplicationThemeManagerService? ThemeManagerService = WindowHelper.ThemeManagerService;
 
         private readonly UpdateHostService updateHostService;
 
+        private readonly HardwareHostService hardwareHostService;
+
+        private readonly OsHostService osHostService;
+
         [ObservableProperty] private string _appVersion = string.Empty;
 
-        public SettingsViewModel(UpdateHostService updateHostService)
+        public SettingsViewModel(UpdateHostService updateHostService, HardwareHostService hardwareHostService, OsHostService osHostService)
         {
             this.updateHostService = updateHostService;
+            this.hardwareHostService = hardwareHostService;
+            this.osHostService = osHostService;
 
-            updateHostService.PropertyChanged += OnHostPropertyChanged;
+            InitializeViewModel();
         }
 
         // ── Update ─────────────────────────────────────────────────────────
@@ -170,21 +174,68 @@ namespace SYSi.ViewModels.PagesBottom
         }
         #endregion
 
+        #region Timer Interval Refresher handle
+        private static readonly Dictionary<int, string> refreshIntervalList = new()
+        {
+            {500, "high_title" },
+            {1000, "normal_title" },
+            {2000, "low_title" },
+            {-1, "paused_title" },
+
+        };
+
+        [ObservableProperty]
+        private ObservableCollection<ComboBoxItemInt>? _refreshIntervalList = new() {
+            new()
+            {
+                Value = 500, ContentKey = refreshIntervalList[500]
+            },
+            new()
+            {
+                Value = 1000, ContentKey = refreshIntervalList[1000]
+            },
+            new()
+            {
+                Value = 2000, ContentKey = refreshIntervalList[2000]
+            },
+            new()
+            {
+                Value = -1, ContentKey = refreshIntervalList[-1]
+            }
+        };
+
+        [ObservableProperty]
+        private ComboBoxItemInt? _selectedRefreshInterval = new() 
+        { 
+            Value = UserDataStore.GetValue<int>("RefreshInfoInterval"), 
+            ContentKey = refreshIntervalList[UserDataStore.GetValue<int>("RefreshInfoInterval")] 
+        };
+
+        partial void OnSelectedRefreshIntervalChanged(ComboBoxItemInt? value)
+        {
+            int intValue = value?.Value ?? -1;
+            UserDataStore.SetValue("RefreshInfoInterval", intValue);
+            hardwareHostService.SetRefreshInterval(intValue);
+            osHostService.SetRefreshInterval(intValue);
+        }
+        #endregion
+
         [ObservableProperty]
         private string _copyRight = AppInfoHelper.CopyRight;
 
         public Task OnNavigatedToAsync()
         {
-            if (!_isInitialized)
-                InitializeViewModel();
-
             ScrollToUpdateRequested?.Invoke();
+
+            updateHostService.PropertyChanged += OnHostPropertyChanged;
 
             return Task.CompletedTask;
         }
 
         public Task OnNavigatedFromAsync()
         {
+            updateHostService.PropertyChanged -= OnHostPropertyChanged;
+
             return Task.CompletedTask;
         }
 
@@ -193,7 +244,6 @@ namespace SYSi.ViewModels.PagesBottom
             var v = UpdateService.GetCurrentVersion();
             AppVersion = $"SYSi - {v.Major}.{v.Minor}.{v.Build}";
             UpdateStatusText = LanguageBase.GetLangValue("page_settings_update_idle");
-            _isInitialized = true;
 
             _ = CheckForUpdateAsync();
 

@@ -66,4 +66,12 @@
 		</None>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <EditorConfigFiles Remove="D:\DEV\C#DOTNET\SYSi\SYSi\.editorconfig" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="D:\DEV\C#DOTNET\SYSi\SYSi\.editorconfig" />
+	</ItemGroup>
+
 </Project>

@@ -18,27 +18,39 @@ namespace SYSi.Services.HostServices
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        private int refreshing = 0;
+
+        private readonly int stockTimerInterval = 1000;
+
         public HardwareHostService(HardwareService.HardwareService hardware)
         {
             _hardware = hardware;
+            _timer = new System.Timers.Timer(stockTimerInterval);
 
             LoadStaticInfo();
+            TimerStart(stockTimerInterval);
+        }
 
-            _timer = new System.Timers.Timer(1000);
-            _timer.Elapsed += TimerElapsed;
-            _timer.Start();
+        public void SetRefreshInterval(int _timerInterval)
+        {
+            TimerStop();
+            if (_timerInterval > 0)
+            {
+                TimerStart(_timerInterval);
+            }
         }
 
         private void LoadStaticInfo()
         {
-            CpuInfo = _hardware.GetCpuInfo();
-            RamInfo = _hardware.GetRamInfo();
 
-            Gpus = _hardware.GetGpuInfoList();
-            Drives = _hardware.GetStorageInfo();
-            Networks = _hardware.GetNetworkInfo();
+            var snapshot = _hardware.GetFullSnapshot();
 
-            Motherboard = _hardware.GetMotherboardInfo();
+            CpuInfo     = snapshot.Cpu;
+            RamInfo     = snapshot.Ram;
+            Gpus        = snapshot.Gpus;
+            Drives      = snapshot.Drives;
+            Networks    = snapshot.Networks;
+            Motherboard = snapshot.Motherboard;
 
             _hardware.InitGpuPdh(Gpus);
 
@@ -47,6 +59,11 @@ namespace SYSi.Services.HostServices
 
         private async void TimerElapsed(object? sender, ElapsedEventArgs e)
         {
+            if (Interlocked.CompareExchange(ref refreshing, 1, 0) != 0)
+            {
+                return;
+            }
+
             try
             {
                 await Task.WhenAll(
@@ -62,8 +79,10 @@ namespace SYSi.Services.HostServices
                     OnPropertyChanged(nameof(RamInfo));
                 });
             }
-            catch
+            catch { }
+            finally
             {
+                Interlocked.Exchange(ref refreshing, 0);
             }
         }
 
@@ -85,10 +104,29 @@ namespace SYSi.Services.HostServices
                 new PropertyChangedEventArgs(propertyName));
         }
 
+        private void TimerStart(int _timerInterval)
+        {
+            _timer.Elapsed += TimerElapsed;
+            _timer.Interval = _timerInterval;
+            _timer.Start();
+        }
+
+        private void TimerStop()
+        {
+            _timer.Elapsed -= TimerElapsed;
+            _timer.Stop();
+        }
+
+        private void TimerDispose()
+        {
+            TimerStop();
+            _timer.Dispose();
+        }
+
         public void Dispose()
         {
-            _timer.Stop();
-            _timer.Dispose();
+            TimerDispose();
+            _hardware.Dispose();
         }
     }
 }

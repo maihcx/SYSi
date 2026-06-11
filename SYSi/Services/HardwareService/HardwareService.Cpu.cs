@@ -15,6 +15,8 @@ public sealed partial class HardwareService
     private int _cpuBaseMHz;
     private readonly object _cpuClockLock = new();
 
+    private static int _cachedBaseMHz;
+
     public HardwareService()
     {
         ReadSystemTimes(out _prevIdle, out _prevKernel, out _prevUser);
@@ -65,8 +67,7 @@ public sealed partial class HardwareService
             }
 
             long total = dKernel + dUser;
-            if (total <= 0) return 0;
-            return Math.Round(Math.Clamp((1.0 - (double)dIdle / total) * 100.0, 0, 100), 1);
+            return total <= 0 ? 0 : Math.Round(Math.Clamp((1.0 - (double)dIdle / total) * 100.0, 0, 100), 1);
         }
         catch { return 0; }
     }
@@ -79,16 +80,7 @@ public sealed partial class HardwareService
         info.ShortName    = ParseCpuName(info.Name);
         info.Manufacturer = GetCpuVendor();
 
-        int baseMHz = GetCpuBaseSpeedViaCpuid();
-        if (baseMHz == 0)
-        {
-            var searcher = new ManagementObjectSearcher("select CurrentClockSpeed from Win32_Processor");
-            foreach (var item in searcher.Get())
-            {
-                baseMHz = Convert.ToInt32((uint)item["CurrentClockSpeed"]);
-            }
-        }
-
+        int baseMHz = GetCpuBaseClockMHz();
         info.BaseClockGHz = baseMHz > 0 ? $"{baseMHz / 1000.0:F2} GHz" : "N/A";
     }
 
@@ -96,42 +88,61 @@ public sealed partial class HardwareService
 
     private void InitCpuClockPdh()
     {
-        try
+        _cpuBaseMHz = GetCpuBaseClockMHz();
+
+        if (_cpuBaseMHz == 0)
         {
-            _cpuBaseMHz = GetCpuBaseSpeedViaCpuid();
-            if (_cpuBaseMHz == 0)
+            return;
+        }
+
+        lock (_cpuClockLock)
+        {
+            if (NativeMethods.PdhOpenQuery(null, 0, out _cpuClockQuery) != 0)
             {
-                var searcher = new ManagementObjectSearcher("select CurrentClockSpeed from Win32_Processor");
+                return;
+            }
+
+            NativeMethods.PdhAddEnglishCounter(
+                _cpuClockQuery,
+                @"\Processor Information(_Total)\% Processor Performance",
+                0, out _cpuClockCounter);
+            NativeMethods.PdhCollectQueryData(_cpuClockQuery);
+        }
+    }
+
+    public static int GetCpuBaseClockMHz()
+    {
+        if (_cachedBaseMHz == 0)
+        {
+            _cachedBaseMHz = GetCpuBaseSpeedViaCpuid();
+            if (_cachedBaseMHz == 0)
+            {
+                using var searcher = new ManagementObjectSearcher("select CurrentClockSpeed from Win32_Processor");
                 foreach (var item in searcher.Get())
                 {
-                    _cpuBaseMHz = Convert.ToInt32((uint)item["CurrentClockSpeed"]);
+                    _cachedBaseMHz = Convert.ToInt32((uint)item["CurrentClockSpeed"]);
                 }
             }
-
-            if (_cpuBaseMHz == 0) return;
-
-            lock (_cpuClockLock)
-            {
-                if (NativeMethods.PdhOpenQuery(null, 0, out _cpuClockQuery) != 0) return;
-                NativeMethods.PdhAddEnglishCounter(
-                    _cpuClockQuery,
-                    @"\Processor Information(_Total)\% Processor Performance",
-                    0, out _cpuClockCounter);
-                NativeMethods.PdhCollectQueryData(_cpuClockQuery);
-            }
         }
-        catch { }
+
+        return _cachedBaseMHz;
     }
 
     public string GetCurrentCpuSpeedGHz()
     {
         try
         {
-            if (_cpuClockQuery == IntPtr.Zero || _cpuBaseMHz == 0) return string.Empty;
+            if (_cpuClockQuery == IntPtr.Zero || _cpuBaseMHz == 0)
+            {
+                return string.Empty;
+            }
 
             lock (_cpuClockLock)
             {
-                if (NativeMethods.PdhCollectQueryData(_cpuClockQuery) != 0) return string.Empty;
+                if (NativeMethods.PdhCollectQueryData(_cpuClockQuery) != 0)
+                {
+                    return string.Empty;
+                }
 
                 var value = new NativeMethods.PDH_FMT_COUNTERVALUE();
                 if (NativeMethods.PdhGetFormattedCounterValue(
@@ -168,7 +179,11 @@ public sealed partial class HardwareService
     private static int GetCpuBaseSpeedViaCpuid()
     {
         var (maxLeaf, _, _, _) = X86Base.CpuId(0, 0);
-        if (maxLeaf < 0x16) return 0;
+        if (maxLeaf < 0x16)
+        {
+            return 0;
+        }
+
         var (eax, _, _, _) = X86Base.CpuId(0x16, 0);
         return eax & 0xFFFF;
     }
@@ -203,7 +218,9 @@ public sealed partial class HardwareService
     {
         var bytes = BitConverter.GetBytes(reg);
         foreach (var b in bytes)
+        {
             sb.Append(b == 0 ? ' ' : (char)b);
+        }
     }
 
     // ── System times ─────────────────────────────────────────────────────────
@@ -227,20 +244,28 @@ public sealed partial class HardwareService
         {
             uint len = 0;
             NativeMethods.GetLogicalProcessorInformation(IntPtr.Zero, ref len);
-            if (len == 0) return Environment.ProcessorCount;
+            if (len == 0)
+            {
+                return Environment.ProcessorCount;
+            }
 
             IntPtr buf = Marshal.AllocHGlobal((int)len);
             try
             {
                 if (!NativeMethods.GetLogicalProcessorInformation(buf, ref len))
+                {
                     return Environment.ProcessorCount;
+                }
 
                 int size = Marshal.SizeOf<NativeMethods.SYSTEM_LOGICAL_PROCESSOR_INFORMATION>();
                 int count = 0;
                 for (int i = 0; i + size <= (int)len; i += size)
                 {
                     var item = Marshal.PtrToStructure<NativeMethods.SYSTEM_LOGICAL_PROCESSOR_INFORMATION>(buf + i);
-                    if (item.Relationship == 0) count++;
+                    if (item.Relationship == 0)
+                    {
+                        count++;
+                    }
                 }
                 return count > 0 ? count : Environment.ProcessorCount;
             }
@@ -274,14 +299,19 @@ public sealed partial class HardwareService
             uint len = 0;
             NativeMethods.GetLogicalProcessorInformationEx(
                 NativeMethods.LOGICAL_PROCESSOR_RELATIONSHIP.RelationCache, IntPtr.Zero, ref len);
-            if (len == 0) return ("N/A", "N/A", "N/A");
+            if (len == 0)
+            {
+                return ("N/A", "N/A", "N/A");
+            }
 
             IntPtr buf = Marshal.AllocHGlobal((int)len);
             try
             {
                 if (!NativeMethods.GetLogicalProcessorInformationEx(
                     NativeMethods.LOGICAL_PROCESSOR_RELATIONSHIP.RelationCache, buf, ref len))
+                {
                     return ("N/A", "N/A", "N/A");
+                }
 
                 uint l1 = 0, l2 = 0, l3 = 0;
                 int headerSize = Marshal.SizeOf<NativeMethods.SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>();
@@ -315,7 +345,10 @@ public sealed partial class HardwareService
 
     private static (int Family, int Model, int Stepping, string ProcessorId) GetCpuSignature()
     {
-        if (!X86Base.IsSupported) return (0, 0, 0, "N/A");
+        if (!X86Base.IsSupported)
+        {
+            return (0, 0, 0, "N/A");
+        }
 
         var cpuid = X86Base.CpuId(1, 0);
         int eax = cpuid.Eax;
@@ -339,7 +372,11 @@ public sealed partial class HardwareService
     {
         foreach (var s in ParseSmbios(4))
         {
-            if (s.Length > 0x08) info.Socket = s.Str(0x04);
+            if (s.Length > 0x08)
+            {
+                info.Socket = s.Str(0x04);
+            }
+
             break;
         }
 
@@ -357,7 +394,10 @@ public sealed partial class HardwareService
 
     private static bool GetVirtualizationEnabled()
     {
-        if (!X86Base.IsSupported) return false;
+        if (!X86Base.IsSupported)
+        {
+            return false;
+        }
 
         var (_, _, ecx, _) = X86Base.CpuId(1, 0);
 

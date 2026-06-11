@@ -40,7 +40,9 @@
             var offsetY = GetY(Offset);
 
             if (ItemsOwner is IHierarchicalVirtualizationAndScrollInfo)
+            {
                 offsetY = 0;
+            }
 
             Size childSize = CalculateChildArrangeSize(finalSize);
             CalculateSpacing(finalSize, out double innerSpacing, out double outerSpacing);

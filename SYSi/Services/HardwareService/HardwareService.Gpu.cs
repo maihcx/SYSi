@@ -1,8 +1,4 @@
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.Win32;
-using SYSi.Utils;
 
 namespace SYSi.Services.HardwareService;
 
@@ -16,38 +12,42 @@ public sealed partial class HardwareService
 
     // ── PDH state ────────────────────────────────────────────────────────────
 
-    private static readonly object _pdhLock = new();
-    private static IntPtr _gpuQuery = IntPtr.Zero;
-    private static IntPtr _gpuCounter = IntPtr.Zero;
-    private static bool _pdhReady;
-    private static Dictionary<(uint hi, uint lo), int> _luidToGpuIndex = [];
+    private readonly object _pdhLock = new();
+    private IntPtr _gpuQuery = IntPtr.Zero;
+    private IntPtr _gpuCounter = IntPtr.Zero;
+    private bool _pdhReady;
+    private Dictionary<(uint hi, uint lo), int> _luidToGpuIndex = [];
 
     // ── Public API ───────────────────────────────────────────────────────────
 
     public List<GpuInfo> GetGpuInfoList()
     {
         var list = new List<GpuInfo>();
-        try
+
+        IntPtr devInfo = NativeMethods.SetupDiGetClassDevs(
+        ref Unsafe.AsRef(in DisplayClassGuid),
+        IntPtr.Zero, IntPtr.Zero, NativeMethods.DIGCF_PRESENT);
+
+        if (devInfo == new IntPtr(-1))
         {
-            IntPtr devInfo = NativeMethods.SetupDiGetClassDevs(
-                ref Unsafe.AsRef(in DisplayClassGuid),
-                IntPtr.Zero, IntPtr.Zero, NativeMethods.DIGCF_PRESENT);
-
-            if (devInfo == new IntPtr(-1)) return list;
-            try
-            {
-                var devData = new NativeMethods.SP_DEVINFO_DATA
-                { cbSize = (uint)Marshal.SizeOf<NativeMethods.SP_DEVINFO_DATA>() };
-
-                for (uint i = 0; NativeMethods.SetupDiEnumDeviceInfo(devInfo, i, ref devData); i++)
-                    list.Add(BuildGpuInfo(devInfo, ref devData));
-            }
-            finally { NativeMethods.SetupDiDestroyDeviceInfoList(devInfo); }
-
-            EnrichWithDisplayInfo(list);
-            RefreshGpuUsage(list);
+            return list;
         }
-        catch { }
+
+        NativeMethods.SP_DEVINFO_DATA devData = new()
+        {
+            cbSize = (uint)Marshal.SizeOf<NativeMethods.SP_DEVINFO_DATA>()
+        };
+
+        for (uint i = 0; NativeMethods.SetupDiEnumDeviceInfo(devInfo, i, ref devData); i++)
+        {
+            list.Add(BuildGpuInfo(devInfo, ref devData));
+        }
+
+        NativeMethods.SetupDiDestroyDeviceInfoList(devInfo);
+
+        EnrichWithDisplayInfo(list);
+        RefreshGpuUsage(list);
+
         return list;
     }
 
@@ -75,23 +75,25 @@ public sealed partial class HardwareService
 
     private static void EnrichFromRegistry(GpuInfo gpu, string driverKey)
     {
-        if (driverKey == "N/A") return;
-        try
+        if (driverKey == "N/A")
         {
-            using var key = Registry.LocalMachine
-                .OpenSubKey($@"SYSTEM\CurrentControlSet\Control\Class\{driverKey}");
-            if (key == null) return;
-
-            gpu.DriverVersion = key.GetValue("DriverVersion")?.ToString() ?? "N/A";
-            gpu.DriverDate    = key.GetValue("DriverDate")?.ToString()    ?? "N/A";
-            gpu.VramText      = ReadVram(key);
-            gpu.VideoProcessor = RegistryString(key.GetValue("HardwareInformation.ChipType"));
-
-            var (vendor, device) = ParsePciIds(gpu.PnpDeviceId);
-            gpu.VideoArchitecture = LookupArchitecture(vendor, device);
-            gpu.VideoMemoryType   = ReadMemoryType(key, vendor, device);
+            return;
         }
-        catch { }
+
+        using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Control\Class\{driverKey}");
+        if (key == null)
+        {
+            return;
+        }
+
+        gpu.DriverVersion = key.GetValue("DriverVersion")?.ToString() ?? "N/A";
+        gpu.DriverDate    = key.GetValue("DriverDate")?.ToString()    ?? "N/A";
+        gpu.VramText      = ReadVram(key);
+        gpu.VideoProcessor = RegistryString(key.GetValue("HardwareInformation.ChipType"));
+
+        var (vendor, device) = ParsePciIds(gpu.PnpDeviceId);
+        gpu.VideoArchitecture = LookupArchitecture(vendor, device);
+        gpu.VideoMemoryType   = ReadMemoryType(key, vendor, device);
     }
 
     private static string ReadVram(RegistryKey key)
@@ -105,14 +107,18 @@ public sealed partial class HardwareService
         };
 
         if (bytes <= 0 && key.GetValue("HardwareInformation.MemorySize") is int dw)
+        {
             bytes = (long)(uint)dw;
+        }
 
         // Intel iGPU stores size under the "0000" subkey
         if (bytes <= 0)
         {
             using var sub = key.OpenSubKey("0000");
             if (sub?.GetValue("HardwareInformation.qwMemorySize") is byte[] sb && sb.Length >= 8)
+            {
                 bytes = (long)BitConverter.ToUInt64(sb, 0);
+            }
         }
 
         return bytes > 0 ? FormatBytes(bytes) : "Shared";
@@ -135,36 +141,45 @@ public sealed partial class HardwareService
 
     private static void EnrichWithDisplayInfo(List<GpuInfo> gpus)
     {
-        if (gpus.Count == 0) return;
-        try
+        if (gpus.Count == 0)
         {
-            var dd = new NativeMethods.DISPLAY_DEVICE
-            { cb = (uint)Marshal.SizeOf<NativeMethods.DISPLAY_DEVICE>() };
-
-            for (uint i = 0; NativeMethods.EnumDisplayDevices(null, i, ref dd, 0); i++)
-            {
-                if ((dd.StateFlags & MirroringFlag) != 0) continue;
-
-                var dm = default(NativeMethods.DEVMODE);
-                dm.dmSize = (ushort)Marshal.SizeOf<NativeMethods.DEVMODE>();
-
-                if (!NativeMethods.EnumDisplaySettings(
-                        dd.DeviceName, NativeMethods.ENUM_CURRENT_SETTINGS, ref dm)) continue;
-
-                string adapter = dd.DeviceString.Trim();
-                var match = gpus.FirstOrDefault(g =>
-                        adapter.Contains(g.Name, StringComparison.OrdinalIgnoreCase) ||
-                        g.Name.Contains(adapter, StringComparison.OrdinalIgnoreCase))
-                    ?? (gpus.Count == 1 ? gpus[0] : null);
-
-                if (match == null || !string.IsNullOrEmpty(match.Resolution)) continue;
-
-                match.Resolution   = $"{dm.dmPelsWidth} × {dm.dmPelsHeight}";
-                match.RefreshRate  = $"{dm.dmDisplayFrequency} Hz";
-                match.BitsPerPixel = $"{dm.dmBitsPerPel} bit";
-            }
+            return;
         }
-        catch { }
+
+        NativeMethods.DISPLAY_DEVICE dd = new()
+        { cb = (uint)Marshal.SizeOf<NativeMethods.DISPLAY_DEVICE>() };
+
+        for (uint i = 0; NativeMethods.EnumDisplayDevices(null, i, ref dd, 0); i++)
+        {
+            if ((dd.StateFlags & MirroringFlag) != 0)
+            {
+                continue;
+            }
+
+            var dm = default(NativeMethods.DEVMODE);
+            dm.dmSize = (ushort)Marshal.SizeOf<NativeMethods.DEVMODE>();
+
+            if (!NativeMethods.EnumDisplaySettings(
+                    dd.DeviceName, NativeMethods.ENUM_CURRENT_SETTINGS, ref dm))
+            {
+                continue;
+            }
+
+            string adapter = dd.DeviceString.Trim();
+            var match = gpus.FirstOrDefault(g =>
+                    adapter.Contains(g.Name, StringComparison.OrdinalIgnoreCase) ||
+                    g.Name.Contains(adapter, StringComparison.OrdinalIgnoreCase))
+                ?? (gpus.Count == 1 ? gpus[0] : null);
+
+            if (match == null || !string.IsNullOrEmpty(match.Resolution))
+            {
+                continue;
+            }
+
+            match.Resolution   = $"{dm.dmPelsWidth} × {dm.dmPelsHeight}";
+            match.RefreshRate  = $"{dm.dmDisplayFrequency} Hz";
+            match.BitsPerPixel = $"{dm.dmBitsPerPel} bit";
+        }
     }
 
     // ── GPU usage (PDH + DXGI LUID mapping) ──────────────────────────────────
@@ -173,10 +188,17 @@ public sealed partial class HardwareService
     {
         lock (_pdhLock)
         {
-            if (_pdhReady) return;
+            if (_pdhReady)
+            {
+                return;
+            }
+
             try
             {
-                if (NativeMethods.PdhOpenQuery(null, IntPtr.Zero, out _gpuQuery) != 0) return;
+                if (NativeMethods.PdhOpenQuery(null, IntPtr.Zero, out _gpuQuery) != 0)
+                {
+                    return;
+                }
 
                 uint r = NativeMethods.PdhAddCounter(
                     _gpuQuery,
@@ -184,7 +206,10 @@ public sealed partial class HardwareService
                     IntPtr.Zero,
                     out _gpuCounter);
 
-                if (r != 0) return;
+                if (r != 0)
+                {
+                    return;
+                }
 
                 NativeMethods.PdhCollectQueryData(_gpuQuery);
                 _pdhReady = true;
@@ -197,8 +222,15 @@ public sealed partial class HardwareService
 
     public void RefreshGpuUsage(List<GpuInfo> gpus)
     {
-        if (!_pdhReady) InitGpuPdh(gpus);
-        if (!_pdhReady || _gpuCounter == IntPtr.Zero) return;
+        if (!_pdhReady)
+        {
+            InitGpuPdh(gpus);
+        }
+
+        if (!_pdhReady || _gpuCounter == IntPtr.Zero)
+        {
+            return;
+        }
 
         try
         {
@@ -211,7 +243,10 @@ public sealed partial class HardwareService
                     _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
                     ref bufSize, out itemCount, IntPtr.Zero);
 
-                if (bufSize == 0) return;
+                if (bufSize == 0)
+                {
+                    return;
+                }
 
                 IntPtr buf = Marshal.AllocHGlobal((int)bufSize);
                 try
@@ -220,7 +255,10 @@ public sealed partial class HardwareService
                         _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
                         ref bufSize, out itemCount, buf);
 
-                    if (r != 0 && r != 0x800007D2) return;   // PDH_MORE_DATA is acceptable
+                    if (r != 0 && r != 0x800007D2)
+                    {
+                        return;   // PDH_MORE_DATA is acceptable
+                    }
 
                     // PDH_FMT_COUNTERVALUE_ITEM_W layout (x64):
                     //   szName  : IntPtr  (8 bytes — pointer into buf)
@@ -241,7 +279,10 @@ public sealed partial class HardwareService
                             IntPtr.Add(itemPtr, IntPtr.Size + 8));
 
                         var luid = ParseLuid(name);
-                        if (luid == null) continue;
+                        if (luid == null)
+                        {
+                            continue;
+                        }
 
                         luidUsage.TryGetValue(luid.Value, out double cur);
                         luidUsage[luid.Value] = cur + value;
@@ -250,7 +291,9 @@ public sealed partial class HardwareService
                     foreach (var (luid, usage) in luidUsage)
                     {
                         if (_luidToGpuIndex.TryGetValue(luid, out int idx) && idx < gpus.Count)
+                        {
                             gpus[idx].UsagePercent = Math.Round(Math.Clamp(usage, 0, 100), 1);
+                        }
                     }
                 }
                 finally { Marshal.FreeHGlobal(buf); }
@@ -259,11 +302,15 @@ public sealed partial class HardwareService
         catch { }
     }
 
-    private static void DisposeGpuPdh()
+    private void DisposeGpuPdh()
     {
         lock (_pdhLock)
         {
-            if (_gpuQuery == IntPtr.Zero) return;
+            if (_gpuQuery == IntPtr.Zero)
+            {
+                return;
+            }
+
             NativeMethods.PdhCloseQuery(_gpuQuery);
             _gpuQuery = IntPtr.Zero;
             _pdhReady = false;
@@ -283,7 +330,10 @@ public sealed partial class HardwareService
         {
             var guid = DxgiFactory1Guid;
             if (NativeMethods.CreateDXGIFactory1(ref guid, out IntPtr factory) != 0
-                || factory == IntPtr.Zero) return map;
+                || factory == IntPtr.Zero)
+            {
+                return map;
+            }
 
             // IDXGIFactory1::EnumAdapters1 is vtable slot 12
             var enumAdapters1 = VTableDelegate<NativeMethods.EnumAdapters1Delegate>(factory, 12);
@@ -291,9 +341,15 @@ public sealed partial class HardwareService
             for (uint idx = 0; ; idx++)
             {
                 if (enumAdapters1(factory, idx, out IntPtr adapter) == unchecked((int)0x887A0002))
+                {
                     break;   // DXGI_ERROR_NOT_FOUND
+                }
 
-                if (adapter == IntPtr.Zero) break;
+                if (adapter == IntPtr.Zero)
+                {
+                    break;
+                }
+
                 try
                 {
                     // IDXGIAdapter1::GetDesc1 is vtable slot 10
@@ -310,9 +366,14 @@ public sealed partial class HardwareService
                             g.Name.Contains(descName, StringComparison.OrdinalIgnoreCase));
 
                         if (gpuIdx < 0 && (int)idx < gpus.Count)
+                        {
                             gpuIdx = (int)idx;   // position fallback
+                        }
 
-                        if (gpuIdx >= 0) map[luid] = gpuIdx;
+                        if (gpuIdx >= 0)
+                        {
+                            map[luid] = gpuIdx;
+                        }
                     }
                 }
                 finally { ComRelease(adapter); }
@@ -342,19 +403,21 @@ public sealed partial class HardwareService
 
     // ── Parsing helpers ──────────────────────────────────────────────────────
 
+    private static readonly Regex LuidRegex = new(@"luid_0x([0-9A-Fa-f]+)_0x([0-9A-Fa-f]+)",  RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static readonly Regex PciIdRegex = new(@"VEN_([0-9A-Fa-f]{4})&DEV_([0-9A-Fa-f]{4})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     /// <summary>
     /// Extracts the LUID from a PDH GPU Engine instance name.
     /// Format: "pid_XXX_luid_0xHHHHHHHH_0xLLLLLLLL_phys_N_eng_M_engtype_3D"
     /// </summary>
     private static (uint hi, uint lo)? ParseLuid(string name)
     {
-        var m = Regex.Match(name,
-            @"luid_0x([0-9A-Fa-f]+)_0x([0-9A-Fa-f]+)",
-            RegexOptions.IgnoreCase);
+        var m = LuidRegex.Match(name);
 
-        if (!m.Success) return null;
-
-        return uint.TryParse(m.Groups[1].Value, System.Globalization.NumberStyles.HexNumber, null, out uint hi)
+        return !m.Success
+            ? null
+            : uint.TryParse(m.Groups[1].Value, System.Globalization.NumberStyles.HexNumber, null, out uint hi)
             && uint.TryParse(m.Groups[2].Value, System.Globalization.NumberStyles.HexNumber, null, out uint lo)
             ? (hi, lo) : null;
     }
@@ -362,9 +425,7 @@ public sealed partial class HardwareService
     /// <summary>Parses "VEN_XXXX&amp;DEV_XXXX" from a PnP hardware ID string.</summary>
     private static (string vendor, string device) ParsePciIds(string pnpId)
     {
-        var m = Regex.Match(pnpId,
-            @"VEN_([0-9A-Fa-f]{4})&DEV_([0-9A-Fa-f]{4})",
-            RegexOptions.IgnoreCase);
+        var m = PciIdRegex.Match(pnpId);
 
         return m.Success
             ? (m.Groups[1].Value.ToUpperInvariant(), m.Groups[2].Value.ToUpperInvariant())
@@ -375,10 +436,9 @@ public sealed partial class HardwareService
 
     private static string LookupArchitecture(string vendor, string deviceId)
     {
-        if (!int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber, null, out int dev))
-            return "N/A";
-
-        return vendor switch
+        return !int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber, null, out int dev)
+            ? "N/A"
+            : vendor switch
         {
             "1002" => dev switch // AMD
             {
@@ -413,10 +473,9 @@ public sealed partial class HardwareService
 
     private static string LookupVramType(string vendor, string deviceId)
     {
-        if (!int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber, null, out int dev))
-            return "N/A";
-
-        return vendor switch
+        return !int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber, null, out int dev)
+            ? "N/A"
+            : vendor switch
         {
             "1002" => dev switch // AMD
             {
@@ -448,10 +507,21 @@ public sealed partial class HardwareService
     {
         foreach (string s in (string[])[mfg, name])
         {
-            if (s.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase)) return "NVIDIA";
-            if (s.Contains("Intel", StringComparison.OrdinalIgnoreCase)) return "Intel";
+            if (s.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase))
+            {
+                return "NVIDIA";
+            }
+
+            if (s.Contains("Intel", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Intel";
+            }
+
             if (s.Contains("AMD", StringComparison.OrdinalIgnoreCase) ||
-                s.Contains("ATI", StringComparison.OrdinalIgnoreCase)) return "AMD";
+                s.Contains("ATI", StringComparison.OrdinalIgnoreCase))
+            {
+                return "AMD";
+            }
         }
         return string.IsNullOrWhiteSpace(mfg) ? "N/A" : mfg;
     }

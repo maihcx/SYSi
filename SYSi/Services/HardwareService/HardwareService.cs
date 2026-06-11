@@ -12,13 +12,39 @@ namespace SYSi.Services.HardwareService;
 /// </summary>
 public sealed partial class HardwareService : IDisposable
 {
+    // ── Parallel snapshot ─────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Loads all hardware info in parallel. Call once at startup.
+    /// Returns a snapshot with CPU, GPU, RAM, Storage, Motherboard, Network
+    /// all populated concurrently.
+    /// </summary>
+    public HardwareSnapshot GetFullSnapshot()
+    {
+        var snapshot = new HardwareSnapshot();
+
+        Parallel.Invoke(
+            new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
+            () => snapshot.Cpu         = GetCpuInfo(),
+            () => snapshot.Gpus        = GetGpuInfoList(),
+            () => snapshot.Ram         = GetRamInfo(),
+            () => snapshot.Drives      = GetStorageInfo(),
+            () => snapshot.Motherboard = GetMotherboardInfo(),
+            () => snapshot.Networks    = GetNetworkInfo()
+        );
+
+        return snapshot;
+    }
+
+    // ── Dispose ───────────────────────────────────────────────────────────────
+
     public void Dispose()
     {
         DisposeGpuPdh();
         DisposeCpuClockPdh();
     }
 
-    // ── Registry helper ──────────────────────────────────────────────────────
+    // ── Registry helper ───────────────────────────────────────────────────────
 
     internal static string GetDeviceProperty(
         IntPtr devInfo, ref NativeMethods.SP_DEVINFO_DATA devData, uint property)
@@ -26,7 +52,10 @@ public sealed partial class HardwareService : IDisposable
         NativeMethods.SetupDiGetDeviceRegistryProperty(
             devInfo, ref devData, property, out _, null, 0, out uint needed);
 
-        if (needed == 0) return "N/A";
+        if (needed == 0)
+        {
+            return "N/A";
+        }
 
         var buf = new byte[needed];
         NativeMethods.SetupDiGetDeviceRegistryProperty(
@@ -35,11 +64,15 @@ public sealed partial class HardwareService : IDisposable
         return Encoding.Unicode.GetString(buf).TrimEnd('\0', ' ');
     }
 
-    // ── Format helpers ───────────────────────────────────────────────────────
+    // ── Format helpers ────────────────────────────────────────────────────────
 
     public static string FormatBytes(long bytes)
     {
-        if (bytes <= 0) return "N/A";
+        if (bytes <= 0)
+        {
+            return "N/A";
+        }
+
         string[] units = ["B", "KB", "MB", "GB", "TB"];
         double v = bytes;
         int i = 0;
@@ -51,15 +84,24 @@ public sealed partial class HardwareService : IDisposable
 
     internal static string FormatNetworkSpeed(long bps)
     {
-        if (bps >= 1_000_000_000) return $"{bps / 1_000_000_000.0:F0} Gbps";
-        if (bps >= 1_000_000) return $"{bps / 1_000_000:F0} Mbps";
+        if (bps >= 1_000_000_000)
+        {
+            return $"{bps / 1_000_000_000.0:F0} Gbps";
+        }
+
+        if (bps >= 1_000_000)
+        {
+            return $"{bps / 1_000_000:F0} Mbps";
+        }
+
         return $"{bps / 1000} Kbps";
     }
 
     internal static string FormatMac(string raw)
     {
-        if (string.IsNullOrWhiteSpace(raw) || raw.Length != 12) return raw;
-        return string.Join(":", Enumerable.Range(0, 6).Select(i => raw.Substring(i * 2, 2)));
+        return string.IsNullOrWhiteSpace(raw) || raw.Length != 12
+            ? raw
+            : string.Join(":", Enumerable.Range(0, 6).Select(i => raw.Substring(i * 2, 2)));
     }
 
     /// <summary>

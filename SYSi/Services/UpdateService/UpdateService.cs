@@ -32,7 +32,9 @@ namespace SYSi.Services.UpdateService
                 var release = await _http.GetFromJsonAsync<GitHubRelease>(url, ct);
 
                 if (release is null || string.IsNullOrWhiteSpace(release.TagName))
+                {
                     return false;
+                }
 
                 LatestRelease = release;
 
@@ -61,7 +63,9 @@ namespace SYSi.Services.UpdateService
             CancellationToken ct = default)
         {
             if (string.IsNullOrEmpty(InstallerDownloadUrl))
+            {
                 throw new InvalidOperationException("No installer URL available.");
+            }
 
             ErrorMessage = null;
 
@@ -91,7 +95,9 @@ namespace SYSi.Services.UpdateService
                     await dest.WriteAsync(buffer.AsMemory(0, read), ct);
                     downloaded += read;
                     if (total > 0)
+                    {
                         progress.Report((double)downloaded / total);
+                    }
                 }
 
                 DownloadedInstallerPath = destPath;
@@ -109,7 +115,9 @@ namespace SYSi.Services.UpdateService
         public void LaunchInstaller()
         {
             if (string.IsNullOrEmpty(DownloadedInstallerPath) || !File.Exists(DownloadedInstallerPath))
+            {
                 throw new FileNotFoundException("Installer not found.", DownloadedInstallerPath);
+            }
 
             Process.Start(new ProcessStartInfo
             {
@@ -129,7 +137,9 @@ namespace SYSi.Services.UpdateService
         {
             string cleaned = tagName.TrimStart('v', 'V').Split('-')[0];
             if (!Version.TryParse(cleaned, out var remote))
+            {
                 return false;
+            }
 
             var current = GetCurrentVersion();
             return remote > current;

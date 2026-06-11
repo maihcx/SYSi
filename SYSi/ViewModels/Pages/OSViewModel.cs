@@ -2,17 +2,13 @@
 {
     public partial class OSViewModel : ObservableObject, INavigationAware
     {
-        private bool _isInitialized = false;
-
         private readonly OsHostService osHostService;
 
         public OSViewModel(OsHostService osHostService)
         {
             this.osHostService = osHostService;
-            if (!_isInitialized)
-            {
-                InitializeViewModel();
-            }
+
+            InitializeViewModel();
         }
 
         [ObservableProperty]
@@ -30,8 +26,6 @@
 
         private void InitializeViewModel()
         {
-            _isInitialized = true;
-
             LoadStaticInfo();
         }
 
