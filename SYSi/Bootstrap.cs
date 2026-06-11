@@ -100,6 +100,12 @@
 
         public static void OnStartup()
         {
+            int refreshInfoInterval = UserDataStore.GetValue<int>("RefreshInfoInterval");
+
+            App.GetRequiredService<HardwareHostService>().SetRefreshInterval(refreshInfoInterval);
+
+            App.GetRequiredService<OsHostService>().SetRefreshInterval(refreshInfoInterval);
+
             SplashScreen?.Close(new TimeSpan(0, 0, 0, 0, 0));
         }
 
