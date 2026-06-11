@@ -12,13 +12,39 @@ namespace SYSi.Services.HardwareService;
 /// </summary>
 public sealed partial class HardwareService : IDisposable
 {
+    // ── Parallel snapshot ─────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Loads all hardware info in parallel. Call once at startup.
+    /// Returns a snapshot with CPU, GPU, RAM, Storage, Motherboard, Network
+    /// all populated concurrently.
+    /// </summary>
+    public HardwareSnapshot GetFullSnapshot()
+    {
+        var snapshot = new HardwareSnapshot();
+
+        Parallel.Invoke(
+            new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
+            () => snapshot.Cpu         = GetCpuInfo(),
+            () => snapshot.Gpus        = GetGpuInfoList(),
+            () => snapshot.Ram         = GetRamInfo(),
+            () => snapshot.Drives      = GetStorageInfo(),
+            () => snapshot.Motherboard = GetMotherboardInfo(),
+            () => snapshot.Networks    = GetNetworkInfo()
+        );
+
+        return snapshot;
+    }
+
+    // ── Dispose ───────────────────────────────────────────────────────────────
+
     public void Dispose()
     {
         DisposeGpuPdh();
         DisposeCpuClockPdh();
     }
 
-    // ── Registry helper ──────────────────────────────────────────────────────
+    // ── Registry helper ───────────────────────────────────────────────────────
 
     internal static string GetDeviceProperty(
         IntPtr devInfo, ref NativeMethods.SP_DEVINFO_DATA devData, uint property)
@@ -35,7 +61,7 @@ public sealed partial class HardwareService : IDisposable
         return Encoding.Unicode.GetString(buf).TrimEnd('\0', ' ');
     }
 
-    // ── Format helpers ───────────────────────────────────────────────────────
+    // ── Format helpers ────────────────────────────────────────────────────────
 
     public static string FormatBytes(long bytes)
     {

@@ -15,6 +15,8 @@ public sealed partial class HardwareService
     private int _cpuBaseMHz;
     private readonly object _cpuClockLock = new();
 
+    private static int _cachedBaseMHz;
+
     public HardwareService()
     {
         ReadSystemTimes(out _prevIdle, out _prevKernel, out _prevUser);
@@ -79,16 +81,7 @@ public sealed partial class HardwareService
         info.ShortName    = ParseCpuName(info.Name);
         info.Manufacturer = GetCpuVendor();
 
-        int baseMHz = GetCpuBaseSpeedViaCpuid();
-        if (baseMHz == 0)
-        {
-            var searcher = new ManagementObjectSearcher("select CurrentClockSpeed from Win32_Processor");
-            foreach (var item in searcher.Get())
-            {
-                baseMHz = Convert.ToInt32((uint)item["CurrentClockSpeed"]);
-            }
-        }
-
+        int baseMHz = GetCpuBaseClockMHz();
         info.BaseClockGHz = baseMHz > 0 ? $"{baseMHz / 1000.0:F2} GHz" : "N/A";
     }
 
@@ -96,31 +89,39 @@ public sealed partial class HardwareService
 
     private void InitCpuClockPdh()
     {
-        try
+        _cpuBaseMHz = GetCpuBaseClockMHz();
+
+        if (_cpuBaseMHz == 0) return;
+
+        lock (_cpuClockLock)
         {
-            _cpuBaseMHz = GetCpuBaseSpeedViaCpuid();
-            if (_cpuBaseMHz == 0)
+            if (NativeMethods.PdhOpenQuery(null, 0, out _cpuClockQuery) != 0) return;
+            NativeMethods.PdhAddEnglishCounter(
+                _cpuClockQuery,
+                @"\Processor Information(_Total)\% Processor Performance",
+                0, out _cpuClockCounter);
+            NativeMethods.PdhCollectQueryData(_cpuClockQuery);
+        }
+    }
+
+    public static int GetCpuBaseClockMHz()
+    {   
+        if (_cachedBaseMHz == 0)
+        {
+            _cachedBaseMHz = GetCpuBaseSpeedViaCpuid();
+            if (_cachedBaseMHz == 0)
             {
-                var searcher = new ManagementObjectSearcher("select CurrentClockSpeed from Win32_Processor");
-                foreach (var item in searcher.Get())
+                using (var searcher = new ManagementObjectSearcher("select CurrentClockSpeed from Win32_Processor"))
                 {
-                    _cpuBaseMHz = Convert.ToInt32((uint)item["CurrentClockSpeed"]);
+                    foreach (var item in searcher.Get())
+                    {
+                        _cachedBaseMHz = Convert.ToInt32((uint)item["CurrentClockSpeed"]);
+                    }
                 }
             }
-
-            if (_cpuBaseMHz == 0) return;
-
-            lock (_cpuClockLock)
-            {
-                if (NativeMethods.PdhOpenQuery(null, 0, out _cpuClockQuery) != 0) return;
-                NativeMethods.PdhAddEnglishCounter(
-                    _cpuClockQuery,
-                    @"\Processor Information(_Total)\% Processor Performance",
-                    0, out _cpuClockCounter);
-                NativeMethods.PdhCollectQueryData(_cpuClockQuery);
-            }
         }
-        catch { }
+
+        return _cachedBaseMHz;
     }
 
     public string GetCurrentCpuSpeedGHz()
