@@ -2,17 +2,13 @@
 {
     public partial class NetworkViewModel : ObservableObject, INavigationAware
     {
-        private bool _isInitialized = false;
-
         private readonly HardwareHostService hardwareHostService;
 
         public NetworkViewModel(HardwareHostService hardwareHostService)
         {
             this.hardwareHostService = hardwareHostService;
-            if (!_isInitialized)
-            {
-                InitializeViewModel();
-            }
+
+            InitializeViewModel();
         }
 
         [ObservableProperty]
@@ -30,17 +26,12 @@
 
         private void InitializeViewModel()
         {
-            _isInitialized = true;
             LoadStaticInfo();
         }
 
         private void LoadStaticInfo()
         {
-            try
-            {
-                Adapters = hardwareHostService?.Networks ?? new();
-            }
-            catch { }
+            Adapters = hardwareHostService.Networks;
         }
     }
 }

@@ -4,8 +4,6 @@ namespace SYSi.ViewModels.Pages
 {
     public partial class HomeViewModel : ObservableObject, INavigationAware
     {
-        private bool _isInitialized = false;
-
         private readonly HardwareHostService hardwareHostService;
 
         private readonly OsHostService osHostService;
@@ -23,15 +21,12 @@ namespace SYSi.ViewModels.Pages
             this.navigationService = navigationService;
             this.hardwareHostService = hardwareHostService;
             this.osHostService = osHostService;
+
+            InitializeViewModel();
         }
 
         public Task OnNavigatedToAsync()
         {
-            if (!_isInitialized)
-            {
-                InitializeViewModel();
-            }
-
             return Task.CompletedTask;
         }
 
@@ -42,8 +37,6 @@ namespace SYSi.ViewModels.Pages
 
         private void InitializeViewModel()
         {
-            _isInitialized = true;
-
             LoadStaticInfo();
         }
 
