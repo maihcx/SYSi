@@ -156,8 +156,9 @@ namespace SYSi.Services.HostServices
 
         private static string ParseOsName(string? raw)
         {
-            if (string.IsNullOrWhiteSpace(raw)) return "Windows";
-            return raw.Replace("Microsoft Windows", "Windows")
+            return string.IsNullOrWhiteSpace(raw)
+                ? "Windows"
+                : raw.Replace("Microsoft Windows", "Windows")
                       .Replace("Microsoft", "")
                       .Trim();
         }

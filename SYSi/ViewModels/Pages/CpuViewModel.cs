@@ -2,8 +2,6 @@
 {
     public partial class CpuViewModel : ObservableObject, INavigationAware
     {
-        private bool _isInitialized = false;
-
         private readonly HardwareHostService hardwareHostService;
 
         static string loadingText = LanguageBase.GetLangValue("loading_title");
@@ -11,10 +9,8 @@
         public CpuViewModel(HardwareHostService hardwareHostService)
         {
             this.hardwareHostService = hardwareHostService;
-            if (!_isInitialized)
-            {
-                InitializeViewModel();
-            }
+
+            InitializeViewModel();
         }
 
         [ObservableProperty]
@@ -36,12 +32,9 @@
             ProcessorId = loadingText,
         };
 
-        public async Task OnNavigatedToAsync()
+        public Task OnNavigatedToAsync()
         {
-            if (!_isInitialized)
-            {
-                InitializeViewModel();
-            }
+            return Task.CompletedTask;
         }
 
         public Task OnNavigatedFromAsync()
@@ -51,8 +44,6 @@
 
         private void InitializeViewModel()
         {
-            _isInitialized = true;
-
             LoadStaticInfo();
         }
 

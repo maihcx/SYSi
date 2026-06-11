@@ -5,8 +5,6 @@ namespace SYSi.ViewModels.PagesBottom
 {
     public partial class SettingsViewModel : ObservableObject, INavigationAware
     {
-        private bool _isInitialized = false;
-
         public event Action? ScrollToUpdateRequested;
 
         private static ApplicationThemeManagerService? ThemeManagerService = WindowHelper.ThemeManagerService;
@@ -24,6 +22,8 @@ namespace SYSi.ViewModels.PagesBottom
             this.updateHostService = updateHostService;
             this.hardwareHostService = hardwareHostService;
             this.osHostService = osHostService;
+
+            InitializeViewModel();
         }
 
         // ── Update ─────────────────────────────────────────────────────────
@@ -225,9 +225,6 @@ namespace SYSi.ViewModels.PagesBottom
 
         public Task OnNavigatedToAsync()
         {
-            if (!_isInitialized)
-                InitializeViewModel();
-
             ScrollToUpdateRequested?.Invoke();
 
             updateHostService.PropertyChanged += OnHostPropertyChanged;
@@ -247,7 +244,6 @@ namespace SYSi.ViewModels.PagesBottom
             var v = UpdateService.GetCurrentVersion();
             AppVersion = $"SYSi - {v.Major}.{v.Minor}.{v.Build}";
             UpdateStatusText = LanguageBase.GetLangValue("page_settings_update_idle");
-            _isInitialized = true;
 
             _ = CheckForUpdateAsync();
 

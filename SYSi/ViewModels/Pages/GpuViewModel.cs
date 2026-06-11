@@ -2,8 +2,6 @@
 {
     public partial class GpuViewModel : ObservableObject, INavigationAware
     {
-        private bool _isInitialized = false;
-
         private readonly HardwareHostService hardwareHostService;
 
         private List<GpuInfo> Gpus = new();
@@ -13,10 +11,8 @@
         public GpuViewModel(HardwareHostService hardwareHostService)
         {
             this.hardwareHostService = hardwareHostService;
-            if (!_isInitialized)
-            {
-                InitializeViewModel();
-            }
+
+            InitializeViewModel();
         }
 
         [ObservableProperty]
@@ -64,8 +60,6 @@
 
         private void InitializeViewModel()
         {
-            _isInitialized = true;
-
             setLoading();
 
             LoadStaticInfo();

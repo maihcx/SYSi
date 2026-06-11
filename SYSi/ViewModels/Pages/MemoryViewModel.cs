@@ -2,8 +2,6 @@
 {
     public partial class MemoryViewModel : ObservableObject, INavigationAware
     {
-        private bool _isInitialized = false;
-
         private readonly HardwareHostService hardwareHostService;
 
         static string loadingText = LanguageBase.GetLangValue("loading_title");
@@ -11,10 +9,8 @@
         public MemoryViewModel(HardwareHostService hardwareHostService)
         {
             this.hardwareHostService = hardwareHostService;
-            if (!_isInitialized)
-            {
-                InitializeViewModel();
-            }
+
+            InitializeViewModel();
         }
 
         [ObservableProperty]
@@ -40,8 +36,6 @@
 
         private void InitializeViewModel()
         {
-            _isInitialized = true;
-
             setLoading();
 
             LoadStaticInfo();

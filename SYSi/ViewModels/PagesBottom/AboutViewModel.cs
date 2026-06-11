@@ -2,15 +2,13 @@
 {
     public partial class AboutViewModel : ObservableObject, INavigationAware
     {
-        private bool _isInitialized = false;
+        public AboutViewModel()
+        {
+            InitializeViewModel();
+        }
 
         public Task OnNavigatedToAsync()
         {
-            if (!_isInitialized)
-            {
-                InitializeViewModel();
-            }
-
             return Task.CompletedTask;
         }
 
@@ -24,8 +22,6 @@
 
         private void InitializeViewModel()
         {
-            _isInitialized = true;
-
             var v = Services.UpdateService.UpdateService.GetCurrentVersion();
             AppVersion = $"{v.Major}.{v.Minor}.{v.Build}";
         }
