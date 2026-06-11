@@ -39,29 +39,27 @@ namespace SYSi.Services.HostServices
         {
             try
             {
-                using (var searcher = new ManagementObjectSearcher(
+                using var searcher = new ManagementObjectSearcher(
                     "SELECT Caption, Version, OSArchitecture, InstallDate, LastBootUpTime " +
-                    "FROM Win32_OperatingSystem"))
+                    "FROM Win32_OperatingSystem");
+                foreach (ManagementObject obj in searcher.Get().Cast<ManagementObject>())
                 {
-                    foreach (ManagementObject obj in searcher.Get())
-                    {
-                        string version = obj["Version"]?.ToString()?.Trim() ?? "N/A";
-                        var dtInstall = ManagementDateTimeConverter.ToDateTime(obj["InstallDate"]?.ToString() ?? "");
-                        var dtLastBoot = ManagementDateTimeConverter.ToDateTime(obj["LastBootUpTime"]?.ToString() ?? "");
+                    string version = obj["Version"]?.ToString()?.Trim() ?? "N/A";
+                    var dtInstall = ManagementDateTimeConverter.ToDateTime(obj["InstallDate"]?.ToString() ?? "");
+                    var dtLastBoot = ManagementDateTimeConverter.ToDateTime(obj["LastBootUpTime"]?.ToString() ?? "");
 
-                        OsInfo.OsName         = ParseOsName(obj["Caption"]?.ToString());
-                        OsInfo.OsVersion      = version;
-                        OsInfo.BuildNumber    = ParseBuildNumber(version);
-                        OsInfo.OsArchitecture = obj["OSArchitecture"]?.ToString()?.Trim() ?? "N/A";
+                    OsInfo.OsName         = ParseOsName(obj["Caption"]?.ToString());
+                    OsInfo.OsVersion      = version;
+                    OsInfo.BuildNumber    = ParseBuildNumber(version);
+                    OsInfo.OsArchitecture = obj["OSArchitecture"]?.ToString()?.Trim() ?? "N/A";
 
-                        OsInfo.InstallDate    = dtInstall.ToString("dd/MM/yyyy");
-                        OsInfo.InstallTime    = dtInstall.ToString("HH:mm");
+                    OsInfo.InstallDate    = dtInstall.ToString("dd/MM/yyyy");
+                    OsInfo.InstallTime    = dtInstall.ToString("HH:mm");
 
-                        OsInfo.LastBoot       = dtLastBoot.ToString("dd/MM/yyyy HH:mm");
-                        OsInfo.LastBootDate   = dtLastBoot.ToString("dd/MM/yyyy");
-                        OsInfo.LastBootTime   = dtLastBoot.ToString("HH:mm");
-                        break;
-                    }
+                    OsInfo.LastBoot       = dtLastBoot.ToString("dd/MM/yyyy HH:mm");
+                    OsInfo.LastBootDate   = dtLastBoot.ToString("dd/MM/yyyy");
+                    OsInfo.LastBootTime   = dtLastBoot.ToString("HH:mm");
+                    break;
                 }
 
             }
@@ -80,11 +78,9 @@ namespace SYSi.Services.HostServices
             OsInfo.Locale      = CultureInfo.CurrentCulture.Name;
             OsInfo.TimeZone    = TimeZoneInfo.Local.DisplayName;
 
-            using (var key = Registry.LocalMachine.OpenSubKey(
-                @"SOFTWARE\Microsoft\Windows NT\CurrentVersion"))
-            {
-                OsInfo.OsEdition = key?.GetValue("EditionID")?.ToString() ?? "N/A";
-            }
+            using var key = Registry.LocalMachine.OpenSubKey(
+                @"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+            OsInfo.OsEdition = key?.GetValue("EditionID")?.ToString() ?? "N/A";
         }
 
         private void TimerElapsed(object? sender, ElapsedEventArgs e)
@@ -107,17 +103,15 @@ namespace SYSi.Services.HostServices
         {
             try
             {
-                using (var searcher = new ManagementObjectSearcher(
+                using var searcher = new ManagementObjectSearcher(
                     "SELECT LicenseStatus FROM SoftwareLicensingProduct " +
                     "WHERE PartialProductKey IS NOT NULL " +
-                    "AND ApplicationId = '55c92734-d682-4d71-983e-d6ec3f16059f'"))
+                    "AND ApplicationId = '55c92734-d682-4d71-983e-d6ec3f16059f'");
+                foreach (ManagementObject obj in searcher.Get().Cast<ManagementObject>())
                 {
-                    foreach (ManagementObject obj in searcher.Get())
-                    {
-                        uint status = (uint)(obj["LicenseStatus"] ?? 0u);
-                        OsInfo.IsActivated       = status == 1;
-                        return;
-                    }
+                    uint status = (uint)(obj["LicenseStatus"] ?? 0u);
+                    OsInfo.IsActivated       = status == 1;
+                    return;
                 }
             }
             catch { }

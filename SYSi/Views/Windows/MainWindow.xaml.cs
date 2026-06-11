@@ -57,7 +57,9 @@
         private void RootNavigation_Navigated(NavigationView sender, NavigatedEventArgs args)
         {
             if (args?.Page is not FrameworkElement page)
+            {
                 return;
+            }
 
             var pageType = page.GetType();
 

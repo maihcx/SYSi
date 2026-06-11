@@ -52,7 +52,10 @@ public sealed partial class HardwareService : IDisposable
         NativeMethods.SetupDiGetDeviceRegistryProperty(
             devInfo, ref devData, property, out _, null, 0, out uint needed);
 
-        if (needed == 0) return "N/A";
+        if (needed == 0)
+        {
+            return "N/A";
+        }
 
         var buf = new byte[needed];
         NativeMethods.SetupDiGetDeviceRegistryProperty(
@@ -65,7 +68,11 @@ public sealed partial class HardwareService : IDisposable
 
     public static string FormatBytes(long bytes)
     {
-        if (bytes <= 0) return "N/A";
+        if (bytes <= 0)
+        {
+            return "N/A";
+        }
+
         string[] units = ["B", "KB", "MB", "GB", "TB"];
         double v = bytes;
         int i = 0;
@@ -77,15 +84,24 @@ public sealed partial class HardwareService : IDisposable
 
     internal static string FormatNetworkSpeed(long bps)
     {
-        if (bps >= 1_000_000_000) return $"{bps / 1_000_000_000.0:F0} Gbps";
-        if (bps >= 1_000_000) return $"{bps / 1_000_000:F0} Mbps";
+        if (bps >= 1_000_000_000)
+        {
+            return $"{bps / 1_000_000_000.0:F0} Gbps";
+        }
+
+        if (bps >= 1_000_000)
+        {
+            return $"{bps / 1_000_000:F0} Mbps";
+        }
+
         return $"{bps / 1000} Kbps";
     }
 
     internal static string FormatMac(string raw)
     {
-        if (string.IsNullOrWhiteSpace(raw) || raw.Length != 12) return raw;
-        return string.Join(":", Enumerable.Range(0, 6).Select(i => raw.Substring(i * 2, 2)));
+        return string.IsNullOrWhiteSpace(raw) || raw.Length != 12
+            ? raw
+            : string.Join(":", Enumerable.Range(0, 6).Select(i => raw.Substring(i * 2, 2)));
     }
 
     /// <summary>

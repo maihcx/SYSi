@@ -26,7 +26,10 @@ public sealed partial class HardwareService
         var status = new NativeMethods.MEMORYSTATUSEX
         { dwLength = (uint)Marshal.SizeOf<NativeMethods.MEMORYSTATUSEX>() };
 
-        if (!NativeMethods.GlobalMemoryStatusEx(ref status)) return;
+        if (!NativeMethods.GlobalMemoryStatusEx(ref status))
+        {
+            return;
+        }
 
         ulong total = status.ullTotalPhys;
         ulong avail = status.ullAvailPhys;
@@ -46,10 +49,16 @@ public sealed partial class HardwareService
 
         foreach (var s in ParseSmbios(17))
         {
-            if (s.Length < 0x1C) continue;
+            if (s.Length < 0x1C)
+            {
+                continue;
+            }
 
             ushort size = s.Word(0x0C);
-            if (size == 0 || size == 0xFFFF) continue;  // empty slot
+            if (size == 0 || size == 0xFFFF)
+            {
+                continue;  // empty slot
+            }
 
             long capBytes = size == 0x7FFF
                 ? (long)s.Word(0x1C) * 1024L * 1024L
@@ -74,9 +83,16 @@ public sealed partial class HardwareService
                 DataWidth = s.Length > 0x0B ? s.Word(0x0A) : (ushort)0,
             };
 
-            if (speedMhz > 0) speeds.Add(speedMhz.ToString());
+            if (speedMhz > 0)
+            {
+                speeds.Add(speedMhz.ToString());
+            }
+
             info.Slots.Add(slot);
-            if (string.IsNullOrEmpty(info.MemoryType)) info.MemoryType = slot.MemoryType;
+            if (string.IsNullOrEmpty(info.MemoryType))
+            {
+                info.MemoryType = slot.MemoryType;
+            }
         }
 
         info.SpeedText = speeds.Count switch

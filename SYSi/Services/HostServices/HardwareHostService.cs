@@ -59,7 +59,11 @@ namespace SYSi.Services.HostServices
 
         private async void TimerElapsed(object? sender, ElapsedEventArgs e)
         {
-            if (Interlocked.CompareExchange(ref refreshing, 1, 0) != 0) return;
+            if (Interlocked.CompareExchange(ref refreshing, 1, 0) != 0)
+            {
+                return;
+            }
+
             try
             {
                 await Task.WhenAll(

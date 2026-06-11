@@ -49,9 +49,7 @@
             {
                 try
                 {
-                    if (value is JsonElement elem)
-                        return elem.Deserialize<T>()!;
-                    return (T)Convert.ChangeType(value, typeof(T));
+                    return value is JsonElement elem ? elem.Deserialize<T>()! : (T)Convert.ChangeType(value, typeof(T));
                 }
                 catch { }
             }
@@ -59,9 +57,7 @@
             try
             {
                 var defaultValue = Properties.Settings.Default[key];
-                if (defaultValue is T tVal)
-                    return tVal;
-                return (T)Convert.ChangeType(defaultValue, typeof(T));
+                return defaultValue is T tVal ? tVal : (T)Convert.ChangeType(defaultValue, typeof(T));
             }
             catch
             {

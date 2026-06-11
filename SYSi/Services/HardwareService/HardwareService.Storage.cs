@@ -86,19 +86,21 @@ public sealed partial class HardwareService
                 0, FileShare.ReadWrite, IntPtr.Zero,
                 FileMode.Open, 0, IntPtr.Zero);
 
-            if (handle.IsInvalid) return -1;
+            if (handle.IsInvalid)
+            {
+                return -1;
+            }
 
             int size = Marshal.SizeOf<NativeMethods.VOLUME_DISK_EXTENTS>();
             IntPtr buffer = Marshal.AllocHGlobal(size);
             try
             {
-                if (!NativeMethods.DeviceIoControl(
+                return !NativeMethods.DeviceIoControl(
                         handle,
                         NativeMethods.IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS,
-                        IntPtr.Zero, 0, buffer, (uint)size, out _, IntPtr.Zero))
-                    return -1;
-
-                return (int)Marshal.PtrToStructure<NativeMethods.VOLUME_DISK_EXTENTS>(buffer)
+                        IntPtr.Zero, 0, buffer, (uint)size, out _, IntPtr.Zero)
+                    ? -1
+                    : (int)Marshal.PtrToStructure<NativeMethods.VOLUME_DISK_EXTENTS>(buffer)
                                    .Extents.DiskNumber;
             }
             finally { Marshal.FreeHGlobal(buffer); }
@@ -122,18 +124,27 @@ public sealed partial class HardwareService
 
     private static string NormalizeModel(string pnpId)
     {
-        if (string.IsNullOrWhiteSpace(pnpId)) return "N/A";
+        if (string.IsNullOrWhiteSpace(pnpId))
+        {
+            return "N/A";
+        }
 
         int ven = pnpId.IndexOf("Ven_", StringComparison.OrdinalIgnoreCase);
         int prod = pnpId.IndexOf("&Prod_", StringComparison.OrdinalIgnoreCase);
 
-        if (ven < 0 || prod < 0) return pnpId;
+        if (ven < 0 || prod < 0)
+        {
+            return pnpId;
+        }
 
         string vendor = pnpId.Substring(ven + 4, prod - (ven + 4));
         string product = pnpId[(prod + 6)..];
 
         int slash = product.IndexOf('\\');
-        if (slash >= 0) product = product[..slash];
+        if (slash >= 0)
+        {
+            product = product[..slash];
+        }
 
         return $"{vendor} {product}".Replace('_', ' ').Trim();
     }
