@@ -11,13 +11,15 @@ namespace SYSi.Services.HostServices
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        private readonly int stockTimerInterval = 1000;
+
         public OsHostService()
         {
+            _timer = new System.Timers.Timer(stockTimerInterval);
+
             Task.Run(LoadStaticInfo);
 
-            _timer = new System.Timers.Timer(1000);
-            _timer.Elapsed += TimerElapsed;
-            _timer.Start();
+            TimerStart(stockTimerInterval);
         }
 
         private void LoadStaticInfo()
@@ -61,6 +63,7 @@ namespace SYSi.Services.HostServices
                         break;
                     }
                 }
+
             }
             catch
             {
@@ -174,10 +177,37 @@ namespace SYSi.Services.HostServices
         private void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
+        private void TimerStart(int _timerInterval)
+        {
+            _timer.Elapsed += TimerElapsed;
+            _timer.Interval = _timerInterval;
+            _timer.Start();
+        }
+
+        private void TimerStop()
+        {
+            _timer.Elapsed -= TimerElapsed;
+            _timer.Stop();
+        }
+
+        private void TimerDispose()
+        {
+            TimerStop();
+            _timer.Dispose();
+        }
+
+        public void SetRefreshInterval(int _timerInterval)
+        {
+            TimerStop();
+            if (_timerInterval > 0)
+            {
+                TimerStart(_timerInterval);
+            }
+        }
+
         public void Dispose()
         {
-            _timer.Stop();
-            _timer.Dispose();
+            TimerDispose();
         }
     }
 }

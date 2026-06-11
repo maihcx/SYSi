@@ -83,6 +83,16 @@
                 </StackPanel>
             </controls:FormFieldCard>
 
+            <controls:FormFieldCard Icon="{ui:SymbolIcon Timer24}"
+                                    PrimaryText="{utils:Localization page_settings_refresh_interval_title}"
+                                    DescriptionText="{utils:Localization page_settings_refresh_interval_summary}">
+
+                <ComboBox ItemsSource="{Binding ViewModel.RefreshIntervalList}"
+                          SelectedItem="{Binding ViewModel.SelectedRefreshInterval, Mode=TwoWay}"
+                          DisplayMemberPath="Content"
+                          MinWidth="100" />
+            </controls:FormFieldCard>
+
             <ui:TextBlock
                 Margin="0,24,0,8"
                 FontTypography="BodyStrong"

@@ -13,11 +13,17 @@ namespace SYSi.ViewModels.PagesBottom
 
         private readonly UpdateHostService updateHostService;
 
+        private readonly HardwareHostService hardwareHostService;
+
+        private readonly OsHostService osHostService;
+
         [ObservableProperty] private string _appVersion = string.Empty;
 
-        public SettingsViewModel(UpdateHostService updateHostService)
+        public SettingsViewModel(UpdateHostService updateHostService, HardwareHostService hardwareHostService, OsHostService osHostService)
         {
             this.updateHostService = updateHostService;
+            this.hardwareHostService = hardwareHostService;
+            this.osHostService = osHostService;
         }
 
         // ── Update ─────────────────────────────────────────────────────────
@@ -165,6 +171,52 @@ namespace SYSi.ViewModels.PagesBottom
         partial void OnSliderCornerRadiusChanged(int oldValue, int newValue)
         {
             ThemeManagerService?.GlobalCornerRadius = newValue;
+        }
+        #endregion
+
+        #region Timer Interval Refresher handle
+        private static readonly Dictionary<int, string> refreshIntervalList = new()
+        {
+            {500, "high_title" },
+            {1000, "normal_title" },
+            {2000, "low_title" },
+            {-1, "paused_title" },
+
+        };
+
+        [ObservableProperty]
+        private ObservableCollection<ComboBoxItemInt>? _refreshIntervalList = new() {
+            new()
+            {
+                Value = 500, ContentKey = refreshIntervalList[500]
+            },
+            new()
+            {
+                Value = 1000, ContentKey = refreshIntervalList[1000]
+            },
+            new()
+            {
+                Value = 2000, ContentKey = refreshIntervalList[2000]
+            },
+            new()
+            {
+                Value = -1, ContentKey = refreshIntervalList[-1]
+            }
+        };
+
+        [ObservableProperty]
+        private ComboBoxItemInt? _selectedRefreshInterval = new() 
+        { 
+            Value = UserDataStore.GetValue<int>("RefreshInfoInterval"), 
+            ContentKey = refreshIntervalList[UserDataStore.GetValue<int>("RefreshInfoInterval")] 
+        };
+
+        partial void OnSelectedRefreshIntervalChanged(ComboBoxItemInt? value)
+        {
+            int intValue = value?.Value ?? -1;
+            UserDataStore.SetValue("RefreshInfoInterval", intValue);
+            hardwareHostService.SetRefreshInterval(intValue);
+            osHostService.SetRefreshInterval(intValue);
         }
         #endregion
 

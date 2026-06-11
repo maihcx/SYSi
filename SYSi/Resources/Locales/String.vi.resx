@@ -579,4 +579,22 @@
   <data name="net_type_title" xml:space="preserve">
     <value>Loại adapter</value>
   </data>
+  <data name="page_settings_refresh_interval_title" xml:space="preserve">
+    <value>Tốc độ làm mới thông tin</value>
+  </data>
+  <data name="page_settings_refresh_interval_summary" xml:space="preserve">
+    <value>Chọn tần suất cập nhật báo cáo sử dụng tài nguyên hệ thống</value>
+  </data>
+  <data name="high_title" xml:space="preserve">
+    <value>Cao</value>
+  </data>
+  <data name="normal_title" xml:space="preserve">
+    <value>Bình thường</value>
+  </data>
+  <data name="low_title" xml:space="preserve">
+    <value>Thấp</value>
+  </data>
+  <data name="paused_title" xml:space="preserve">
+    <value>Tạm dừng</value>
+  </data>
 </root>

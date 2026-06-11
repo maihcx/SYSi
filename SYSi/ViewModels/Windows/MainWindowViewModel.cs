@@ -29,12 +29,16 @@
         [ObservableProperty]
         private ObservableCollection<object> _footerMenuItems;
 
-        public MainWindowViewModel(INavigationService navigationService)
+        public MainWindowViewModel(INavigationService navigationService, HardwareHostService hardwareHostService, OsHostService osHostService)
         {
             NavigationHandle.NavigationService = navigationService;
             _navigationService = navigationService;
             _menuItems = NavigationHandle.GetNavCardsInNamespace("SYSi.Views.Pages");
             _footerMenuItems = NavigationHandle.GetNavCardsInNamespace("SYSi.Views.PagesBottom");
+
+            int refreshInfoInterval = UserDataStore.GetValue<int>("RefreshInfoInterval");
+            hardwareHostService.SetRefreshInterval(refreshInfoInterval);
+            osHostService.SetRefreshInterval(refreshInfoInterval);
         }
 
         partial void OnIsPaneOpenChanged(bool value)
