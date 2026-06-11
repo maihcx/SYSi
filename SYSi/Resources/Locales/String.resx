@@ -579,4 +579,22 @@
   <data name="net_type_title" xml:space="preserve">
     <value>net_type_title</value>
   </data>
+  <data name="page_settings_refresh_interval_title" xml:space="preserve">
+    <value>page_settings_refresh_interval_title</value>
+  </data>
+  <data name="page_settings_refresh_interval_summary" xml:space="preserve">
+    <value>page_settings_refresh_interval_summary</value>
+  </data>
+  <data name="high_title" xml:space="preserve">
+    <value>high_title</value>
+  </data>
+  <data name="normal_title" xml:space="preserve">
+    <value>normal_title</value>
+  </data>
+  <data name="low_title" xml:space="preserve">
+    <value>low_title</value>
+  </data>
+  <data name="paused_title" xml:space="preserve">
+    <value>paused_title</value>
+  </data>
 </root>

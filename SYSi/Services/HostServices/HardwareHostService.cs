@@ -18,15 +18,26 @@ namespace SYSi.Services.HostServices
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        private int refreshing = 0;
+
+        private readonly int stockTimerInterval = 1000;
+
         public HardwareHostService(HardwareService.HardwareService hardware)
         {
             _hardware = hardware;
+            _timer = new System.Timers.Timer(stockTimerInterval);
 
             LoadStaticInfo();
+            TimerStart(stockTimerInterval);
+        }
 
-            _timer = new System.Timers.Timer(1000);
-            _timer.Elapsed += TimerElapsed;
-            _timer.Start();
+        public void SetRefreshInterval(int _timerInterval)
+        {
+            TimerStop();
+            if (_timerInterval > 0)
+            {
+                TimerStart(_timerInterval);
+            }
         }
 
         private void LoadStaticInfo()
@@ -89,10 +100,29 @@ namespace SYSi.Services.HostServices
                 new PropertyChangedEventArgs(propertyName));
         }
 
+        private void TimerStart(int _timerInterval)
+        {
+            _timer.Elapsed += TimerElapsed;
+            _timer.Interval = _timerInterval;
+            _timer.Start();
+        }
+
+        private void TimerStop()
+        {
+            _timer.Elapsed -= TimerElapsed;
+            _timer.Stop();
+        }
+
+        private void TimerDispose()
+        {
+            TimerStop();
+            _timer.Dispose();
+        }
+
         public void Dispose()
         {
-            _timer.Stop();
-            _timer.Dispose();
+            TimerDispose();
+            _hardware.Dispose();
         }
     }
 }

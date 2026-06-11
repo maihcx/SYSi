@@ -166,5 +166,17 @@ namespace SYSi.Properties {
                 this["IsNavPaneOpen"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1000")]
+        public int RefreshInfoInterval {
+            get {
+                return ((int)(this["RefreshInfoInterval"]));
+            }
+            set {
+                this["RefreshInfoInterval"] = value;
+            }
+        }
     }
 }
