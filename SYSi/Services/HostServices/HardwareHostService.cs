@@ -31,14 +31,15 @@ namespace SYSi.Services.HostServices
 
         private void LoadStaticInfo()
         {
-            CpuInfo = _hardware.GetCpuInfo();
-            RamInfo = _hardware.GetRamInfo();
 
-            Gpus = _hardware.GetGpuInfoList();
-            Drives = _hardware.GetStorageInfo();
-            Networks = _hardware.GetNetworkInfo();
+            var snapshot = _hardware.GetFullSnapshot();
 
-            Motherboard = _hardware.GetMotherboardInfo();
+            CpuInfo     = snapshot.Cpu;
+            RamInfo     = snapshot.Ram;
+            Gpus        = snapshot.Gpus;
+            Drives      = snapshot.Drives;
+            Networks    = snapshot.Networks;
+            Motherboard = snapshot.Motherboard;
 
             _hardware.InitGpuPdh(Gpus);
 
@@ -47,6 +48,7 @@ namespace SYSi.Services.HostServices
 
         private async void TimerElapsed(object? sender, ElapsedEventArgs e)
         {
+            if (Interlocked.CompareExchange(ref refreshing, 1, 0) != 0) return;
             try
             {
                 await Task.WhenAll(
@@ -62,8 +64,10 @@ namespace SYSi.Services.HostServices
                     OnPropertyChanged(nameof(RamInfo));
                 });
             }
-            catch
+            catch { }
+            finally
             {
+                Interlocked.Exchange(ref refreshing, 0);
             }
         }
 

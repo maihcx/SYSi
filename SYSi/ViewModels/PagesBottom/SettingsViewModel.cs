@@ -18,8 +18,6 @@ namespace SYSi.ViewModels.PagesBottom
         public SettingsViewModel(UpdateHostService updateHostService)
         {
             this.updateHostService = updateHostService;
-
-            updateHostService.PropertyChanged += OnHostPropertyChanged;
         }
 
         // ── Update ─────────────────────────────────────────────────────────
@@ -180,11 +178,15 @@ namespace SYSi.ViewModels.PagesBottom
 
             ScrollToUpdateRequested?.Invoke();
 
+            updateHostService.PropertyChanged += OnHostPropertyChanged;
+
             return Task.CompletedTask;
         }
 
         public Task OnNavigatedFromAsync()
         {
+            updateHostService.PropertyChanged -= OnHostPropertyChanged;
+
             return Task.CompletedTask;
         }
 

@@ -342,15 +342,17 @@ public sealed partial class HardwareService
 
     // ── Parsing helpers ──────────────────────────────────────────────────────
 
+    private static readonly Regex LuidRegex = new(@"luid_0x([0-9A-Fa-f]+)_0x([0-9A-Fa-f]+)",  RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static readonly Regex PciIdRegex = new(@"VEN_([0-9A-Fa-f]{4})&DEV_([0-9A-Fa-f]{4})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     /// <summary>
     /// Extracts the LUID from a PDH GPU Engine instance name.
     /// Format: "pid_XXX_luid_0xHHHHHHHH_0xLLLLLLLL_phys_N_eng_M_engtype_3D"
     /// </summary>
     private static (uint hi, uint lo)? ParseLuid(string name)
     {
-        var m = Regex.Match(name,
-            @"luid_0x([0-9A-Fa-f]+)_0x([0-9A-Fa-f]+)",
-            RegexOptions.IgnoreCase);
+        var m = LuidRegex.Match(name);
 
         if (!m.Success) return null;
 
@@ -362,9 +364,7 @@ public sealed partial class HardwareService
     /// <summary>Parses "VEN_XXXX&amp;DEV_XXXX" from a PnP hardware ID string.</summary>
     private static (string vendor, string device) ParsePciIds(string pnpId)
     {
-        var m = Regex.Match(pnpId,
-            @"VEN_([0-9A-Fa-f]{4})&DEV_([0-9A-Fa-f]{4})",
-            RegexOptions.IgnoreCase);
+        var m = PciIdRegex.Match(pnpId);
 
         return m.Success
             ? (m.Groups[1].Value.ToUpperInvariant(), m.Groups[2].Value.ToUpperInvariant())

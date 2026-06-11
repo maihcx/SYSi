@@ -7,21 +7,22 @@ public sealed partial class HardwareService
         var drives = new List<StorageDriveInfo>();
         try
         {
+            // Build basic info for all ready drives
             foreach (var drive in DriveInfo.GetDrives())
             {
                 if (!drive.IsReady) continue;
-
-                var info = BuildDriveInfo(drive);
-                drives.Add(info);
+                drives.Add(BuildDriveInfo(drive));
             }
 
+            // Enrich with model names — each drive opens a handle independently,
+            // so they can run in parallel safely
             EnrichDrivesWithModel(drives);
         }
         catch { }
         return drives;
     }
 
-    // ── Build ────────────────────────────────────────────────────────────────
+    // ── Build ─────────────────────────────────────────────────────────────────
 
     private static StorageDriveInfo BuildDriveInfo(DriveInfo drive)
     {
@@ -54,79 +55,55 @@ public sealed partial class HardwareService
         return info;
     }
 
-    // ── Model name from Registry (HARDWARE\DEVICEMAP\Scsi) ──────────────────
+    // ── Model name enrichment (parallel per-drive) ────────────────────────────
 
     private static void EnrichDrivesWithModel(List<StorageDriveInfo> drives)
     {
-        var cache = new Dictionary<int, string>();
+        // Resolve disk numbers in parallel — each call opens its own handle
+        var diskNumbers = new int[drives.Count];
+        Parallel.For(0, drives.Count, i =>
+            diskNumbers[i] = GetDiskNumber(drives[i].Letter));
 
-        foreach (var drive in drives)
+        // Model lookup by disk number — deduplicate with a shared cache
+        // ConcurrentDictionary avoids locking on the common case (cache hit)
+        var modelCache = new System.Collections.Concurrent.ConcurrentDictionary<int, string>();
+
+        Parallel.For(0, drives.Count, i =>
         {
-            int diskNumber = GetDiskNumber(drive.Letter);
-
-            if (diskNumber < 0)
-            {
-                drive.Model = "N/A";
-                continue;
-            }
-
-            if (!cache.TryGetValue(diskNumber, out string? model))
-            {
-                model = GetDiskModel(diskNumber);
-                cache[diskNumber] = model;
-            }
-
-            drive.Model = model;
-        }
+            int disk = diskNumbers[i];
+            drives[i].Model = disk < 0
+                ? "N/A"
+                : modelCache.GetOrAdd(disk, GetDiskModel);
+        });
     }
 
     private static int GetDiskNumber(string driveLetter)
     {
         try
         {
-            using var handle =
-                NativeMethods.CreateFile(
-                    @"\\.\" + driveLetter.TrimEnd('\\'),
-                    0,
-                    FileShare.ReadWrite,
-                    IntPtr.Zero,
-                    FileMode.Open,
-                    0,
-                    IntPtr.Zero);
+            using var handle = NativeMethods.CreateFile(
+                @"\\.\" + driveLetter.TrimEnd('\\'),
+                0, FileShare.ReadWrite, IntPtr.Zero,
+                FileMode.Open, 0, IntPtr.Zero);
 
-            if (handle.IsInvalid)
-                return -1;
+            if (handle.IsInvalid) return -1;
 
             int size = Marshal.SizeOf<NativeMethods.VOLUME_DISK_EXTENTS>();
             IntPtr buffer = Marshal.AllocHGlobal(size);
-
             try
             {
                 if (!NativeMethods.DeviceIoControl(
                         handle,
                         NativeMethods.IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS,
-                        IntPtr.Zero,
-                        0,
-                        buffer,
-                        (uint)size,
-                        out _,
-                        IntPtr.Zero))
+                        IntPtr.Zero, 0, buffer, (uint)size, out _, IntPtr.Zero))
                     return -1;
 
-                var extents =
-                    Marshal.PtrToStructure<NativeMethods.VOLUME_DISK_EXTENTS>(buffer);
-
-                return (int)extents.Extents.DiskNumber;
+                return (int)Marshal.PtrToStructure<NativeMethods.VOLUME_DISK_EXTENTS>(buffer)
+                                   .Extents.DiskNumber;
             }
-            finally
-            {
-                Marshal.FreeHGlobal(buffer);
-            }
+            finally { Marshal.FreeHGlobal(buffer); }
         }
-        catch
-        {
-            return -1;
-        }
+        catch { return -1; }
     }
 
     private static string GetDiskModel(int diskNumber)
@@ -136,40 +113,28 @@ public sealed partial class HardwareService
             using var key = Registry.LocalMachine.OpenSubKey(
                 @"SYSTEM\CurrentControlSet\Services\disk\Enum");
 
-            string? value =
-                key?.GetValue(diskNumber.ToString())?.ToString();
+            string? value = key?.GetValue(diskNumber.ToString())?.ToString();
 
-            return string.IsNullOrWhiteSpace(value)
-                ? "N/A"
-                : NormalizeModel(value);
+            return string.IsNullOrWhiteSpace(value) ? "N/A" : NormalizeModel(value);
         }
-        catch
-        {
-            return "N/A";
-        }
+        catch { return "N/A"; }
     }
 
     private static string NormalizeModel(string pnpId)
     {
-        if (string.IsNullOrWhiteSpace(pnpId))
-            return "N/A";
+        if (string.IsNullOrWhiteSpace(pnpId)) return "N/A";
 
         int ven = pnpId.IndexOf("Ven_", StringComparison.OrdinalIgnoreCase);
         int prod = pnpId.IndexOf("&Prod_", StringComparison.OrdinalIgnoreCase);
 
-        if (ven < 0 || prod < 0)
-            return pnpId;
+        if (ven < 0 || prod < 0) return pnpId;
 
         string vendor = pnpId.Substring(ven + 4, prod - (ven + 4));
-
         string product = pnpId[(prod + 6)..];
 
         int slash = product.IndexOf('\\');
-        if (slash >= 0)
-            product = product[..slash];
+        if (slash >= 0) product = product[..slash];
 
-        return $"{vendor} {product}"
-            .Replace('_', ' ')
-            .Trim();
+        return $"{vendor} {product}".Replace('_', ' ').Trim();
     }
 }
