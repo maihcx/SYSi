@@ -128,7 +128,9 @@ public class InfoRow : ContentControl
     {
         string? text = ValueContent as string ?? ValueText;
         if (!string.IsNullOrWhiteSpace(text))
+        {
             Clipboard.SetText(text);
+        }
     }
 
     private static void OnValueContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -147,13 +149,10 @@ public class InfoRow : ContentControl
 
         bool hasContent = ValueContent != null;
 
-        if (contentPresenter != null)
-            contentPresenter.Visibility = hasContent ? Visibility.Visible : Visibility.Collapsed;
+        contentPresenter?.Visibility = hasContent ? Visibility.Visible : Visibility.Collapsed;
 
-        if (valueText != null)
-            valueText.Visibility = hasContent ? Visibility.Collapsed : valueText.Visibility;
+        valueText?.Visibility = hasContent ? Visibility.Collapsed : valueText.Visibility;
 
-        if (hyperlinkBtn != null)
-            hyperlinkBtn.Visibility = hasContent ? Visibility.Collapsed : hyperlinkBtn.Visibility;
+        hyperlinkBtn?.Visibility = hasContent ? Visibility.Collapsed : hyperlinkBtn.Visibility;
     }
 }
