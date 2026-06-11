@@ -11,11 +11,17 @@ public sealed partial class HardwareService
     {
         lock (_smbiosLock)
         {
-            if (_smbiosCache != null) return _smbiosCache;
+            if (_smbiosCache != null)
+            {
+                return _smbiosCache;
+            }
 
             const uint RSMB = 0x52534D42;
             uint size = NativeMethods.GetSystemFirmwareTable(RSMB, 0, IntPtr.Zero, 0);
-            if (size == 0) return _smbiosCache = [];
+            if (size == 0)
+            {
+                return _smbiosCache = [];
+            }
 
             IntPtr buf = Marshal.AllocHGlobal((int)size);
             try
@@ -34,14 +40,20 @@ public sealed partial class HardwareService
     internal static IEnumerable<SmbiosStruct> ParseSmbios(byte type)
     {
         byte[] raw = GetSmbiosData();
-        if (raw.Length < 8) yield break;  // 8-byte firmware table header
+        if (raw.Length < 8)
+        {
+            yield break;  // 8-byte firmware table header
+        }
 
         int offset = 8;
         while (offset < raw.Length - 4)
         {
             byte curType = raw[offset];
             byte length = raw[offset + 1];
-            if (length < 4 || offset + length > raw.Length) break;
+            if (length < 4 || offset + length > raw.Length)
+            {
+                break;
+            }
 
             // Locate double-null string terminator
             int strStart = offset + length;
@@ -53,8 +65,10 @@ public sealed partial class HardwareService
             }
 
             if (curType == type)
+            {
                 yield return new SmbiosStruct(raw, offset, length,
                     ParseSmbiosStrings(raw, strStart, strEnd));
+            }
 
             offset = strEnd;
         }
@@ -67,7 +81,11 @@ public sealed partial class HardwareService
         while (i < end - 1)
         {
             int j = i;
-            while (j < end && raw[j] != 0) j++;
+            while (j < end && raw[j] != 0)
+            {
+                j++;
+            }
+
             list.Add(Encoding.UTF8.GetString(raw, i, j - i));
             i = j + 1;
         }

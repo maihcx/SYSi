@@ -35,7 +35,9 @@ namespace SYSi.Services.HostServices
         public async Task CheckAsync(Action<GitHubRelease>? onUpdateFound = null)
         {
             if (Status is UpdateStatus.Checking or UpdateStatus.Downloading)
+            {
                 return;
+            }
 
             Cancel();
             _cts = new CancellationTokenSource();
@@ -73,7 +75,9 @@ namespace SYSi.Services.HostServices
         public async Task DownloadAsync()
         {
             if (Status is not UpdateStatus.UpdateAvailable)
+            {
                 return;
+            }
 
             Cancel();
             _cts = new CancellationTokenSource();
@@ -107,7 +111,9 @@ namespace SYSi.Services.HostServices
         public void LaunchInstaller()
         {
             if (Status is not UpdateStatus.ReadyToInstall)
+            {
                 return;
+            }
 
             _update.LaunchInstaller();
         }
@@ -124,7 +130,11 @@ namespace SYSi.Services.HostServices
 
         private bool SetField<T>(ref T field, T value, [CallerMemberName] string? name = null)
         {
-            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+            if (EqualityComparer<T>.Default.Equals(field, value))
+            {
+                return false;
+            }
+
             field = value;
             OnPropertyChanged(name);
             return true;

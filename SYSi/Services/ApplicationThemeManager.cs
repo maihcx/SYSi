@@ -84,7 +84,10 @@
             get => globalCornerRadius;
             set
             {
-                if (globalCornerRadius == value) return;
+                if (globalCornerRadius == value)
+                {
+                    return;
+                }
 
                 globalCornerRadius = value;
 
