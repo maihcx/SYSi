@@ -1,3 +1,32 @@
+## v0.6.0
+
+## 🚀 Changelog
+## 🚀 Features
+
+- Add configurable refresh interval (#69) — @maihcx
+
+## 🐛 Bug Fixes
+
+- Remove extra space in filename (#66) — @maihcx
+
+## ⚡ Performance
+
+- Set refresh interval on startup; update ViewModel (#76) — @maihcx
+- Set application theme on startup; remove Watch (#74) — @maihcx
+- Use invariant culture for parsing width (#70) — @maihcx
+- Add update type enum and localize OS status (#68) — @maihcx
+- Parallelize hardware snapshot and optimize IO (#67) — @maihcx
+
+## 🧹 Maintenance
+
+- Remove _isInitialized and eagerly initialize viewmodels (#73) — @maihcx
+- Adjust virtualization offset; null-safe InfoRow updates (#72) — @maihcx
+- Add .editorconfig and apply code cleanup (#71) — @maihcx
+- Remove unused _navigationWindow field (#65) — @maihcx
+
+
+---
+
 ## v0.5.1
 
 ## 🚀 Changelog
