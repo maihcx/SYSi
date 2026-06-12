@@ -164,9 +164,41 @@
                        FontWeight="SemiBold"
                        Margin="0,0,0,12" />
 
-            <ItemsControl ItemsSource="{Binding ViewModel.RamInfo.Slots}"
-                          Margin="0 0 0 -8">
-                <ItemsControl.ItemTemplate>
+            <ListBox ItemsSource="{Binding ViewModel.RamInfo.Slots}"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     ScrollViewer.CanContentScroll="True">
+
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="HorizontalContentAlignment"
+                                Value="Stretch" />
+                        <Setter Property="Padding"
+                                Value="0" />
+                        <Setter Property="Margin"
+                                Value="0" />
+                        <Setter Property="Focusable"
+                                Value="False" />
+                        <Setter Property="FocusVisualStyle"
+                                Value="{x:Null}" />
+
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <ContentPresenter />
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+
+                <ListBox.ItemTemplate>
                     <DataTemplate>
                         <ui:CardAction Margin="0,0,0,8"
                                        IsChevronVisible="False">
@@ -230,7 +262,7 @@
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                                         <TextBlock Text="{Binding MemoryType}"
                                                    FontWeight="SemiBold"
-                                                   TextTrimming="CharacterEllipsis"/>
+                                                   TextTrimming="CharacterEllipsis" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="1">
                                         <TextBlock Text="{utils:Localization memory_speed_rated_title}"
@@ -350,9 +382,8 @@
                             </StackPanel>
                         </ui:CardAction>
                     </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-
+                </ListBox.ItemTemplate>
+            </ListBox>
         </StackPanel>
     </Grid>
 </Page>
