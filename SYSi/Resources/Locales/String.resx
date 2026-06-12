@@ -600,4 +600,13 @@
   <data name="bios_microcode_title" xml:space="preserve">
     <value>bios_microcode_title</value>
   </data>
+  <data name="chipset_title" xml:space="preserve">
+    <value>chipset_title</value>
+  </data>
+  <data name="southbridge_title" xml:space="preserve">
+    <value>southbridge_title</value>
+  </data>
+  <data name="bus_specs_title" xml:space="preserve">
+    <value>bus_specs_title</value>
+  </data>
 </root>

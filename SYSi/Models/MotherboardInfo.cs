@@ -30,6 +30,15 @@
         public string _systemModel = string.Empty;
 
         [ObservableProperty]
+        public string _busSpecs = string.Empty;
+
+        [ObservableProperty]
         public string _microcode = string.Empty;
+
+        [ObservableProperty]
+        public string _chipset = string.Empty;
+
+        [ObservableProperty]
+        public string _southbridge = string.Empty;
     }
 }
