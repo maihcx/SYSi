@@ -91,21 +91,5 @@
                 BringToFront(mw);
             }
         }
-
-        public static bool IsAutoHideNavPanel
-        {
-            get;
-            set
-            {
-                if (field == value)
-                {
-                    return;
-                }
-
-                field = value;
-                UserDataStore.SetValue("IsAutoHideNavPanel", field);
-                OnAutoHideNavChanged?.Invoke(value);
-            }
-        } = UserDataStore.GetValue<bool>("IsAutoHideNavPanel");
     }
 }

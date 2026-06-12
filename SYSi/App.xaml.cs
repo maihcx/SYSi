@@ -43,6 +43,10 @@
             {
                 services.AddNavigationViewPageProvider();
 
+                services.AddSingleton<NavigationPanelHostService>();
+
+                services.AddSingleton<IHostedService>(ihsv => ihsv.GetRequiredService<NavigationPanelHostService>());
+
                 services.AddHostedService<ApplicationHostService>();
 
                 // Main window with navigation

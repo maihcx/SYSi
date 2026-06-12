@@ -15,13 +15,23 @@ namespace SYSi.ViewModels.PagesBottom
 
         private readonly OsHostService osHostService;
 
+        private readonly NavigationPanelHostService navigationPanelHostService;
+
         [ObservableProperty] private string _appVersion = string.Empty;
 
-        public SettingsViewModel(UpdateHostService updateHostService, HardwareHostService hardwareHostService, OsHostService osHostService)
+        public SettingsViewModel(
+            UpdateHostService updateHostService, 
+            HardwareHostService hardwareHostService, 
+            OsHostService osHostService, 
+            NavigationPanelHostService navigationPanelHostService
+        )
         {
             this.updateHostService = updateHostService;
             this.hardwareHostService = hardwareHostService;
             this.osHostService = osHostService;
+            this.navigationPanelHostService = navigationPanelHostService;
+
+            _autoHideNavigationPanel = navigationPanelHostService.NaviPanelOpen == NaviPanelOpenState.Auto;
 
             InitializeViewModel();
         }
@@ -116,11 +126,20 @@ namespace SYSi.ViewModels.PagesBottom
 
         #region Navigation panel auto hide
         [ObservableProperty]
-        private bool _autoHideNavigationPanel = WindowHelper.IsAutoHideNavPanel;
+        private bool _autoHideNavigationPanel;
 
-        partial void OnAutoHideNavigationPanelChanged(bool oldValue, bool newValue)
+        partial void OnAutoHideNavigationPanelChanged(bool value)
         {
-            WindowHelper.IsAutoHideNavPanel = AutoHideNavigationPanel = newValue;
+            if (value)
+            {
+                navigationPanelHostService.NaviPanelOpen = NaviPanelOpenState.Auto;
+            }
+            else
+            {
+                navigationPanelHostService.NaviPanelOpen = 
+                    navigationPanelHostService.GetIsPanelInternalOpen() ? 
+                    NaviPanelOpenState.Open : NaviPanelOpenState.Close;
+            }
         }
         #endregion
 
