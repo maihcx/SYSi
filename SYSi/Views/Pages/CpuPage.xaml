@@ -82,6 +82,10 @@
                                           ValueText="{Binding ViewModel.CpuInfo.Name}"
                                           ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
+                                          LabelText="{utils:Localization code_name_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.CodeName}"
+                                          ValueHorizontalAlign="Right" />
+                        <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization manu_title}"
                                           ValueText="{Binding ViewModel.CpuInfo.Manufacturer}"
                                           ValueHorizontalAlign="Right" />
@@ -108,6 +112,10 @@
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization proc_id_title}"
                                           ValueText="{Binding ViewModel.CpuInfo.ProcessorId}"
+                                          ValueHorizontalAlign="Right" />
+                        <controls:InfoRow LabelWidth="100"
+                                          LabelText="{utils:Localization instructions_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.Instructions}"
                                           ValueHorizontalAlign="Right"
                                           IsLast="True" />
                     </StackPanel>
@@ -131,6 +139,10 @@
                         </StackPanel>
                         
                         <controls:InfoRow LabelWidth="100"
+                                          LabelText="{utils:Localization max_tdp_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.MaxTdp}"
+                                          ValueHorizontalAlign="Right" />
+                        <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization cores_title}"
                                           ValueText="{Binding ViewModel.CpuInfo.PhysicalCores}"
                                           ValueHorizontalAlign="Right" />
@@ -145,6 +157,10 @@
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization current_clock_title}"
                                           ValueText="{Binding ViewModel.CpuInfo.CurrentClockGHz}"
+                                          ValueHorizontalAlign="Right" />
+                        <controls:InfoRow LabelWidth="100"
+                                          LabelText="{utils:Localization ratio_boost_title}"
+                                          ValueText="{Binding ViewModel.CpuInfo.BoostRatio}"
                                           ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization l1_title}"

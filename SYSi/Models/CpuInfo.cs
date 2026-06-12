@@ -56,6 +56,18 @@
         [ObservableProperty]
         public double _usagePercent;
 
+        [ObservableProperty]
+        public string _codeName = string.Empty;
+
+        [ObservableProperty]
+        public string _maxTdp = string.Empty;
+
+        [ObservableProperty]
+        public string _instructions = string.Empty;
+
+        [ObservableProperty]
+        public string _boostRatio = string.Empty;
+
         public double TemperatureCelsius { get; set; }
     }
 }
