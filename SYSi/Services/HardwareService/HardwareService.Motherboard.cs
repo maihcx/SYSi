@@ -93,7 +93,9 @@ public sealed partial class HardwareService
             ref classGuid, IntPtr.Zero, IntPtr.Zero, NativeMethods.DIGCF_PRESENT);
 
         if (deviceInfoSet == IntPtr.Zero || deviceInfoSet == new IntPtr(-1))
+        {
             return;
+        }
 
         try
         {
@@ -197,8 +199,8 @@ public sealed partial class HardwareService
     {
         // 700-series PCH — Raptor Lake / Raptor Lake Refresh — DMI 4.0 x8
         ["7A04"] = ("Intel Raptor Lake", "Intel Z790", "PCI-Express 4.0 (16.0 GT/s)"),
-        ["7A06"] = ("Intel Raptor Lake", "Intel H770", "PCI-Express 4.0 (16.0 GT/s)"),
-        ["7A08"] = ("Intel Raptor Lake", "Intel B760", "PCI-Express 4.0 (16.0 GT/s)"),
+        ["7A06"] = ("Intel Raptor Lake", "Intel B760", "PCI-Express 4.0 (16.0 GT/s)"),
+        ["7A08"] = ("Intel Raptor Lake", "Intel H770", "PCI-Express 4.0 (16.0 GT/s)"),
         ["7A0C"] = ("Intel Raptor Lake", "Intel Q670", "PCI-Express 4.0 (16.0 GT/s)"),
         ["7A14"] = ("Intel Raptor Lake", "Intel W680", "PCI-Express 4.0 (16.0 GT/s)"),
 
