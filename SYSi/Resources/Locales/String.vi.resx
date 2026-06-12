@@ -600,4 +600,13 @@
   <data name="bios_microcode_title" xml:space="preserve">
     <value>Vi mã</value>
   </data>
+  <data name="chipset_title" xml:space="preserve">
+    <value>Chipset</value>
+  </data>
+  <data name="southbridge_title" xml:space="preserve">
+    <value>Cầu Nam</value>
+  </data>
+  <data name="bus_specs_title" xml:space="preserve">
+    <value>Thông số Bus</value>
+  </data>
 </root>

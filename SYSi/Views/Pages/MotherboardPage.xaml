@@ -33,24 +33,30 @@
                                    FontWeight="SemiBold"
                                    FontSize="14" />
                     </StackPanel>
-                    
+
                     <controls:InfoRow LabelText="{utils:Localization manu_title}"
-                                        ValueText="{Binding ViewModel.MotherboardInfo.Manufacturer}" />
+                                      ValueText="{Binding ViewModel.MotherboardInfo.Manufacturer}" />
                     <controls:InfoRow LabelText="{utils:Localization product_title}"
-                                        ValueText="{Binding ViewModel.MotherboardInfo.Product}" />
+                                      ValueText="{Binding ViewModel.MotherboardInfo.Product}" />
                     <controls:InfoRow LabelText="{utils:Localization version_title}"
-                                        ValueText="{Binding ViewModel.MotherboardInfo.Version}" />
+                                      ValueText="{Binding ViewModel.MotherboardInfo.Version}" />
                     <controls:InfoRow LabelText="{utils:Localization serial_title}"
-                                        ValueText="{Binding ViewModel.MotherboardInfo.SerialNumber}" />
+                                      ValueText="{Binding ViewModel.MotherboardInfo.SerialNumber}" />
                     <controls:InfoRow LabelText="{utils:Localization sys_model_title}"
-                                        ValueText="{Binding ViewModel.MotherboardInfo.SystemModel}" />
+                                      ValueText="{Binding ViewModel.MotherboardInfo.SystemModel}" />
+                    <controls:InfoRow LabelText="{utils:Localization bus_specs_title}"
+                                      ValueText="{Binding ViewModel.MotherboardInfo.BusSpecs}" />
                     <controls:InfoRow LabelText="{utils:Localization sys_family_title}"
-                                        ValueText="{Binding ViewModel.MotherboardInfo.SystemFamily}"
-                                        IsLast="True" />
+                                      ValueText="{Binding ViewModel.MotherboardInfo.SystemFamily}" />
+                    <controls:InfoRow LabelText="{utils:Localization chipset_title}"
+                                      ValueText="{Binding ViewModel.MotherboardInfo.Chipset}"  />
+                    <controls:InfoRow LabelText="{utils:Localization southbridge_title}"
+                                      ValueText="{Binding ViewModel.MotherboardInfo.Southbridge}"
+                                      IsLast="True" />
                 </StackPanel>
             </ui:CardAction>
 
-                <!-- BIOS info -->
+            <!-- BIOS info -->
             <ui:CardAction IsChevronVisible="False">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal"
@@ -63,13 +69,13 @@
                                    FontWeight="SemiBold"
                                    FontSize="14" />
                     </StackPanel>
-                    
+
                     <controls:InfoRow LabelText="{utils:Localization bios_manu_title}"
                                       ValueText="{Binding ViewModel.MotherboardInfo.BiosManufacturer}" />
                     <controls:InfoRow LabelText="{utils:Localization bios_ver_title}"
                                       ValueText="{Binding ViewModel.MotherboardInfo.BiosVersion}" />
                     <controls:InfoRow LabelText="{utils:Localization bios_date_title}"
-                                      ValueText="{Binding ViewModel.MotherboardInfo.BiosDate}"  />
+                                      ValueText="{Binding ViewModel.MotherboardInfo.BiosDate}" />
                     <controls:InfoRow LabelText="{utils:Localization bios_microcode_title}"
                                       ValueText="{Binding ViewModel.MotherboardInfo.Microcode}"
                                       IsLast="True" />
