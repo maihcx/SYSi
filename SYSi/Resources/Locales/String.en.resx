@@ -597,4 +597,7 @@
   <data name="paused_title" xml:space="preserve">
     <value>Paused</value>
   </data>
+  <data name="bios_microcode_title" xml:space="preserve">
+    <value>Microcode</value>
+  </data>
 </root>

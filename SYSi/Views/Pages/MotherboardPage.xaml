@@ -69,7 +69,9 @@
                     <controls:InfoRow LabelText="{utils:Localization bios_ver_title}"
                                       ValueText="{Binding ViewModel.MotherboardInfo.BiosVersion}" />
                     <controls:InfoRow LabelText="{utils:Localization bios_date_title}"
-                                      ValueText="{Binding ViewModel.MotherboardInfo.BiosDate}"
+                                      ValueText="{Binding ViewModel.MotherboardInfo.BiosDate}"  />
+                    <controls:InfoRow LabelText="{utils:Localization bios_microcode_title}"
+                                      ValueText="{Binding ViewModel.MotherboardInfo.Microcode}"
                                       IsLast="True" />
                 </StackPanel>
             </ui:CardAction>

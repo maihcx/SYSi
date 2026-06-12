@@ -597,4 +597,7 @@
   <data name="paused_title" xml:space="preserve">
     <value>Tạm dừng</value>
   </data>
+  <data name="bios_microcode_title" xml:space="preserve">
+    <value>Vi mã</value>
+  </data>
 </root>
