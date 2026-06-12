@@ -1,3 +1,30 @@
+## v0.7.0
+
+## 🚀 Changelog
+## 🚀 Features
+
+- Enhance RAM info, UI and converters (#85) — @maihcx
+- Display CPU code name, TDP, instructions & boost (#83) — @maihcx
+- Support chipset/southbridge detection and display (#81) — @maihcx
+- Add BIOS microcode support (#80) — @maihcx
+
+## 🐛 Bug Fixes
+
+- Wrap TimerStop in try/catch (#82) — @maihcx
+
+## ⚡ Performance
+
+- Use virtualizing ListBox for RAM slots & Storage disk (#86) — @maihcx
+- Invoke PropertyChanged per hardware task (#84) — @maihcx
+
+## 🧹 Maintenance
+
+- Remove AutoHideNavPanelChanged delegate/event (#79) — @maihcx
+- Add NavigationPanelHostService and nav model (#78) — @maihcx
+
+
+---
+
 ## v0.6.0
 
 ## 🚀 Changelog
