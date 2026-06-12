@@ -621,4 +621,43 @@
   <data name="ratio_boost_title" xml:space="preserve">
     <value>ratio_boost_title</value>
   </data>
+  <data name="memory_type_title" xml:space="preserve">
+    <value>memory_type_title</value>
+  </data>
+  <data name="memory_speed_title" xml:space="preserve">
+    <value>memory_speed_title</value>
+  </data>
+  <data name="memory_channel_title" xml:space="preserve">
+    <value>memory_channel_title</value>
+  </data>
+  <data name="memory_slots_used_title" xml:space="preserve">
+    <value>memory_slots_used_title</value>
+  </data>
+  <data name="memory_speed_rated_title" xml:space="preserve">
+    <value>memory_speed_rated_title</value>
+  </data>
+  <data name="memory_form_factor_title" xml:space="preserve">
+    <value>memory_form_factor_title</value>
+  </data>
+  <data name="memory_speed_configured_title" xml:space="preserve">
+    <value>memory_speed_configured_title</value>
+  </data>
+  <data name="memory_data_width_title" xml:space="preserve">
+    <value>memory_data_width_title</value>
+  </data>
+  <data name="memory_voltage_title" xml:space="preserve">
+    <value>memory_voltage_title</value>
+  </data>
+  <data name="memory_min_voltage_title" xml:space="preserve">
+    <value>memory_min_voltage_title</value>
+  </data>
+  <data name="memory_max_voltage_title" xml:space="preserve">
+    <value>memory_max_voltage_title</value>
+  </data>
+  <data name="memory_part_number_title" xml:space="preserve">
+    <value>memory_part_number_title</value>
+  </data>
+  <data name="memory_serial_number_title" xml:space="preserve">
+    <value>memory_serial_number_title</value>
+  </data>
 </root>
