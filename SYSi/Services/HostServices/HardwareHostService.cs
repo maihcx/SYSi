@@ -67,17 +67,34 @@ namespace SYSi.Services.HostServices
             try
             {
                 await Task.WhenAll(
-                    Task.Run(() => _hardware.RefreshCPUInfo(CpuInfo)),
-                    Task.Run(() => _hardware.RefreshGpuUsage(Gpus)),
-                    Task.Run(() => _hardware.RefreshRamInfo(RamInfo))
-                );
+                    Task.Run(() =>
+                    {
+                        _hardware.RefreshCPUInfo(CpuInfo);
 
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    OnPropertyChanged(nameof(CpuInfo));
-                    OnPropertyChanged(nameof(Gpus));
-                    OnPropertyChanged(nameof(RamInfo));
-                });
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            OnPropertyChanged(nameof(CpuInfo));
+                        });
+                    }),
+                    Task.Run(() =>
+                    {
+                        _hardware.RefreshGpuUsage(Gpus);
+
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            OnPropertyChanged(nameof(Gpus));
+                        });
+                    }),
+                    Task.Run(() =>
+                    {
+                        _hardware.RefreshRamInfo(RamInfo);
+
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            OnPropertyChanged(nameof(RamInfo));
+                        });
+                    })
+                );
             }
             catch { }
             finally
