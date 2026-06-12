@@ -10,6 +10,7 @@ public sealed partial class HardwareService
             ReadBaseboard(info);
             ReadBios(info);
             ReadSystemInfo(info);
+            ReadBiosMicrocode(info);
         }
         catch { }
         return info;
@@ -52,5 +53,24 @@ public sealed partial class HardwareService
             info.SystemFamily = s.Length > 0x1A ? s.Str(0x1A) : "N/A";
             break;
         }
+    }
+
+    public static void ReadBiosMicrocode(MotherboardInfo info)
+    {
+        string microcode = "N/A";
+        try
+        {
+            using var key = Registry.LocalMachine.OpenSubKey(
+                @"HARDWARE\DESCRIPTION\System\CentralProcessor\0");
+
+            if (key?.GetValue("Update Revision") is byte[] data && data.Length >= 4)
+            {
+                uint revision = BitConverter.ToUInt32(data, 0);
+                microcode = $"0x{revision:X}";
+            }
+        }
+        catch { }
+
+        info.Microcode = microcode;
     }
 }

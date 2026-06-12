@@ -28,5 +28,8 @@
 
         [ObservableProperty]
         public string _systemModel = string.Empty;
+
+        [ObservableProperty]
+        public string _microcode = string.Empty;
     }
 }
