@@ -15,11 +15,48 @@
       ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
       ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-      mc:Ignorable="d">
+      mc:Ignorable="d"
+      ScrollViewer.CanContentScroll="False">
 
     <Grid Margin="0 0 0 30">
-        <ItemsControl ItemsSource="{Binding ViewModel.Drives}" Margin="0 0 0 -8">
-            <ItemsControl.ItemTemplate>
+        <ListBox ItemsSource="{Binding ViewModel.Drives}"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 ScrollViewer.CanContentScroll="True"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 ui:SmoothScrollBehavior.IsEnabled="True">
+
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="HorizontalContentAlignment"
+                            Value="Stretch" />
+                    <Setter Property="Padding"
+                            Value="0" />
+                    <Setter Property="Margin"
+                            Value="0" />
+                    <Setter Property="Focusable"
+                            Value="False" />
+                    <Setter Property="FocusVisualStyle"
+                            Value="{x:Null}" />
+
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListBoxItem">
+                                <ContentPresenter />
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListBox.ItemContainerStyle>
+
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+
+            <ListBox.ItemTemplate>
                 <DataTemplate>
                     <ui:CardAction Margin="0,0,0,8"
                                    IsChevronVisible="False">
@@ -99,7 +136,7 @@
                         </StackPanel>
                     </ui:CardAction>
                 </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </Page>
