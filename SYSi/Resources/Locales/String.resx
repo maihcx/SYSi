@@ -609,4 +609,16 @@
   <data name="bus_specs_title" xml:space="preserve">
     <value>bus_specs_title</value>
   </data>
+  <data name="code_name_title" xml:space="preserve">
+    <value>code_name_title</value>
+  </data>
+  <data name="max_tdp_title" xml:space="preserve">
+    <value>max_tdp_title</value>
+  </data>
+  <data name="instructions_title" xml:space="preserve">
+    <value>instructions_title</value>
+  </data>
+  <data name="ratio_boost_title" xml:space="preserve">
+    <value>ratio_boost_title</value>
+  </data>
 </root>
