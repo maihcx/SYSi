@@ -19,7 +19,8 @@
 
     <Grid Margin="0 0 0 30">
         <StackPanel>
-            <!-- Summary Row -->
+
+            <!-- Summary Row: Total / Used / Available -->
             <Grid Margin="0 0 0 8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -37,7 +38,8 @@
                         <TextBlock Text="{Binding ViewModel.RamInfo.TotalText}"
                                    FontSize="18"
                                    FontWeight="Bold"
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </ui:CardAction>
                 <ui:CardAction Grid.Column="2"
@@ -49,7 +51,8 @@
                         <TextBlock Text="{Binding ViewModel.RamInfo.UsedText}"
                                    FontSize="18"
                                    FontWeight="Bold"
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </ui:CardAction>
                 <ui:CardAction Grid.Column="4"
@@ -61,7 +64,76 @@
                         <TextBlock Text="{Binding ViewModel.RamInfo.AvailableText}"
                                    FontSize="18"
                                    FontWeight="Bold"
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </ui:CardAction>
+            </Grid>
+
+            <!-- Summary Row 2: Type / Speed / Channel / Slots -->
+            <Grid Margin="0 0 0 8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ui:CardAction Grid.Column="0"
+                               IsChevronVisible="False">
+                    <StackPanel>
+                        <TextBlock Text="{utils:Localization memory_type_title}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{Binding ViewModel.RamInfo.MemoryType}"
+                                   FontSize="15"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </ui:CardAction>
+                <ui:CardAction Grid.Column="2"
+                               IsChevronVisible="False">
+                    <StackPanel>
+                        <TextBlock Text="{utils:Localization memory_speed_title}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{Binding ViewModel.RamInfo.SpeedText}"
+                                   FontSize="15"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </ui:CardAction>
+                <ui:CardAction Grid.Column="4"
+                               IsChevronVisible="False">
+                    <StackPanel>
+                        <TextBlock Text="{utils:Localization memory_channel_title}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{Binding ViewModel.RamInfo.ChannelMode}"
+                                   FontSize="15"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </ui:CardAction>
+                <ui:CardAction Grid.Column="6"
+                               IsChevronVisible="False">
+                    <StackPanel>
+                        <TextBlock Text="{utils:Localization memory_slots_used_title}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <TextBlock FontSize="15"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis">
+                            <Run Text="{Binding ViewModel.RamInfo.PopulatedSlots, Mode=OneWay}" />
+                            <Run Text="/" />
+                            <Run Text="{Binding ViewModel.RamInfo.TotalSlots, Mode=OneWay}" />
+                        </TextBlock>
                     </StackPanel>
                 </ui:CardAction>
             </Grid>
@@ -76,8 +148,8 @@
                         <TextBlock HorizontalAlignment="Right"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
-                    <Run Text="{Binding ViewModel.RamInfo.UsagePercent, StringFormat={}{0:F1}}" />
-                    <Run Text="%" />
+                            <Run Text="{Binding ViewModel.RamInfo.UsagePercent, StringFormat={}{0:F1}}" />
+                            <Run Text="%" />
                         </TextBlock>
                     </Grid>
                     <ProgressBar Value="{Binding ViewModel.RamInfo.UsagePercent}"
@@ -86,36 +158,66 @@
                 </StackPanel>
             </ui:CardAction>
 
-            <!-- Slots -->
+            <!-- Slots heading -->
             <TextBlock Text="{utils:Localization memory_slots_title}"
                        FontSize="16"
                        FontWeight="SemiBold"
                        Margin="0,0,0,12" />
 
-            <ItemsControl ItemsSource="{Binding ViewModel.RamInfo.Slots}" Margin="0 0 0 -8">
+            <ItemsControl ItemsSource="{Binding ViewModel.RamInfo.Slots}"
+                          Margin="0 0 0 -8">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <ui:CardAction Margin="0,0,0,8"
                                        IsChevronVisible="False">
                             <StackPanel>
                                 <!-- Slot header -->
-                                <StackPanel Orientation="Horizontal"
-                                            Margin="0,0,0,12">
-                                    <ui:SymbolIcon Symbol="Memory16"
-                                                   FontSize="20"
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
-                                    <TextBlock Text="{Binding BankLabel}"
-                                               FontWeight="Bold"
-                                               FontSize="14"
-                                               VerticalAlignment="Center"
-                                               Margin="8,0,12,0" />
-                                    <TextBlock Text="{Binding CapacityText}"
-                                               FontSize="13"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                               VerticalAlignment="Center" />
-                                </StackPanel>
+                                <ui:Card Margin="-4,-4,-4,8"
+                                         Padding="8 4"
+                                         Background="{DynamicResource SystemFillColorNeutralBackgroundBrush}">
+                                    <Grid VerticalAlignment="Center">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
 
-                                <!-- Row 1 -->
+                                        <ui:SymbolIcon Grid.Column="0"
+                                                       Symbol="Memory16"
+                                                       FontSize="20"
+                                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{Binding BankLabel}"
+                                                   FontWeight="Bold"
+                                                   FontSize="14"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0" />
+                                        <TextBlock Grid.Column="4"
+                                                   Text="{Binding CapacityText}"
+                                                   FontSize="13"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   VerticalAlignment="Center" />
+
+                                        <Border Grid.Column="5"
+                                                Padding="8 2"
+                                                Margin="0 4"
+                                                CornerRadius="4"
+                                                Background="{DynamicResource SystemFillColorSuccessBackgroundBrush}"
+                                                Visibility="{Binding Rank, Converter={StaticResource ZeroToCollapsedConverter}}">
+                                            <TextBlock FontSize="11"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource SystemFillColorSuccessBrush}">
+                                                    <Run Text="Rank " />
+                                                    <Run Text="{Binding Rank}" />
+                                            </TextBlock>
+                                        </Border>
+                                    </Grid>
+                                </ui:Card>
+
+                                <!-- Row 1: Type / Speed (rated) / Manufacturer -->
                                 <Grid Margin="0,0,0,10">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -123,30 +225,104 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Type"
+                                        <TextBlock Text="{utils:Localization memory_type_title}"
                                                    FontSize="11"
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                                         <TextBlock Text="{Binding MemoryType}"
-                                                   FontWeight="SemiBold" />
+                                                   FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1">
-                                        <TextBlock Text="Speed"
+                                        <TextBlock Text="{utils:Localization memory_speed_rated_title}"
                                                    FontSize="11"
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                                        <TextBlock FontWeight="SemiBold">
-                                    <Run Text="{Binding SpeedMHz}" /><Run Text=" MHz" />
+                                        <TextBlock FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis">
+                                            <Run Text="{Binding SpeedMHz}" /><Run Text=" MHz" />
                                         </TextBlock>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Manufacturer"
+                                        <TextBlock Text="{utils:Localization manu_title}"
                                                    FontSize="11"
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                                         <TextBlock Text="{Binding Manufacturer}"
-                                                   FontWeight="SemiBold" />
+                                                   FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis" />
                                     </StackPanel>
                                 </Grid>
 
-                                <!-- Row 2 -->
+                                <!-- Row 2: Form Factor / Configured Speed / Data Width -->
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{utils:Localization memory_form_factor_title}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{Binding FormFactor}"
+                                                   FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{utils:Localization memory_speed_configured_title}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis">
+                                            <Run Text="{Binding ConfiguredSpeedMHz}" /><Run Text=" MHz" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="{utils:Localization memory_data_width_title}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis">
+                                            <Run Text="{Binding DataWidth}" /><Run Text=" bit" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Row 3: Voltage (configured / min / max) -->
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{utils:Localization memory_voltage_title}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis">
+                                            <Run Text="{Binding ConfiguredVoltage, Converter={StaticResource MvToVoltConverter}}" /><Run Text=" V" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{utils:Localization memory_min_voltage_title}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis">
+                                            <Run Text="{Binding MinVoltage, Converter={StaticResource MvToVoltConverter}}" /><Run Text=" V" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="{utils:Localization memory_max_voltage_title}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis">
+                                            <Run Text="{Binding MaxVoltage, Converter={StaticResource MvToVoltConverter}}" /><Run Text=" V" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Row 4: Part Number / Serial Number -->
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -154,34 +330,29 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Form Factor"
-                                                   FontSize="11"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                                        <TextBlock Text="{Binding FormFactor}"
-                                                   FontWeight="SemiBold" />
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Text="Part Number"
+                                        <TextBlock Text="{utils:Localization memory_part_number_title}"
                                                    FontSize="11"
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                                         <TextBlock Text="{Binding PartNumber}"
                                                    FontWeight="SemiBold"
                                                    TextTrimming="CharacterEllipsis" />
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Data Width"
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{utils:Localization memory_serial_number_title}"
                                                    FontSize="11"
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                                        <TextBlock FontWeight="SemiBold">
-                                    <Run Text="{Binding DataWidth}" /><Run Text=" bit" />
-                                        </TextBlock>
+                                        <TextBlock Text="{Binding SerialNumber}"
+                                                   FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis" />
                                     </StackPanel>
                                 </Grid>
+
                             </StackPanel>
                         </ui:CardAction>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+
         </StackPanel>
     </Grid>
 </Page>

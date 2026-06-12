@@ -28,6 +28,21 @@
 
         [ObservableProperty]
         private ushort _dataWidth;
+
+        [ObservableProperty]
+        private uint _configuredSpeedMHz;
+
+        [ObservableProperty]
+        private ushort _configuredVoltage;
+
+        [ObservableProperty]
+        private ushort _minVoltage;
+
+        [ObservableProperty]
+        private ushort _maxVoltage;
+
+        [ObservableProperty]
+        private byte _rank; 
     }
 
     public partial class RamInfo : ObservableObject
@@ -49,6 +64,15 @@
 
         [ObservableProperty]
         private string _memoryType = string.Empty;
+
+        [ObservableProperty]
+        private string _channelMode = string.Empty;
+
+        [ObservableProperty]
+        private int _totalSlots;
+
+        [ObservableProperty]
+        private int _populatedSlots;
 
         public List<RamSlotInfo> Slots { get; set; } = new();
     }

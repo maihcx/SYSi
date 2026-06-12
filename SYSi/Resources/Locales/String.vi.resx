@@ -621,4 +621,43 @@
   <data name="ratio_boost_title" xml:space="preserve">
     <value>Ratio Boost</value>
   </data>
+  <data name="memory_type_title" xml:space="preserve">
+    <value>Loại</value>
+  </data>
+  <data name="memory_speed_title" xml:space="preserve">
+    <value>Tốc độ</value>
+  </data>
+  <data name="memory_channel_title" xml:space="preserve">
+    <value>Kênh</value>
+  </data>
+  <data name="memory_slots_used_title" xml:space="preserve">
+    <value>Khe cắm</value>
+  </data>
+  <data name="memory_speed_rated_title" xml:space="preserve">
+    <value>Tốc độ (Đánh giá)</value>
+  </data>
+  <data name="memory_form_factor_title" xml:space="preserve">
+    <value>Hình thức</value>
+  </data>
+  <data name="memory_speed_configured_title" xml:space="preserve">
+    <value>Tốc độ (Cấu hình)</value>
+  </data>
+  <data name="memory_data_width_title" xml:space="preserve">
+    <value>Độ rộng dữ liệu</value>
+  </data>
+  <data name="memory_voltage_title" xml:space="preserve">
+    <value>Điện áp</value>
+  </data>
+  <data name="memory_min_voltage_title" xml:space="preserve">
+    <value>Điện áp tối thiểu</value>
+  </data>
+  <data name="memory_max_voltage_title" xml:space="preserve">
+    <value>Điện áp tối đa</value>
+  </data>
+  <data name="memory_part_number_title" xml:space="preserve">
+    <value>Mã sản phẩm</value>
+  </data>
+  <data name="memory_serial_number_title" xml:space="preserve">
+    <value>Số seri</value>
+  </data>
 </root>
