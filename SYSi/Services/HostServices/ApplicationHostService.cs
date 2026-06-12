@@ -35,11 +35,6 @@
         /// </summary>
         private Task HandleActivationAsync()
         {
-            if (Application.Current.Windows.OfType<MainWindow>().Any())
-            {
-                return Task.CompletedTask;
-            }
-
             IWindow mainWindow = _serviceProvider.GetRequiredService<IWindow>();
             mainWindow.Loaded += OnMainWindowLoaded;
             mainWindow?.Show();

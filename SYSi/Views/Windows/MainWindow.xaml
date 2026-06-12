@@ -40,7 +40,6 @@
                            FrameMargin="0"
                            IsBackButtonVisible="Visible"
                            IsPaneToggleVisible="True"
-                           IsPaneOpen="{Binding ViewModel.IsPaneOpen, Mode=TwoWay}"
                            MenuItemsSource="{Binding ViewModel.MenuItems, Mode=OneWay}"
                            OpenPaneLength="240"
                            PaneDisplayMode="Left"
