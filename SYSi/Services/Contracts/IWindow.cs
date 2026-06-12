@@ -9,5 +9,9 @@ public interface IWindow
 {
     event RoutedEventHandler Loaded;
 
+    event SizeChangedEventHandler SizeChanged;
+
+    double Width { get; }
+
     void Show();
 }

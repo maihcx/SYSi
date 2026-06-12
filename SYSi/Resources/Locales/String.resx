@@ -597,4 +597,67 @@
   <data name="paused_title" xml:space="preserve">
     <value>paused_title</value>
   </data>
+  <data name="bios_microcode_title" xml:space="preserve">
+    <value>bios_microcode_title</value>
+  </data>
+  <data name="chipset_title" xml:space="preserve">
+    <value>chipset_title</value>
+  </data>
+  <data name="southbridge_title" xml:space="preserve">
+    <value>southbridge_title</value>
+  </data>
+  <data name="bus_specs_title" xml:space="preserve">
+    <value>bus_specs_title</value>
+  </data>
+  <data name="code_name_title" xml:space="preserve">
+    <value>code_name_title</value>
+  </data>
+  <data name="max_tdp_title" xml:space="preserve">
+    <value>max_tdp_title</value>
+  </data>
+  <data name="instructions_title" xml:space="preserve">
+    <value>instructions_title</value>
+  </data>
+  <data name="ratio_boost_title" xml:space="preserve">
+    <value>ratio_boost_title</value>
+  </data>
+  <data name="memory_type_title" xml:space="preserve">
+    <value>memory_type_title</value>
+  </data>
+  <data name="memory_speed_title" xml:space="preserve">
+    <value>memory_speed_title</value>
+  </data>
+  <data name="memory_channel_title" xml:space="preserve">
+    <value>memory_channel_title</value>
+  </data>
+  <data name="memory_slots_used_title" xml:space="preserve">
+    <value>memory_slots_used_title</value>
+  </data>
+  <data name="memory_speed_rated_title" xml:space="preserve">
+    <value>memory_speed_rated_title</value>
+  </data>
+  <data name="memory_form_factor_title" xml:space="preserve">
+    <value>memory_form_factor_title</value>
+  </data>
+  <data name="memory_speed_configured_title" xml:space="preserve">
+    <value>memory_speed_configured_title</value>
+  </data>
+  <data name="memory_data_width_title" xml:space="preserve">
+    <value>memory_data_width_title</value>
+  </data>
+  <data name="memory_voltage_title" xml:space="preserve">
+    <value>memory_voltage_title</value>
+  </data>
+  <data name="memory_min_voltage_title" xml:space="preserve">
+    <value>memory_min_voltage_title</value>
+  </data>
+  <data name="memory_max_voltage_title" xml:space="preserve">
+    <value>memory_max_voltage_title</value>
+  </data>
+  <data name="memory_part_number_title" xml:space="preserve">
+    <value>memory_part_number_title</value>
+  </data>
+  <data name="memory_serial_number_title" xml:space="preserve">
+    <value>memory_serial_number_title</value>
+  </data>
 </root>

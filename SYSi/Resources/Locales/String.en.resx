@@ -597,4 +597,67 @@
   <data name="paused_title" xml:space="preserve">
     <value>Paused</value>
   </data>
+  <data name="bios_microcode_title" xml:space="preserve">
+    <value>Microcode</value>
+  </data>
+  <data name="chipset_title" xml:space="preserve">
+    <value>Chipset</value>
+  </data>
+  <data name="southbridge_title" xml:space="preserve">
+    <value>Southbridge</value>
+  </data>
+  <data name="bus_specs_title" xml:space="preserve">
+    <value>BusSpecs</value>
+  </data>
+  <data name="code_name_title" xml:space="preserve">
+    <value>Code Name</value>
+  </data>
+  <data name="max_tdp_title" xml:space="preserve">
+    <value>Max TDP</value>
+  </data>
+  <data name="instructions_title" xml:space="preserve">
+    <value>Instructions</value>
+  </data>
+  <data name="ratio_boost_title" xml:space="preserve">
+    <value>Ratio Boost</value>
+  </data>
+  <data name="memory_type_title" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="memory_speed_title" xml:space="preserve">
+    <value>Speed</value>
+  </data>
+  <data name="memory_channel_title" xml:space="preserve">
+    <value>Channel</value>
+  </data>
+  <data name="memory_slots_used_title" xml:space="preserve">
+    <value>Slots</value>
+  </data>
+  <data name="memory_speed_rated_title" xml:space="preserve">
+    <value>Speed (Rated)</value>
+  </data>
+  <data name="memory_form_factor_title" xml:space="preserve">
+    <value>Form Factor</value>
+  </data>
+  <data name="memory_speed_configured_title" xml:space="preserve">
+    <value>Speed (Configured)</value>
+  </data>
+  <data name="memory_data_width_title" xml:space="preserve">
+    <value>Data Width</value>
+  </data>
+  <data name="memory_voltage_title" xml:space="preserve">
+    <value>Voltage</value>
+  </data>
+  <data name="memory_min_voltage_title" xml:space="preserve">
+    <value>Min Voltage</value>
+  </data>
+  <data name="memory_max_voltage_title" xml:space="preserve">
+    <value>Max Voltage</value>
+  </data>
+  <data name="memory_part_number_title" xml:space="preserve">
+    <value>Part Number</value>
+  </data>
+  <data name="memory_serial_number_title" xml:space="preserve">
+    <value>Serial Number</value>
+  </data>
 </root>

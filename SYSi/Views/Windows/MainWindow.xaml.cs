@@ -29,10 +29,7 @@
 
             RootNavigation.Navigated += RootNavigation_Navigated;
 
-            this.SourceInitialized += OnSourceInitialized;
             this.Closing += MainWindow_Closing;
-
-            WindowHelper.OnAutoHideNavChanged += SharedVariable_OnAutoHideNavChanged;
 
             WindowHelper.GlobalSnackbar = snackbarService;
 
@@ -78,15 +75,6 @@
             }
             GC.Collect();
             GC.WaitForPendingFinalizers();
-        }
-
-        private void OnSourceInitialized(object? sender, EventArgs e)
-        {
-            if (WindowHelper.IsAutoHideNavPanel)
-            {
-                this.SizeChanged += MainWindow_SizeChanged;
-                MainWindow_SizeChanged(null, null);
-            }
         }
 
         public void ShowWithEffect()
@@ -151,33 +139,6 @@
             {
                 this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
 
-            }
-        }
-
-        public void MainWindow_SizeChanged(object? sender, SizeChangedEventArgs? e)
-        {
-            double size_width = this.Width;
-            if (size_width < 900 && RootNavigation.IsPaneOpen)
-            {
-                RootNavigation.IsPaneOpen = false;
-            }
-            else if (size_width >= 900 && !RootNavigation.IsPaneOpen)
-            {
-                RootNavigation.IsPaneOpen = true;
-            }
-        }
-
-        private void SharedVariable_OnAutoHideNavChanged(bool state)
-        {
-            if (state)
-            {
-                this.SizeChanged += MainWindow_SizeChanged;
-                MainWindow_SizeChanged(null, null);
-            }
-            else
-            {
-                this.SizeChanged -= MainWindow_SizeChanged;
-                RootNavigation.IsPaneOpen = ViewModel.IsPaneOpen;
             }
         }
     }

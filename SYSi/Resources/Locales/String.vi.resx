@@ -597,4 +597,67 @@
   <data name="paused_title" xml:space="preserve">
     <value>Tạm dừng</value>
   </data>
+  <data name="bios_microcode_title" xml:space="preserve">
+    <value>Vi mã</value>
+  </data>
+  <data name="chipset_title" xml:space="preserve">
+    <value>Chipset</value>
+  </data>
+  <data name="southbridge_title" xml:space="preserve">
+    <value>Cầu Nam</value>
+  </data>
+  <data name="bus_specs_title" xml:space="preserve">
+    <value>Thông số Bus</value>
+  </data>
+  <data name="code_name_title" xml:space="preserve">
+    <value>Tên mã</value>
+  </data>
+  <data name="max_tdp_title" xml:space="preserve">
+    <value>Công suất tối đa</value>
+  </data>
+  <data name="instructions_title" xml:space="preserve">
+    <value>Hướng dẫn</value>
+  </data>
+  <data name="ratio_boost_title" xml:space="preserve">
+    <value>Ratio Boost</value>
+  </data>
+  <data name="memory_type_title" xml:space="preserve">
+    <value>Loại</value>
+  </data>
+  <data name="memory_speed_title" xml:space="preserve">
+    <value>Tốc độ</value>
+  </data>
+  <data name="memory_channel_title" xml:space="preserve">
+    <value>Kênh</value>
+  </data>
+  <data name="memory_slots_used_title" xml:space="preserve">
+    <value>Khe cắm</value>
+  </data>
+  <data name="memory_speed_rated_title" xml:space="preserve">
+    <value>Tốc độ (Đánh giá)</value>
+  </data>
+  <data name="memory_form_factor_title" xml:space="preserve">
+    <value>Hình thức</value>
+  </data>
+  <data name="memory_speed_configured_title" xml:space="preserve">
+    <value>Tốc độ (Cấu hình)</value>
+  </data>
+  <data name="memory_data_width_title" xml:space="preserve">
+    <value>Độ rộng dữ liệu</value>
+  </data>
+  <data name="memory_voltage_title" xml:space="preserve">
+    <value>Điện áp</value>
+  </data>
+  <data name="memory_min_voltage_title" xml:space="preserve">
+    <value>Điện áp tối thiểu</value>
+  </data>
+  <data name="memory_max_voltage_title" xml:space="preserve">
+    <value>Điện áp tối đa</value>
+  </data>
+  <data name="memory_part_number_title" xml:space="preserve">
+    <value>Mã sản phẩm</value>
+  </data>
+  <data name="memory_serial_number_title" xml:space="preserve">
+    <value>Số seri</value>
+  </data>
 </root>
