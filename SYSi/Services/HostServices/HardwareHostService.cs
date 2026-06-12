@@ -113,8 +113,12 @@ namespace SYSi.Services.HostServices
 
         private void TimerStop()
         {
-            _timer.Elapsed -= TimerElapsed;
-            _timer.Stop();
+            try
+            {
+                _timer.Elapsed -= TimerElapsed;
+                _timer.Stop();
+            }
+            catch { }
         }
 
         private void TimerDispose()
