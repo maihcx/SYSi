@@ -146,53 +146,49 @@ public sealed partial class HardwareService
             return;
         }
 
-        try
+        var dd = new NativeMethods.DISPLAY_DEVICE
+        { cb = (uint)Marshal.SizeOf<NativeMethods.DISPLAY_DEVICE>() };
+
+        for (uint i = 0; NativeMethods.EnumDisplayDevices(null, i, ref dd, 0); i++)
         {
-            var dd = new NativeMethods.DISPLAY_DEVICE
-            { cb = (uint)Marshal.SizeOf<NativeMethods.DISPLAY_DEVICE>() };
-
-            for (uint i = 0; NativeMethods.EnumDisplayDevices(null, i, ref dd, 0); i++)
+            if ((dd.StateFlags & MirroringFlag) != 0)
             {
-                if ((dd.StateFlags & MirroringFlag) != 0)
-                {
-                    continue;
-                }
-
-                var dm = default(NativeMethods.DEVMODE);
-                dm.dmSize = (ushort)Marshal.SizeOf<NativeMethods.DEVMODE>();
-
-                if (!NativeMethods.EnumDisplaySettings(
-                        dd.DeviceName, NativeMethods.ENUM_CURRENT_SETTINGS, ref dm))
-                {
-                    continue;
-                }
-
-                string adapter = dd.DeviceString.Trim();
-                var match = gpus.FirstOrDefault(g =>
-                        adapter.Contains(g.Name, StringComparison.OrdinalIgnoreCase) ||
-                        g.Name.Contains(adapter, StringComparison.OrdinalIgnoreCase))
-                    ?? (gpus.Count == 1 ? gpus[0] : null);
-
-                if (match == null)
-                {
-                    continue;
-                }
-
-                string monitorName = GetMonitorName(dd.DeviceName, i);
-                int displayIndex = match.Monitors.Count + 1;
-
-                match.Monitors.Add(new MonitorInfo
-                {
-                    DeviceName   = dd.DeviceName,
-                    MonitorName  = monitorName,
-                    DisplayLabel = $"Display {displayIndex}: {monitorName}",
-                    Resolution   = $"{dm.dmPelsWidth} × {dm.dmPelsHeight}",
-                    RefreshRate  = $"{dm.dmDisplayFrequency} Hz",
-                    BitsPerPixel = $"{dm.dmBitsPerPel} bit",
-                });
+                continue;
             }
+
+            var dm = default(NativeMethods.DEVMODE);
+            dm.dmSize = (ushort)Marshal.SizeOf<NativeMethods.DEVMODE>();
+
+            if (!NativeMethods.EnumDisplaySettings(
+                    dd.DeviceName, NativeMethods.ENUM_CURRENT_SETTINGS, ref dm))
+            {
+                continue;
+            }
+
+            string adapter = dd.DeviceString.Trim();
+            var match = gpus.FirstOrDefault(g =>
+                    adapter.Contains(g.Name, StringComparison.OrdinalIgnoreCase) ||
+                    g.Name.Contains(adapter, StringComparison.OrdinalIgnoreCase))
+                ?? (gpus.Count == 1 ? gpus[0] : null);
+
+            if (match == null)
+            {
+                continue;
+            }
+
+            string monitorName = GetMonitorName(dd.DeviceName, i);
+            int displayIndex = match.Monitors.Count + 1;
+
+            match.Monitors.Add(new MonitorInfo
+            {
+                DeviceName   = dd.DeviceName,
+                MonitorName  = monitorName,
+                DisplayLabel = $"Display {displayIndex}: {monitorName}",
+                Resolution   = $"{dm.dmPelsWidth} × {dm.dmPelsHeight}",
+                RefreshRate  = $"{dm.dmDisplayFrequency} Hz",
+                BitsPerPixel = $"{dm.dmBitsPerPel} bit",
+            });
         }
-        catch { }
     }
 
     private static string GetMonitorName(string deviceName, uint adapterIndex)
@@ -305,30 +301,26 @@ public sealed partial class HardwareService
                 return;
             }
 
-            try
+            if (NativeMethods.PdhOpenQuery(null, IntPtr.Zero, out _gpuQuery) != 0)
             {
-                if (NativeMethods.PdhOpenQuery(null, IntPtr.Zero, out _gpuQuery) != 0)
-                {
-                    return;
-                }
-
-                uint r = NativeMethods.PdhAddCounter(
-                    _gpuQuery,
-                    @"\GPU Engine(*engtype_3D)\Utilization Percentage",
-                    IntPtr.Zero,
-                    out _gpuCounter);
-
-                if (r != 0)
-                {
-                    return;
-                }
-
-                NativeMethods.PdhCollectQueryData(_gpuQuery);
-                _pdhReady = true;
-
-                _luidToGpuIndex = BuildLuidMap(gpus);
+                return;
             }
-            catch { }
+
+            uint r = NativeMethods.PdhAddCounter(
+                _gpuQuery,
+                @"\GPU Engine(*engtype_3D)\Utilization Percentage",
+                IntPtr.Zero,
+                out _gpuCounter);
+
+            if (r != 0)
+            {
+                return;
+            }
+
+            NativeMethods.PdhCollectQueryData(_gpuQuery);
+            _pdhReady = true;
+
+            _luidToGpuIndex = BuildLuidMap(gpus);
         }
     }
 
@@ -344,74 +336,70 @@ public sealed partial class HardwareService
             return;
         }
 
-        try
+        lock (_pdhLock)
         {
-            lock (_pdhLock)
+            NativeMethods.PdhCollectQueryData(_gpuQuery);
+
+            uint bufSize = 0, itemCount = 0;
+            NativeMethods.PdhGetFormattedCounterArray(
+                _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
+                ref bufSize, out itemCount, IntPtr.Zero);
+
+            if (bufSize == 0)
             {
-                NativeMethods.PdhCollectQueryData(_gpuQuery);
-
-                uint bufSize = 0, itemCount = 0;
-                NativeMethods.PdhGetFormattedCounterArray(
-                    _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
-                    ref bufSize, out itemCount, IntPtr.Zero);
-
-                if (bufSize == 0)
-                {
-                    return;
-                }
-
-                IntPtr buf = Marshal.AllocHGlobal((int)bufSize);
-                try
-                {
-                    uint r = NativeMethods.PdhGetFormattedCounterArray(
-                        _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
-                        ref bufSize, out itemCount, buf);
-
-                    if (r != 0 && r != 0x800007D2)
-                    {
-                        return;   // PDH_MORE_DATA is acceptable
-                    }
-
-                    // PDH_FMT_COUNTERVALUE_ITEM_W layout (x64):
-                    //   szName  : IntPtr  (8 bytes — pointer into buf)
-                    //   CStatus : uint    (4 bytes)
-                    //   padding : uint    (4 bytes)
-                    //   Value   : double  (8 bytes)
-                    int itemSize = IntPtr.Size + 16;
-                    var luidUsage = new Dictionary<(uint, uint), double>();
-
-                    for (int j = 0; j < (int)itemCount; j++)
-                    {
-                        IntPtr itemPtr = IntPtr.Add(buf, j * itemSize);
-                        IntPtr namePtr = Marshal.ReadIntPtr(itemPtr);
-                        string name = namePtr != IntPtr.Zero
-                            ? Marshal.PtrToStringUni(namePtr) ?? "" : "";
-
-                        double value = Marshal.PtrToStructure<double>(
-                            IntPtr.Add(itemPtr, IntPtr.Size + 8));
-
-                        var luid = ParseLuid(name);
-                        if (luid == null)
-                        {
-                            continue;
-                        }
-
-                        luidUsage.TryGetValue(luid.Value, out double cur);
-                        luidUsage[luid.Value] = cur + value;
-                    }
-
-                    foreach (var (luid, usage) in luidUsage)
-                    {
-                        if (_luidToGpuIndex.TryGetValue(luid, out int idx) && idx < gpus.Count)
-                        {
-                            gpus[idx].UsagePercent = Math.Round(Math.Clamp(usage, 0, 100), 1);
-                        }
-                    }
-                }
-                finally { Marshal.FreeHGlobal(buf); }
+                return;
             }
+
+            IntPtr buf = Marshal.AllocHGlobal((int)bufSize);
+            try
+            {
+                uint r = NativeMethods.PdhGetFormattedCounterArray(
+                    _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
+                    ref bufSize, out itemCount, buf);
+
+                if (r != 0 && r != 0x800007D2)
+                {
+                    return;   // PDH_MORE_DATA is acceptable
+                }
+
+                // PDH_FMT_COUNTERVALUE_ITEM_W layout (x64):
+                //   szName  : IntPtr  (8 bytes — pointer into buf)
+                //   CStatus : uint    (4 bytes)
+                //   padding : uint    (4 bytes)
+                //   Value   : double  (8 bytes)
+                int itemSize = IntPtr.Size + 16;
+                var luidUsage = new Dictionary<(uint, uint), double>();
+
+                for (int j = 0; j < (int)itemCount; j++)
+                {
+                    IntPtr itemPtr = IntPtr.Add(buf, j * itemSize);
+                    IntPtr namePtr = Marshal.ReadIntPtr(itemPtr);
+                    string name = namePtr != IntPtr.Zero
+                        ? Marshal.PtrToStringUni(namePtr) ?? "" : "";
+
+                    double value = Marshal.PtrToStructure<double>(
+                        IntPtr.Add(itemPtr, IntPtr.Size + 8));
+
+                    var luid = ParseLuid(name);
+                    if (luid == null)
+                    {
+                        continue;
+                    }
+
+                    luidUsage.TryGetValue(luid.Value, out double cur);
+                    luidUsage[luid.Value] = cur + value;
+                }
+
+                foreach (var (luid, usage) in luidUsage)
+                {
+                    if (_luidToGpuIndex.TryGetValue(luid, out int idx) && idx < gpus.Count)
+                    {
+                        gpus[idx].UsagePercent = Math.Round(Math.Clamp(usage, 0, 100), 1);
+                    }
+                }
+            }
+            finally { Marshal.FreeHGlobal(buf); }
         }
-        catch { }
     }
 
     private void DisposeGpuPdh()
@@ -438,62 +426,58 @@ public sealed partial class HardwareService
     private static Dictionary<(uint hi, uint lo), int> BuildLuidMap(List<GpuInfo> gpus)
     {
         var map = new Dictionary<(uint, uint), int>();
-        try
+        var guid = DxgiFactory1Guid;
+        if (NativeMethods.CreateDXGIFactory1(ref guid, out IntPtr factory) != 0
+            || factory == IntPtr.Zero)
         {
-            var guid = DxgiFactory1Guid;
-            if (NativeMethods.CreateDXGIFactory1(ref guid, out IntPtr factory) != 0
-                || factory == IntPtr.Zero)
+            return map;
+        }
+
+        // IDXGIFactory1::EnumAdapters1 is vtable slot 12
+        var enumAdapters1 = VTableDelegate<NativeMethods.EnumAdapters1Delegate>(factory, 12);
+
+        for (uint idx = 0; ; idx++)
+        {
+            if (enumAdapters1(factory, idx, out IntPtr adapter) == unchecked((int)0x887A0002))
             {
-                return map;
+                break;   // DXGI_ERROR_NOT_FOUND
             }
 
-            // IDXGIFactory1::EnumAdapters1 is vtable slot 12
-            var enumAdapters1 = VTableDelegate<NativeMethods.EnumAdapters1Delegate>(factory, 12);
-
-            for (uint idx = 0; ; idx++)
+            if (adapter == IntPtr.Zero)
             {
-                if (enumAdapters1(factory, idx, out IntPtr adapter) == unchecked((int)0x887A0002))
-                {
-                    break;   // DXGI_ERROR_NOT_FOUND
-                }
+                break;
+            }
 
-                if (adapter == IntPtr.Zero)
-                {
-                    break;
-                }
+            try
+            {
+                // IDXGIAdapter1::GetDesc1 is vtable slot 10
+                var getDesc1 = VTableDelegate<NativeMethods.GetDesc1Delegate>(adapter, 10);
+                var desc = new NativeMethods.DXGI_ADAPTER_DESC1();
 
-                try
+                if (getDesc1(adapter, ref desc) == 0 && (desc.Flags & 2) == 0)
                 {
-                    // IDXGIAdapter1::GetDesc1 is vtable slot 10
-                    var getDesc1 = VTableDelegate<NativeMethods.GetDesc1Delegate>(adapter, 10);
-                    var desc = new NativeMethods.DXGI_ADAPTER_DESC1();
+                    var luid = ((uint)desc.AdapterLuid.HighPart, desc.AdapterLuid.LowPart);
+                    string descName = new string(desc.Description).TrimEnd('\0');
 
-                    if (getDesc1(adapter, ref desc) == 0 && (desc.Flags & 2) == 0)
+                    int gpuIdx = gpus.FindIndex(g =>
+                        descName.Contains(g.Name, StringComparison.OrdinalIgnoreCase) ||
+                        g.Name.Contains(descName, StringComparison.OrdinalIgnoreCase));
+
+                    if (gpuIdx < 0 && (int)idx < gpus.Count)
                     {
-                        var luid = ((uint)desc.AdapterLuid.HighPart, desc.AdapterLuid.LowPart);
-                        string descName = new string(desc.Description).TrimEnd('\0');
+                        gpuIdx = (int)idx;   // position fallback
+                    }
 
-                        int gpuIdx = gpus.FindIndex(g =>
-                            descName.Contains(g.Name, StringComparison.OrdinalIgnoreCase) ||
-                            g.Name.Contains(descName, StringComparison.OrdinalIgnoreCase));
-
-                        if (gpuIdx < 0 && (int)idx < gpus.Count)
-                        {
-                            gpuIdx = (int)idx;   // position fallback
-                        }
-
-                        if (gpuIdx >= 0)
-                        {
-                            map[luid] = gpuIdx;
-                        }
+                    if (gpuIdx >= 0)
+                    {
+                        map[luid] = gpuIdx;
                     }
                 }
-                finally { ComRelease(adapter); }
             }
-
-            ComRelease(factory);
+            finally { ComRelease(adapter); }
         }
-        catch { }
+
+        ComRelease(factory);
         return map;
     }
 

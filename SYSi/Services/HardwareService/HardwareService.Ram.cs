@@ -5,12 +5,10 @@ public sealed partial class HardwareService
     public RamInfo GetRamInfo()
     {
         var info = new RamInfo();
-        try
-        {
-            ReadRamUsage(info);
-            ReadRamSlots(info);
-        }
-        catch { }
+
+        ReadRamUsage(info);
+        ReadRamSlots(info);
+
         return info;
     }
 
