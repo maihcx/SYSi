@@ -70,29 +70,17 @@ namespace SYSi.Services.HostServices
                     Task.Run(() =>
                     {
                         _hardware.RefreshCPUInfo(CpuInfo);
-
-                        Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            OnPropertyChanged(nameof(CpuInfo));
-                        });
+                        Application.Current.Dispatcher.InvokeAsync(() => OnPropertyChanged(nameof(CpuInfo)));
                     }),
                     Task.Run(() =>
                     {
                         _hardware.RefreshGpuUsage(Gpus);
-
-                        Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            OnPropertyChanged(nameof(Gpus));
-                        });
+                        Application.Current.Dispatcher.InvokeAsync(() => OnPropertyChanged(nameof(Gpus)));
                     }),
                     Task.Run(() =>
                     {
                         _hardware.RefreshRamInfo(RamInfo);
-
-                        Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            OnPropertyChanged(nameof(RamInfo));
-                        });
+                        Application.Current.Dispatcher.InvokeAsync(() => OnPropertyChanged(nameof(RamInfo)));
                     })
                 );
             }

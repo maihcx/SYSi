@@ -7,6 +7,7 @@
         private static string UniqueAppId = @"Global\SYSi.SingleInstance.App";
         private static bool _isPrimaryInstance = false;
         private static SplashScreen? SplashScreen;
+        private static CancellationTokenSource _pipeCts = new();
 
         public static void OnBeforeStartup()
         {
@@ -48,7 +49,7 @@
             #region Single App Reader
             _pipeThread = new Thread(() =>
             {
-                while (true)
+                while (!_pipeCts.Token.IsCancellationRequested)
                 {
                     try
                     {
@@ -87,6 +88,10 @@
                             });
                         }
                     }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
                     catch
                     {
                         Thread.Sleep(100);
@@ -111,6 +116,7 @@
 
         public static void OnExit()
         {
+            _pipeCts.Cancel();
             if (_mutex != null)
             {
                 try

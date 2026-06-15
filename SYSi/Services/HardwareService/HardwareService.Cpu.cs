@@ -12,10 +12,9 @@ public sealed partial class HardwareService
 
     private IntPtr _cpuClockQuery = IntPtr.Zero;
     private IntPtr _cpuClockCounter = IntPtr.Zero;
-    private int _cpuBaseMHz;
     private readonly object _cpuClockLock = new();
 
-    private static int _cachedBaseMHz;
+    private static int? _cachedBaseMHz;
 
     public HardwareService()
     {
@@ -92,7 +91,7 @@ public sealed partial class HardwareService
 
     private void InitCpuClockPdh()
     {
-        _cpuBaseMHz = GetCpuBaseClockMHz();
+        int _cpuBaseMHz = GetCpuBaseClockMHz();
 
         if (_cpuBaseMHz == 0)
         {
@@ -116,24 +115,28 @@ public sealed partial class HardwareService
 
     private static int GetCpuBaseClockMHz()
     {
+        if (_cachedBaseMHz.HasValue)
+        {
+            return _cachedBaseMHz.Value;
+        }
+
+        _cachedBaseMHz = GetCpuBaseSpeedViaCpuid();
         if (_cachedBaseMHz == 0)
         {
-            _cachedBaseMHz = GetCpuBaseSpeedViaCpuid();
-            if (_cachedBaseMHz == 0)
+            using var searcher = new ManagementObjectSearcher("select CurrentClockSpeed from Win32_Processor");
+            foreach (var item in searcher.Get())
             {
-                using var searcher = new ManagementObjectSearcher("select CurrentClockSpeed from Win32_Processor");
-                foreach (var item in searcher.Get())
-                {
-                    _cachedBaseMHz = Convert.ToInt32((uint)item["CurrentClockSpeed"]);
-                }
+                _cachedBaseMHz = Convert.ToInt32((uint)item["CurrentClockSpeed"]);
             }
         }
 
-        return _cachedBaseMHz;
+        return _cachedBaseMHz.Value;
     }
 
     private double GetCurrentCpuSpeedGHz()
     {
+        int _cpuBaseMHz = GetCpuBaseClockMHz();
+
         try
         {
             if (_cpuClockQuery == IntPtr.Zero || _cpuBaseMHz == 0)
@@ -374,15 +377,6 @@ public sealed partial class HardwareService
 
     private static void EnrichCpuFromSmbios(CpuInfo info)
     {
-        foreach (var s in ParseSmbios(4))
-        {
-            if (s.Length > 0x08)
-            {
-                info.Socket = s.Str(0x04);
-            }
-            break;
-        }
-
         (info.L1Cache, info.L2Cache, info.L3Cache) = GetCpuCaches();
         info.Architecture = GetCpuArchitecture();
 
@@ -395,6 +389,66 @@ public sealed partial class HardwareService
         info.CodeName     = GetCpuCodeName(info.Manufacturer, sig.Family, sig.Model);
         info.Instructions = string.Join(", ", GetSupportedInstructions());
         info.MaxTdp       = GetCpuMaxTdp(info.ShortName, info.Name);
+
+        foreach (var s in ParseSmbios(4))
+        {
+            if (s.Length > 0x08)
+            {
+                info.Socket = NormalizeSocket(s.Str(0x04), info);
+            }
+            break;
+        }
+    }
+
+    private static string NormalizeSocket(string raw, CpuInfo info)
+    {
+        raw = raw.Trim();
+
+        if (raw.StartsWith("LGA", StringComparison.OrdinalIgnoreCase) ||
+            raw.StartsWith("AM", StringComparison.OrdinalIgnoreCase) ||
+            raw.StartsWith("TR", StringComparison.OrdinalIgnoreCase) ||
+            raw.StartsWith("SP", StringComparison.OrdinalIgnoreCase))
+        {
+            return raw;
+        }
+
+        if (int.TryParse(info.Family, System.Globalization.NumberStyles.HexNumber, null, out int family) &&
+            int.TryParse(info.Model, System.Globalization.NumberStyles.HexNumber, null, out int model))
+        {
+            if (family == 6)
+            {
+                return model switch
+                {
+                    0xB7 or 0xBF or 0xBA or 0xB4 => "LGA1700",
+                    0x97 or 0x9A => "LGA1700",
+                    0xA5 or 0xA6 => "LGA1200",
+                    0x8E or 0x9E => "LGA1151",
+                    _ => raw
+                };
+            }
+
+            if (family == 0x17)
+            {
+                return "AM4";
+            }
+
+            if (family == 0x19)
+            {
+                return model switch
+                {
+                    >= 0x60 => "AM5", // Zen4 mobile (Phoenix, Hawk Point)
+                    >= 0x10 => "AM5", // Zen4 desktop (Raphael)
+                    _ => "AM4", // Zen3 (Vermeer, Cézanne)
+                };
+            }
+
+            if (family == 0x1A)
+            {
+                return "AM5";
+            }
+        }
+
+        return raw;
     }
 
     // ── Virtualization ───────────────────────────────────────────────────────
