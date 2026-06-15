@@ -52,112 +52,145 @@
                 </StackPanel>
             </ui:CardAction>
 
+            <ui:CardAction Margin="0 0 0 8"
+                           IsChevronVisible="False"
+                           VerticalAlignment="Stretch"
+                           VerticalContentAlignment="Top">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="0,0,0,12">
+                        <ui:SymbolIcon Symbol="Info24"
+                                       FontSize="15"
+                                       Margin="0 0 8 0" />
+                        <TextBlock Text="{utils:Localization gen_info_title}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14" />
+                    </StackPanel>
+
+                    <controls:InfoRow LabelWidth="100"
+                                      LabelText="{utils:Localization gpu_name_title}"
+                                      ValueText="{Binding ViewModel.GpuInfo.Name}"
+                                      ValueHorizontalAlign="Right" />
+                    <controls:InfoRow LabelWidth="100"
+                                      LabelText="{utils:Localization manu_title}"
+                                      ValueText="{Binding ViewModel.GpuInfo.Manufacturer}"
+                                      ValueHorizontalAlign="Right" />
+                    <controls:InfoRow LabelWidth="100"
+                                      LabelText="{utils:Localization vram_title}"
+                                      ValueText="{Binding ViewModel.GpuInfo.VramText}"
+                                      ValueHorizontalAlign="Right" />
+                    <controls:InfoRow LabelWidth="100"
+                                      LabelText="{utils:Localization driver_ver_title}"
+                                      ValueText="{Binding ViewModel.GpuInfo.DriverVersion}"
+                                      ValueHorizontalAlign="Right" />
+                    <controls:InfoRow LabelWidth="100"
+                                      LabelText="{utils:Localization driver_date_title}"
+                                      ValueText="{Binding ViewModel.GpuInfo.DriverDate}"
+                                      ValueHorizontalAlign="Right" />
+                    <controls:InfoRow LabelWidth="100"
+                                      LabelText="{utils:Localization arch_title}"
+                                      ValueText="{Binding ViewModel.GpuInfo.VideoArchitecture}"
+                                      ValueHorizontalAlign="Right" />
+                    <controls:InfoRow LabelWidth="100"
+                                      LabelText="{utils:Localization mem_type_title}"
+                                      ValueText="{Binding ViewModel.GpuInfo.VideoMemoryType}"
+                                      ValueHorizontalAlign="Right" />
+                    <controls:InfoRow LabelWidth="100"
+                                      LabelText="{utils:Localization pnp_label}"
+                                      ValueText="{Binding ViewModel.GpuInfo.PnpDeviceId}"
+                                      ValueHorizontalAlign="Right"
+                                      IsLast="True" />
+                </StackPanel>
+            </ui:CardAction>
+
             <!-- Info -->
-            <ItemsControl Margin="0 0 0 0">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <UniformGrid Margin="0 0 -8 -8">
-                            <UniformGrid.Columns>
-                                <MultiBinding Converter="{StaticResource WidthToColumnsConverter}">
-                                    <!-- ActualWidth của ItemsControl -->
-                                    <Binding Path="ActualWidth"
-                                             RelativeSource="{RelativeSource AncestorType=ItemsControl}" />
-
-                                    <!-- MinCardWidth -->
-                                    <Binding Source="250" />
-
-                                    <!-- MaxColumns -->
-                                    <Binding Source="2" />
-                                </MultiBinding>
-                            </UniformGrid.Columns>
-                        </UniformGrid>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-
-                <ui:CardAction Margin="0 0 8 8"
-                               IsChevronVisible="False"
-                               VerticalAlignment="Stretch"
-                               VerticalContentAlignment="Top">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal"
-                                    VerticalAlignment="Center"
-                                    Margin="0,0,0,12">
-                            <ui:SymbolIcon Symbol="Info24"
-                                           FontSize="15"
-                                           Margin="0 0 8 0" />
-                            <TextBlock Text="{utils:Localization gen_info_title}"
-                                       FontWeight="SemiBold"
-                                       FontSize="14" />
-                        </StackPanel>
-                        
-                        <controls:InfoRow LabelWidth="100"
-                                          LabelText="{utils:Localization gpu_name_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.Name}"
-                                          ValueHorizontalAlign="Right" />
-                        <controls:InfoRow LabelWidth="100"
-                                          LabelText="{utils:Localization manu_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.Manufacturer}"
-                                          ValueHorizontalAlign="Right" />
-                        <controls:InfoRow LabelWidth="100"
-                                          LabelText="{utils:Localization vram_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.VramText}"
-                                          ValueHorizontalAlign="Right" />
-                        <controls:InfoRow LabelWidth="100"
-                                          LabelText="{utils:Localization driver_ver_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.DriverVersion}"
-                                          ValueHorizontalAlign="Right" />
-                        <controls:InfoRow LabelWidth="100"
-                                          LabelText="{utils:Localization driver_date_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.DriverDate}"
-                                          ValueHorizontalAlign="Right"
-                                          IsLast="True" />
+            <ui:CardAction Margin="0 0 0 0"
+                           IsChevronVisible="False"
+                           VerticalAlignment="Stretch"
+                           VerticalContentAlignment="Top">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="0,0,0,12">
+                        <ui:SymbolIcon Symbol="ShareScreenPerson24"
+                                       FontSize="15"
+                                       Margin="0 0 8 0" />
+                        <TextBlock Text="{utils:Localization display_title}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14" />
                     </StackPanel>
-                </ui:CardAction>
 
-                <ui:CardAction Margin="0 0 8 8"
-                               IsChevronVisible="False"
-                               VerticalAlignment="Stretch"
-                               VerticalContentAlignment="Top">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal"
-                                    VerticalAlignment="Center"
-                                    Margin="0,0,0,12">
-                            <ui:SymbolIcon Symbol="ShareScreenPerson24"
-                                           FontSize="15"
-                                           Margin="0 0 8 0" />
-                            <TextBlock Text="{utils:Localization display_title}"
-                                       FontWeight="SemiBold"
-                                       FontSize="14" />
-                        </StackPanel>
-                        
-                        <controls:InfoRow LabelWidth="100"
-                                          LabelText="{utils:Localization resolution_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.Resolution}"
-                                          ValueHorizontalAlign="Right" />
-                        <controls:InfoRow LabelWidth="100"
-                                          LabelText="{utils:Localization refresh_rate_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.RefreshRate}"
-                                          ValueHorizontalAlign="Right" />
-                        <controls:InfoRow LabelWidth="100"
-                                          LabelText="{utils:Localization color_depth_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.BitsPerPixel}"
-                                          ValueHorizontalAlign="Right" />
-                        <controls:InfoRow LabelWidth="100"
-                                          LabelText="{utils:Localization arch_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.VideoArchitecture}"
-                                          ValueHorizontalAlign="Right" />
-                        <controls:InfoRow LabelWidth="100"
-                                          LabelText="{utils:Localization mem_type_title}"
-                                          ValueText="{Binding ViewModel.GpuInfo.VideoMemoryType}"
-                                          ValueHorizontalAlign="Right" />
-                        <controls:InfoRow LabelWidth="100"
-                                          LabelText="{utils:Localization pnp_label}"
-                                          ValueText="{Binding ViewModel.GpuInfo.PnpDeviceId}"
-                                          ValueHorizontalAlign="Right"
-                                          IsLast="True" />
-                    </StackPanel>
-                </ui:CardAction>
-            </ItemsControl>
+                    <ItemsControl ItemsSource="{Binding ViewModel.GpuInfo.Monitors}"
+                                  Margin="0 0 0 0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Margin="0 0 -8 -8">
+                                    <UniformGrid.Columns>
+                                        <MultiBinding Converter="{StaticResource WidthToColumnsConverter}">
+                                            <Binding Path="ActualWidth"
+                                                     RelativeSource="{RelativeSource AncestorType=ItemsControl}" />
+
+                                            <Binding Source="250" />
+
+                                            <Binding Source="2" />
+                                        </MultiBinding>
+                                    </UniformGrid.Columns>
+                                </UniformGrid>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ui:CardAction Margin="0 0 8 8"
+                                               IsChevronVisible="False">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding DeviceName}"
+                                                   FontWeight="SemiBold"
+                                                   FontSize="12"
+                                                   Margin="0 4 0 4">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility"
+                                                            Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding DataContext.ViewModel.GpuInfo.Monitors.Count, 
+                                                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                     Value="1">
+                                                            <Setter Property="Visibility"
+                                                                    Value="Collapsed" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding DataContext.ViewModel.GpuInfo.Monitors.Count, 
+                                                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                     Value="2">
+                                                            <Setter Property="Visibility"
+                                                                    Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+
+                                        <controls:InfoRow LabelWidth="100"
+                                                          LabelText="{utils:Localization resolution_title}"
+                                                          ValueText="{Binding Resolution}"
+                                                          ValueHorizontalAlign="Right" />
+                                        <controls:InfoRow LabelWidth="100"
+                                                          LabelText="{utils:Localization refresh_rate_title}"
+                                                          ValueText="{Binding RefreshRate}"
+                                                          ValueHorizontalAlign="Right" />
+                                        <controls:InfoRow LabelWidth="100"
+                                                          LabelText="{utils:Localization color_depth_title}"
+                                                          ValueText="{Binding BitsPerPixel}"
+                                                          ValueHorizontalAlign="Right" />
+                                        
+                                    </StackPanel>
+                                </ui:CardAction>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ui:CardAction>
         </StackPanel>
     </Grid>
 </Page>
