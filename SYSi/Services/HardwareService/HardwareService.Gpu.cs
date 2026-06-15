@@ -141,7 +141,11 @@ public sealed partial class HardwareService
 
     private static void EnrichWithDisplayInfo(List<GpuInfo> gpus)
     {
-        if (gpus.Count == 0) return;
+        if (gpus.Count == 0)
+        {
+            return;
+        }
+
         try
         {
             var dd = new NativeMethods.DISPLAY_DEVICE
@@ -149,13 +153,19 @@ public sealed partial class HardwareService
 
             for (uint i = 0; NativeMethods.EnumDisplayDevices(null, i, ref dd, 0); i++)
             {
-                if ((dd.StateFlags & MirroringFlag) != 0) continue;
+                if ((dd.StateFlags & MirroringFlag) != 0)
+                {
+                    continue;
+                }
 
                 var dm = default(NativeMethods.DEVMODE);
                 dm.dmSize = (ushort)Marshal.SizeOf<NativeMethods.DEVMODE>();
 
                 if (!NativeMethods.EnumDisplaySettings(
-                        dd.DeviceName, NativeMethods.ENUM_CURRENT_SETTINGS, ref dm)) continue;
+                        dd.DeviceName, NativeMethods.ENUM_CURRENT_SETTINGS, ref dm))
+                {
+                    continue;
+                }
 
                 string adapter = dd.DeviceString.Trim();
                 var match = gpus.FirstOrDefault(g =>
@@ -163,18 +173,124 @@ public sealed partial class HardwareService
                         g.Name.Contains(adapter, StringComparison.OrdinalIgnoreCase))
                     ?? (gpus.Count == 1 ? gpus[0] : null);
 
-                if (match == null) continue;
+                if (match == null)
+                {
+                    continue;
+                }
+
+                string monitorName = GetMonitorName(dd.DeviceName, i);
+                int displayIndex = match.Monitors.Count + 1;
 
                 match.Monitors.Add(new MonitorInfo
                 {
-                    DeviceName  = dd.DeviceName,
-                    Resolution  = $"{dm.dmPelsWidth} × {dm.dmPelsHeight}",
-                    RefreshRate = $"{dm.dmDisplayFrequency} Hz",
-                    BitsPerPixel= $"{dm.dmBitsPerPel} bit",
+                    DeviceName   = dd.DeviceName,
+                    MonitorName  = monitorName,
+                    DisplayLabel = $"Display {displayIndex}: {monitorName}",
+                    Resolution   = $"{dm.dmPelsWidth} × {dm.dmPelsHeight}",
+                    RefreshRate  = $"{dm.dmDisplayFrequency} Hz",
+                    BitsPerPixel = $"{dm.dmBitsPerPel} bit",
                 });
             }
         }
         catch { }
+    }
+
+    private static string GetMonitorName(string deviceName, uint adapterIndex)
+    {
+        var monitor = new NativeMethods.DISPLAY_DEVICE
+        { cb = (uint)Marshal.SizeOf<NativeMethods.DISPLAY_DEVICE>() };
+
+        if (NativeMethods.EnumDisplayDevices(deviceName, 0, ref monitor, 0))
+        {
+            string deviceId = monitor.DeviceID.Trim();
+            string? nameFromEdid = GetMonitorNameFromRegistry(deviceId);
+            if (!string.IsNullOrWhiteSpace(nameFromEdid))
+            {
+                return nameFromEdid;
+            }
+        }
+
+        return $"Display {adapterIndex + 1}";
+    }
+
+    private static string? GetMonitorNameFromRegistry(string deviceId)
+    {
+        try
+        {
+            // deviceId: "MONITOR\ACQ279Q1\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001"
+            using var monitorsKey = Registry.LocalMachine.OpenSubKey(
+                @"SYSTEM\CurrentControlSet\Enum\DISPLAY");
+
+            if (monitorsKey == null)
+            {
+                return null;
+            }
+
+            foreach (string monitorId in monitorsKey.GetSubKeyNames())
+            {
+                using var monitorKey = monitorsKey.OpenSubKey(monitorId);
+                if (monitorKey == null)
+                {
+                    continue;
+                }
+
+                foreach (string instanceId in monitorKey.GetSubKeyNames())
+                {
+                    using var instanceKey = monitorKey.OpenSubKey(instanceId);
+                    if (instanceKey == null)
+                    {
+                        continue;
+                    }
+
+                    string? hwId = instanceKey.GetValue("HardwareID")?.ToString();
+                    if (hwId == null || !deviceId.Contains(monitorId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    using var paramsKey = instanceKey.OpenSubKey(@"Device Parameters");
+                    if (paramsKey?.GetValue("EDID") is not byte[] edid)
+                    {
+                        continue;
+                    }
+
+                    string? name = ParseMonitorNameFromEdid(edid);
+                    if (!string.IsNullOrWhiteSpace(name))
+                    {
+                        return name;
+                    }
+                }
+            }
+        }
+        catch { }
+
+        return null;
+    }
+
+    private static string? ParseMonitorNameFromEdid(byte[] edid)
+    {
+        if (edid.Length < 128)
+        {
+            return null;
+        }
+
+        for (int i = 54; i <= 108; i += 18)
+        {
+            if (edid[i] == 0x00 && edid[i + 1] == 0x00 &&
+                edid[i + 2] == 0x00 && edid[i + 3] == 0xFC)
+            {
+                string name = Encoding.ASCII.GetString(edid, i + 5, 13).Trim();
+                int newline = name.IndexOf('\n');
+                if (newline >= 0)
+                {
+                    name = name[..newline];
+                }
+
+                return name.Trim();
+            }
+        }
+
+        return null;
     }
 
     // ── GPU usage (PDH + DXGI LUID mapping) ──────────────────────────────────
