@@ -280,15 +280,12 @@ public sealed partial class HardwareService
     private static string GetCpuArchitecture()
     {
         NativeMethods.GetNativeSystemInfo(out var si);
-        return si.ProcessorArchitecture switch
-        {
-            0 => "x86",
-            5 => "ARM",
-            6 => "Itanium",
-            9 => "x64",
-            12 => "ARM64",
-            _ => $"Unknown ({si.ProcessorArchitecture})",
-        };
+
+        return HardwareDatabase.CpuArchitectures.TryGetValue(
+            si.ProcessorArchitecture,
+            out var architecture)
+            ? architecture
+            : $"Unknown ({si.ProcessorArchitecture})";
     }
 
     // ── Cache ────────────────────────────────────────────────────────────────
@@ -388,61 +385,10 @@ public sealed partial class HardwareService
         {
             if (s.Length > 0x08)
             {
-                info.Socket = NormalizeSocket(s.Str(0x04), info);
+                info.Socket = GetCpuSocketName(s.Str(0x04), info, info.Manufacturer, sig.Family, sig.Model);
             }
             break;
         }
-    }
-
-    private static string NormalizeSocket(string raw, CpuInfo info)
-    {
-        raw = raw.Trim();
-
-        if (raw.StartsWith("LGA", StringComparison.OrdinalIgnoreCase) ||
-            raw.StartsWith("AM", StringComparison.OrdinalIgnoreCase) ||
-            raw.StartsWith("TR", StringComparison.OrdinalIgnoreCase) ||
-            raw.StartsWith("SP", StringComparison.OrdinalIgnoreCase))
-        {
-            return raw;
-        }
-
-        if (int.TryParse(info.Family, System.Globalization.NumberStyles.HexNumber, null, out int family) &&
-            int.TryParse(info.Model, System.Globalization.NumberStyles.HexNumber, null, out int model))
-        {
-            if (family == 6)
-            {
-                return model switch
-                {
-                    0xB7 or 0xBF or 0xBA or 0xB4 => "LGA1700",
-                    0x97 or 0x9A => "LGA1700",
-                    0xA5 or 0xA6 => "LGA1200",
-                    0x8E or 0x9E => "LGA1151",
-                    _ => raw
-                };
-            }
-
-            if (family == 0x17)
-            {
-                return "AM4";
-            }
-
-            if (family == 0x19)
-            {
-                return model switch
-                {
-                    >= 0x60 => "AM5", // Zen4 mobile (Phoenix, Hawk Point)
-                    >= 0x10 => "AM5", // Zen4 desktop (Raphael)
-                    _ => "AM4", // Zen3 (Vermeer, Cézanne)
-                };
-            }
-
-            if (family == 0x1A)
-            {
-                return "AM5";
-            }
-        }
-
-        return raw;
     }
 
     // ── Virtualization ───────────────────────────────────────────────────────
@@ -480,29 +426,9 @@ public sealed partial class HardwareService
     private static string ParseCpuName(string cpuName)
         => cpuName.Replace("Intel(R) Core(TM)", "Core");
 
-    private static readonly Dictionary<string, string> TdpLookup = new(StringComparer.OrdinalIgnoreCase)
-    {
-        // Intel 13th/14th Gen desktop
-        ["i9-14900K"] = "125 W (253 W PL2)",
-        ["i9-13900K"] = "125 W (253 W PL2)",
-        ["i7-14700K"] = "125 W (253 W PL2)",
-        ["i7-13700K"] = "125 W (253 W PL2)",
-        ["i5-14600K"] = "125 W (181 W PL2)",
-        ["i5-13600K"] = "125 W (181 W PL2)",
-
-        // AMD Ryzen 7000/9000 desktop
-        ["7950X3D"] = "120 W",
-        ["7950X"]   = "170 W",
-        ["7800X3D"] = "120 W",
-        ["7700X"]   = "105 W",
-        ["7600X"]   = "105 W",
-        ["9950X"]   = "170 W",
-        ["9700X"]   = "65 W",
-    };
-
     private static string GetCpuMaxTdp(string shortName, string fullName)
     {
-        foreach (var (key, tdp) in TdpLookup)
+        foreach (var (key, tdp) in HardwareDatabase.CpuTdpDatabase)
         {
             if (shortName.Contains(key, StringComparison.OrdinalIgnoreCase)
                 || fullName.Contains(key, StringComparison.OrdinalIgnoreCase))
@@ -512,161 +438,75 @@ public sealed partial class HardwareService
         }
         return "N/A";
     }
+
     private static List<string> GetSupportedInstructions()
     {
-        var list = new List<string>();
+        var instructions = new List<string>();
+
         if (!X86Base.IsSupported)
         {
-            return list;
+            return instructions;
         }
 
         var (maxLeaf, _, _, _) = X86Base.CpuId(0, 0);
-        var (maxExt, _, _, _)  = X86Base.CpuId(unchecked((int)0x80000000), 0);
+        var (maxExt, _, _, _) = X86Base.CpuId(unchecked((int)0x80000000), 0);
 
-        // Leaf 1
-        if (maxLeaf >= 1)
+        var cpuidCache = new Dictionary<(int Leaf, int SubLeaf), (int Eax, int Ebx, int Ecx, int Edx)>();
+
+        foreach (var feature in HardwareDatabase.CpuFeaturesDatabase)
         {
-            var r1 = X86Base.CpuId(1, 0);
-            AddFlags(list, r1.Edx, Leaf1Edx);
-            AddFlags(list, r1.Ecx, Leaf1Ecx);
-        }
+            bool supportedLeaf = (uint)feature.Leaf >= 0x80000000
+                ? (uint)maxExt >= (uint)feature.Leaf
+                : maxLeaf >= feature.Leaf;
 
-        // Leaf 7, sub-leaf 0
-        if (maxLeaf >= 7)
-        {
-            var r7 = X86Base.CpuId(7, 0);
-            AddFlags(list, r7.Ebx, Leaf7Ebx);
-            AddFlags(list, r7.Ecx, Leaf7Ecx);
-            AddFlags(list, r7.Edx, Leaf7Edx);
-        }
-
-        // Extended leaf 0x80000001
-        if ((uint)maxExt >= 0x80000001)
-        {
-            var rExt = X86Base.CpuId(unchecked((int)0x80000001), 0);
-            AddFlags(list, rExt.Ecx, ExtEcx);
-            AddFlags(list, rExt.Edx, ExtEdx);
-        }
-
-        return list;
-    }
-
-    private static void AddFlags(List<string> list, int register, (int Bit, string Name)[] flags)
-    {
-        foreach (var (bit, name) in flags)
-        {
-            if ((register & (1 << bit)) != 0)
+            if (!supportedLeaf)
             {
-                list.Add(name);
+                continue;
+            }
+
+            if (!cpuidCache.TryGetValue((feature.Leaf, feature.SubLeaf), out var cpuid))
+            {
+                cpuid = X86Base.CpuId(feature.Leaf, feature.SubLeaf);
+                cpuidCache[(feature.Leaf, feature.SubLeaf)] = cpuid;
+            }
+
+            int registerValue = feature.Register switch
+            {
+                HardwareDatabase.CpuidRegister.Eax => cpuid.Eax,
+                HardwareDatabase.CpuidRegister.Ebx => cpuid.Ebx,
+                HardwareDatabase.CpuidRegister.Ecx => cpuid.Ecx,
+                HardwareDatabase.CpuidRegister.Edx => cpuid.Edx,
+                _ => 0
+            };
+
+            if ((registerValue & (1 << feature.Bit)) != 0)
+            {
+                instructions.Add(feature.Name);
             }
         }
+
+        return instructions;
     }
 
     private static string GetCpuCodeName(string manufacturer, int family, int model)
     {
-        if (manufacturer.Contains("Intel", StringComparison.OrdinalIgnoreCase))
-        {
-            // Family 6 — displayModel = model + (extModel << 4)
-            return family switch
-            {
-                6 => model switch
-                {
-                    0xBA or 0xB7 or 0xB5 => "Raptor Lake",
-                    0x97 or 0x9A => "Alder Lake",
-                    0x8F => "Sapphire Rapids",
-                    0x8C or 0x8D => "Tiger Lake",
-                    0xA5 or 0xA6 => "Comet Lake",
-                    0x9E or 0x9D => "Coffee Lake / Kaby Lake",
-                    0x55 => "Skylake-X",
-                    0x4E or 0x5E => "Skylake",
-                    0x3D or 0x47 => "Broadwell",
-                    0x3C or 0x45 or 0x46 => "Haswell",
-                    0x3A or 0x3E => "Ivy Bridge",
-                    0x2A or 0x2D => "Sandy Bridge",
-                    _ => "N/A"
-                },
-                _ => "N/A"
-            };
-        }
-
-        if (manufacturer.Contains("AMD", StringComparison.OrdinalIgnoreCase))
-        {
-            return family switch
-            {
-                0x1A => "Zen 5",
-                0x19 => model switch
-                {
-                    >= 0x60 and <= 0x6F => "Zen 4 (Mobile)",
-                    >= 0x10 and <= 0x1F => "Zen 4",
-                    >= 0x40 and <= 0x5F => "Zen 3+",
-                    _ => "Zen 3"
-                },
-                0x17 => model switch
-                {
-                    >= 0x30 => "Zen 2",
-                    _ => "Zen / Zen+"
-                },
-                _ => "N/A"
-            };
-        }
-
-        return "N/A";
+        return FindCpuRule(manufacturer, family, model)?.CodeName ?? "N/A";
     }
 
-    // ── Feature flag tables ─────────────────────────────────────────────────
+    private static string GetCpuSocketName(string raw, CpuInfo info, string manufacturer, int family, int model)
+    {
+        return FindCpuRule(info.Manufacturer, family, model)?.Socket ?? raw;
+    }
 
-    private static readonly (int Bit, string Name)[] Leaf1Edx =
-    [
-        (23, "MMX"),
-        (25, "SSE"),
-        (26, "SSE2"),
-    ];
-
-    private static readonly (int Bit, string Name)[] Leaf1Ecx =
-    [
-        (0,  "SSE3"),
-        (9,  "SSSE3"),
-        (12, "FMA3"),
-        (19, "SSE4.1"),
-        (20, "SSE4.2"),
-        (25, "AES"),
-        (28, "AVX"),
-    ];
-
-    private static readonly (int Bit, string Name)[] Leaf7Ebx =
-    [
-        (3,  "BMI1"),
-        (5,  "AVX2"),
-        (8,  "BMI2"),
-        (16, "AVX512F"),
-        (17, "AVX512DQ"),
-        (28, "AVX512CD"),
-        (30, "AVX512BW"),
-        (31, "AVX512VL"),
-    ];
-
-    private static readonly (int Bit, string Name)[] Leaf7Ecx =
-    [
-        (8, "GFNI"),
-        (9, "VAES"),
-    ];
-
-    private static readonly (int Bit, string Name)[] Leaf7Edx =
-    [
-        (4, "AVX512VNNI"),
-        (8, "AVX512VP2INTERSECT"),
-    ];
-
-    private static readonly (int Bit, string Name)[] ExtEcx =
-    [
-        (6,  "SSE4A"),
-        (16, "FMA4"),
-        (21, "TBM"),
-    ];
-
-    private static readonly (int Bit, string Name)[] ExtEdx =
-    [
-        (29, "x86-64"),
-        (31, "3DNow!"),
-    ];
+    private static HardwareDatabase.CpuModelRule? FindCpuRule(
+        string manufacturer,
+        int family,
+        int model)
+    {
+        return HardwareDatabase.CpuRulesDatabase.FirstOrDefault(x =>
+            manufacturer.Contains(x.Vendor, StringComparison.OrdinalIgnoreCase) &&
+            x.Family == family &&
+            model >= x.MinModel &&
+            model <= x.MaxModel);
+    }
 }
