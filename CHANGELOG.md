@@ -1,3 +1,24 @@
+## v0.8.0
+
+## 🚀 Changelog
+## 🚀 Features
+
+- Add monitor support and normalize CPU socket (#93) — @maihcx
+
+## 🐛 Bug Fixes
+
+- Add monitor support and normalize CPU socket (#93) — @maihcx
+- Gracefully stop pipe thread with CancellationToken (#91) — @maihcx
+- Fix deviceInfoSet check and motherboard mappings (#89) — @maihcx
+
+## ⚡ Performance
+
+- Cache CPU base MHz and make OS info load async (#92) — @maihcx
+- Use Dispatcher.InvokeAsync for property notifications (#90) — @maihcx
+
+
+---
+
 ## v0.7.0
 
 ## 🚀 Changelog
