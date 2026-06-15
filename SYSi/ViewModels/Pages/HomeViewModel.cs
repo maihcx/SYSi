@@ -2,16 +2,13 @@
 
 namespace SYSi.ViewModels.Pages
 {
-    public partial class HomeViewModel : ObservableObject, INavigationAware
+    public partial class HomeViewModel : ObservableObject
     {
         private readonly HardwareHostService hardwareHostService;
 
         private readonly OsHostService osHostService;
 
         private INavigationService navigationService;
-
-        [ObservableProperty]
-        private ICollection<NavigationCard> _navigationCards = NavigationHandle.GetNavigationCards(["SYSi.Views.Pages", "SYSi.Views.PagesBottom"], typeof(HomePage), typeof(CpuPage), typeof(GpuPage), typeof(MemoryPage), typeof(OSPage));
 
         public HomeViewModel(
             INavigationService navigationService, 
@@ -25,20 +22,13 @@ namespace SYSi.ViewModels.Pages
             InitializeViewModel();
         }
 
-        public Task OnNavigatedToAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task OnNavigatedFromAsync()
-        {
-            return Task.CompletedTask;
-        }
-
         private void InitializeViewModel()
         {
             LoadStaticInfo();
         }
+
+        [ObservableProperty]
+        private ICollection<NavigationCard> _navigationCards = NavigationHandle.GetNavigationCards(["SYSi.Views.Pages", "SYSi.Views.PagesBottom"], typeof(HomePage), typeof(CpuPage), typeof(GpuPage), typeof(MemoryPage), typeof(OSPage));
 
         [ObservableProperty]
         private string _appName = AppInfoHelper.AppName;
@@ -97,9 +87,9 @@ namespace SYSi.ViewModels.Pages
             {
                 OsInfo = osHostService.OsInfo;
 
-                GpuList  = new ObservableCollection<GpuInfo>(hardwareHostService?.Gpus ?? []);
-                CpuInfo  = hardwareHostService?.CpuInfo ?? new();
-                RamInfo  = hardwareHostService?.RamInfo ?? new();
+                GpuList  = new ObservableCollection<GpuInfo>(hardwareHostService.Gpus);
+                CpuInfo  = hardwareHostService.CpuInfo;
+                RamInfo  = hardwareHostService.RamInfo;
             }
             catch { }
         }

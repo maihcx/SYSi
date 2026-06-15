@@ -10,7 +10,11 @@ public sealed partial class HardwareService
             // Build basic info for all ready drives
             foreach (var drive in DriveInfo.GetDrives())
             {
-                if (!drive.IsReady) continue;
+                if (!drive.IsReady)
+                {
+                    continue;
+                }
+
                 drives.Add(BuildDriveInfo(drive));
             }
 

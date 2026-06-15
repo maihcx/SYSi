@@ -14,7 +14,19 @@ public sealed partial class HardwareService
     private IntPtr _cpuClockCounter = IntPtr.Zero;
     private readonly object _cpuClockLock = new();
 
-    private static int? _cachedBaseMHz;
+    private static readonly Lazy<int> _cachedBaseMHz = new(
+    () => {
+        int mhz = GetCpuBaseSpeedViaCpuid();
+        if (mhz == 0)
+        {
+            using var s = new ManagementObjectSearcher("select CurrentClockSpeed from Win32_Processor");
+            foreach (var item in s.Get())
+            {
+                mhz = Convert.ToInt32((uint)item["CurrentClockSpeed"]);
+            }
+        }
+        return mhz;
+    }, isThreadSafe: true);
 
     public HardwareService()
     {
@@ -91,9 +103,7 @@ public sealed partial class HardwareService
 
     private void InitCpuClockPdh()
     {
-        int _cpuBaseMHz = GetCpuBaseClockMHz();
-
-        if (_cpuBaseMHz == 0)
+        if (_cachedBaseMHz.Value == 0)
         {
             return;
         }
@@ -115,31 +125,16 @@ public sealed partial class HardwareService
 
     private static int GetCpuBaseClockMHz()
     {
-        if (_cachedBaseMHz.HasValue)
-        {
-            return _cachedBaseMHz.Value;
-        }
-
-        _cachedBaseMHz = GetCpuBaseSpeedViaCpuid();
-        if (_cachedBaseMHz == 0)
-        {
-            using var searcher = new ManagementObjectSearcher("select CurrentClockSpeed from Win32_Processor");
-            foreach (var item in searcher.Get())
-            {
-                _cachedBaseMHz = Convert.ToInt32((uint)item["CurrentClockSpeed"]);
-            }
-        }
-
         return _cachedBaseMHz.Value;
     }
 
     private double GetCurrentCpuSpeedGHz()
     {
-        int _cpuBaseMHz = GetCpuBaseClockMHz();
+        int baseMHz = GetCpuBaseClockMHz();
 
         try
         {
-            if (_cpuClockQuery == IntPtr.Zero || _cpuBaseMHz == 0)
+            if (_cpuClockQuery == IntPtr.Zero || baseMHz == 0)
             {
                 return 0;
             }
@@ -161,7 +156,7 @@ public sealed partial class HardwareService
                 }
 
                 // % Processor Performance × base = current MHz
-                double currentMHz = value.doubleValue / 100.0 * _cpuBaseMHz;
+                double currentMHz = value.doubleValue / 100.0 * baseMHz;
                 return currentMHz / 1000.0;
             }
         }
@@ -197,16 +192,18 @@ public sealed partial class HardwareService
 
     // ── Brand / vendor ───────────────────────────────────────────────────────
 
+    private static readonly uint[] BrandLeaves = [0x80000002, 0x80000003, 0x80000004];
+
     private static string GetCpuBrandViaCpuid()
     {
         var sb = new StringBuilder(48);
-        foreach (uint leaf in new uint[] { 0x80000002, 0x80000003, 0x80000004 })
+        foreach (uint leaf in BrandLeaves)
         {
-            var info = X86Base.CpuId((int)leaf, 0);
-            AppendLeaf(sb, info.Eax);
-            AppendLeaf(sb, info.Ebx);
-            AppendLeaf(sb, info.Ecx);
-            AppendLeaf(sb, info.Edx);
+            var (Eax, Ebx, Ecx, Edx)= X86Base.CpuId((int)leaf, 0);
+            AppendLeaf(sb, Eax);
+            AppendLeaf(sb, Ebx);
+            AppendLeaf(sb, Ecx);
+            AppendLeaf(sb, Edx);
         }
         return sb.ToString().Trim();
     }
