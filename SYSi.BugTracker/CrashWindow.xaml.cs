@@ -1,11 +1,12 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using static SYSi.BugTracker.ReportPopup;
 
 namespace SYSi.BugTracker;
 
@@ -14,29 +15,40 @@ public partial class CrashWindow : Window
     private string? _logPath;
     private string _rawLog = string.Empty;
 
-    private const int WM_NCHITTEST = 0x0084;
-    private const int WM_NCLBUTTONDOWN = 0x00A1;
-    private const int WM_NCLBUTTONUP = 0x00A2;
-    private const int HTMAXBUTTON = 9;
-    private const int HTCLIENT = 1;
-    private bool _hoveringMaxButton;
+    // ── DWM ──────────────────────────────────────────────────────────────────
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(
+        IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmExtendFrameIntoClientArea(
+        IntPtr hwnd, ref Margins margins);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Margins { public int Left, Right, Top, Bottom; }
+
+    private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+    private const int DWMWA_CAPTION_COLOR = 35;
+    private const int DWMWA_TEXT_COLOR = 36;
+    private const int DWMWA_BORDER_COLOR = 34;
+    private const int DWMWA_SYSTEMBACKDROP_TYPE = 38;
+    private const int DWMSBT_MAINWINDOW = 2; // Mica
 
     // ── Palette ──────────────────────────────────────────────────────────────
 
-    private static readonly SolidColorBrush BrushDefault = Brush("#CBD5E1");
-    private static readonly SolidColorBrush BrushHeader = Brush("#F8FAFC");
-    private static readonly SolidColorBrush BrushSeparator = Brush("#1E3A5F");
-    private static readonly SolidColorBrush BrushLabel = Brush("#60A5FA");
-    private static readonly SolidColorBrush BrushError = Brush("#F87171");
-    private static readonly SolidColorBrush BrushValue = Brush("#34D399");
-    private static readonly SolidColorBrush BrushStackAt = Brush("#94A3B8");
-    private static readonly SolidColorBrush BrushStackPath = Brush("#475569");
-    private static readonly SolidColorBrush BrushMeta = Brush("#A78BFA");
-    private static readonly SolidColorBrush BrushInner = Brush("#FB923C");
-    private static readonly SolidColorBrush HoverBrush = new(Color.FromRgb(0x1E, 0x29, 0x3B));
-    private static readonly SolidColorBrush DefaultWinCtrlButtonForegroundBrush = Brush("#94A3B8");
-    private static readonly SolidColorBrush HoverWinCtrlButtonForegroundBrush = Brush("#F1F5F9");
-    private static readonly SolidColorBrush PressedBrush = Brush("#0F172A");
+    private static readonly SolidColorBrush BrushDefault = MakeBrush("#CBD5E1");
+    private static readonly SolidColorBrush BrushHeader = MakeBrush("#F8FAFC");
+    private static readonly SolidColorBrush BrushSeparator = MakeBrush("#1E3A5F");
+    private static readonly SolidColorBrush BrushLabel = MakeBrush("#60A5FA");
+    private static readonly SolidColorBrush BrushError = MakeBrush("#F87171");
+    private static readonly SolidColorBrush BrushValue = MakeBrush("#34D399");
+    private static readonly SolidColorBrush BrushStackAt = MakeBrush("#94A3B8");
+    private static readonly SolidColorBrush BrushStackPath = MakeBrush("#475569");
+    private static readonly SolidColorBrush BrushMeta = MakeBrush("#A78BFA");
+    private static readonly SolidColorBrush BrushInner = MakeBrush("#FB923C");
+
+    // ── Constructor ──────────────────────────────────────────────────────────
 
     public CrashWindow(string? logPath, string appName)
     {
@@ -44,106 +56,51 @@ public partial class CrashWindow : Window
 
         SourceInitialized += OnSourceInitialized;
 
-        // Wire up SystemCommands — không cần code-behind cho window controls
-        CommandBindings.Add(new CommandBinding(SystemCommands.MinimizeWindowCommand,
-            (_, _) => SystemCommands.MinimizeWindow(this)));
-        CommandBindings.Add(new CommandBinding(SystemCommands.MaximizeWindowCommand,
-            (_, _) => SystemCommands.MaximizeWindow(this)));
-        CommandBindings.Add(new CommandBinding(SystemCommands.RestoreWindowCommand,
-            (_, _) => SystemCommands.RestoreWindow(this)));
-        CommandBindings.Add(new CommandBinding(SystemCommands.CloseWindowCommand,
-            (_, _) => SystemCommands.CloseWindow(this)));
-
-        Title = $"{appName} — Bug Tracker";
-        TitleText.Text = $"{appName} has crashed";
-
+        Title    = $"{appName} — Bug Tracker";
         _logPath = logPath;
         LoadLog();
-
-        SourceInitialized += (_, _) =>
-        {
-            var hwnd = new WindowInteropHelper(this).Handle;
-            HwndSource.FromHwnd(hwnd)?.AddHook(WndProc);
-        };
     }
 
     private void OnSourceInitialized(object? sender, EventArgs e)
     {
-        var source = (HwndSource)PresentationSource.FromVisual(this)!;
-        source.AddHook(WndProc);
+        var hwnd = new WindowInteropHelper(this).Handle;
+        ApplyDwm(hwnd);
     }
 
-    private IntPtr WndProc(
-        IntPtr hwnd,
-        int msg,
-        IntPtr wParam,
-        IntPtr lParam,
-        ref bool handled)
+    private static void ApplyDwm(IntPtr hwnd)
     {
-        if (msg == WM_NCHITTEST)
-        {
-            Point screenPoint = GetPointFromLParam(lParam);
+        // Dark mode title bar
+        int dark = 1;
+        DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ref dark, sizeof(int));
 
-            bool hover = IsOverMaximizeButton(screenPoint);
+        // Caption màu khớp header: #0F1F35
+        int caption = ToBgr(0x0F, 0x1F, 0x35);
+        DwmSetWindowAttribute(hwnd, DWMWA_CAPTION_COLOR, ref caption, sizeof(int));
 
-            if (hover != _hoveringMaxButton)
-            {
-                _hoveringMaxButton = hover;
+        // Text trắng
+        int text = ToBgr(0xF8, 0xFA, 0xFC);
+        DwmSetWindowAttribute(hwnd, DWMWA_TEXT_COLOR, ref text, sizeof(int));
 
-                Dispatcher.BeginInvoke(() =>
-                {
-                    MaximizeButton.Background =
-                        hover ? HoverBrush : Brushes.Transparent;
+        // Border màu accent
+        int border = ToBgr(0x1E, 0x3A, 0x5F);
+        DwmSetWindowAttribute(hwnd, DWMWA_BORDER_COLOR, ref border, sizeof(int));
 
-                    Dispatcher.BeginInvoke(() =>
-                    {
-                        MaximizeButton.Background =
-                            hover ? HoverBrush : Brushes.Transparent;
+        // Mica backdrop
+        int mica = DWMSBT_MAINWINDOW;
+        DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, ref mica, sizeof(int));
 
-                        MaximizeButton.Foreground =
-                            hover ? HoverWinCtrlButtonForegroundBrush : DefaultWinCtrlButtonForegroundBrush;
-                    });
-                });
-            }
-
-            if (hover)
-            {
-                handled = true;
-                return (IntPtr)HTMAXBUTTON;
-            }
-        }
-
-        return IntPtr.Zero;
+        // Extend frame — cần thiết để Mica render vào client area
+        var margins = new Margins { Left = -1, Right = -1, Top = -1, Bottom = -1 };
+        DwmExtendFrameIntoClientArea(hwnd, ref margins);
     }
 
-    private static Point GetPointFromLParam(IntPtr lParam)
-    {
-        long value = lParam.ToInt64();
+    // DWM dùng 0x00BBGGRR
+    private static int ToBgr(byte r, byte g, byte b)
+        => b << 16 | g << 8 | r;
 
-        int x = unchecked((short)(value & 0xFFFF));
-        int y = unchecked((short)((value >> 16) & 0xFFFF));
+    // ── Close button handler (không dùng SystemCommands nữa) ──────────────
 
-        return new Point(x, y);
-    }
-
-    private bool IsOverMaximizeButton(Point screenPoint)
-    {
-        if (MaximizeButton == null)
-        {
-            return false;
-        }
-
-        Point topLeft =
-            MaximizeButton.PointToScreen(new Point(0, 0));
-
-        Rect rect = new(
-            topLeft.X,
-            topLeft.Y,
-            MaximizeButton.ActualWidth,
-            MaximizeButton.ActualHeight);
-
-        return rect.Contains(screenPoint);
-    }
+    private void CloseWindow_Click(object sender, RoutedEventArgs e) => Close();
 
     // ── Load & render ────────────────────────────────────────────────────────
 
@@ -152,9 +109,9 @@ public partial class CrashWindow : Window
         if (_logPath == null || !File.Exists(_logPath))
         {
             ShowPlainError("Log file not found.\nPlease check the path passed as argument.");
-            LogPathText.Text = _logPath ?? "(no path provided)";
+            LogPathText.Text        = _logPath ?? "(no path provided)";
             OpenFolderBtn.IsEnabled = false;
-            DeleteBtn.IsEnabled = false;
+            DeleteBtn.IsEnabled     = false;
             return;
         }
 
@@ -195,21 +152,18 @@ public partial class CrashWindow : Window
 
     private void RenderLine(string line)
     {
-        // ── Separator
         if (line.StartsWith('─') || (line.StartsWith('-') && line.Length > 20 && line.Trim('-').Length == 0))
         {
             LogBlock.Inlines.Add(new Run(line) { Foreground = BrushSeparator });
             return;
         }
 
-        // ── Top header
         if (line.StartsWith("SYSi") || line.StartsWith("App Crash") || line.StartsWith("Crash Report"))
         {
             LogBlock.Inlines.Add(new Run(line) { Foreground = BrushHeader, FontWeight = FontWeights.SemiBold });
             return;
         }
 
-        // ── Meta fields
         if (TrySplitLabel(line, out string label, out string value) && IsMetaLabel(label))
         {
             LogBlock.Inlines.Add(new Run(label + " : ") { Foreground = BrushLabel });
@@ -217,7 +171,6 @@ public partial class CrashWindow : Window
             return;
         }
 
-        // ── Exception
         if (line.TrimStart().StartsWith("Exception :") || line.TrimStart().StartsWith("Exception:"))
         {
             string indent = GetIndent(line);
@@ -228,7 +181,6 @@ public partial class CrashWindow : Window
             return;
         }
 
-        // ── Message
         if (line.TrimStart().StartsWith("Message :") || line.TrimStart().StartsWith("Message:"))
         {
             string indent = GetIndent(line);
@@ -239,7 +191,6 @@ public partial class CrashWindow : Window
             return;
         }
 
-        // ── StackTrace label
         if (line.TrimStart().StartsWith("StackTrace"))
         {
             string indent = GetIndent(line);
@@ -247,22 +198,20 @@ public partial class CrashWindow : Window
             return;
         }
 
-        // ── Stack frame
         if (line.TrimStart().StartsWith("at "))
         {
             RenderStackFrame(line);
             return;
         }
 
-        // ── InnerException marker
         if (line.TrimStart().StartsWith("─ InnerException:") || line.TrimStart().StartsWith("- InnerException:"))
         {
             string indent = GetIndent(line);
-            LogBlock.Inlines.Add(new Run(indent + "─ InnerException:") { Foreground = BrushInner, FontWeight = FontWeights.SemiBold });
+            LogBlock.Inlines.Add(new Run(indent + "─ InnerException:")
+            { Foreground = BrushInner, FontWeight = FontWeights.SemiBold });
             return;
         }
 
-        // ── Timestamp tag [...]
         if (line.StartsWith('[') && line.Contains(']'))
         {
             int end = line.IndexOf(']');
@@ -273,7 +222,6 @@ public partial class CrashWindow : Window
             return;
         }
 
-        // ── Default
         LogBlock.Inlines.Add(new Run(line) { Foreground = BrushDefault });
     }
 
@@ -299,7 +247,7 @@ public partial class CrashWindow : Window
         }
     }
 
-    // ── Meta bar (pills) ──────────────────────────────────────────────────────
+    // ── Meta bar ──────────────────────────────────────────────────────────────
 
     private void BuildMetaBar(string log)
     {
@@ -324,7 +272,7 @@ public partial class CrashWindow : Window
         {
             var pill = new Border
             {
-                Background        = new SolidColorBrush(Color.FromRgb(0x1E, 0x29, 0x3B)),
+                Background        = new SolidColorBrush(Color.FromArgb(0xCC, 0x1E, 0x29, 0x3B)),
                 CornerRadius      = new CornerRadius(5),
                 Padding           = new Thickness(10, 4, 10, 4),
                 Margin            = new Thickness(0, 0, 8, 0),
@@ -352,7 +300,7 @@ public partial class CrashWindow : Window
 
     // ── Button handlers ───────────────────────────────────────────────────────
 
-    private void Copy_Click(object sender, RoutedEventArgs e)
+    private void Copy_Click(object? sender, RoutedEventArgs? e)
     {
         if (!string.IsNullOrEmpty(_rawLog))
         {
@@ -402,6 +350,22 @@ public partial class CrashWindow : Window
         }
     }
 
+    private void Report_Click(object sender, RoutedEventArgs e)
+    {
+        var popup = new ReportPopup();
+        popup.Owner = this;
+
+        popup.ShowDialog();
+
+        switch (popup.SelectedAction)
+        {
+            case ReportAction.Facebook:
+            case ReportAction.GitHub:
+                Copy_Click(null, null);
+                break;
+        }
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static bool TrySplitLabel(string line, out string label, out string value)
@@ -435,9 +399,9 @@ public partial class CrashWindow : Window
         return line[..i];
     }
 
-    private static SolidColorBrush Brush(string hex)
+    private static SolidColorBrush MakeBrush(string hex)
     {
-        hex = hex.TrimStart('#');
+        hex  = hex.TrimStart('#');
         byte r = Convert.ToByte(hex[0..2], 16);
         byte g = Convert.ToByte(hex[2..4], 16);
         byte b = Convert.ToByte(hex[4..6], 16);

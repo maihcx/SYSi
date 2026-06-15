@@ -9,19 +9,12 @@
         Width="900"
         MinHeight="480"
         MinWidth="680"
-        Background="#0F172A"
-        WindowStyle="SingleBorderWindow"
+        Background="Transparent"
         AllowsTransparency="False"
         ResizeMode="CanResize"
         WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI">
 
-    <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="62"
-                      ResizeBorderThickness="6"
-                      UseAeroCaptionButtons="True" />
-    </WindowChrome.WindowChrome>
-    
     <Window.Resources>
         <!-- Action button -->
         <Style x:Key="ActionButton"
@@ -96,7 +89,7 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Close button (footer) -->
+        <!-- Close button -->
         <Style x:Key="CloseButton"
                TargetType="Button"
                BasedOn="{StaticResource ActionButton}">
@@ -119,65 +112,6 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Window control button — dùng Command binding, không cần code-behind -->
-        <Style x:Key="WinCtrlButton"
-               TargetType="Button">
-            <Setter Property="Background"
-                    Value="Transparent" />
-            <Setter Property="Foreground"
-                    Value="#94A3B8" />
-            <Setter Property="BorderThickness"
-                    Value="0" />
-            <Setter Property="Width"
-                    Value="46" />
-            <Setter Property="Height"
-                    Value="32" />
-            <Setter Property="FontSize"
-                    Value="13" />
-            <Setter Property="Cursor"
-                    Value="Hand" />
-            <Setter Property="WindowChrome.IsHitTestVisibleInChrome"
-                    Value="True" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver"
-                                     Value="True">
-                                <Setter Property="Background"
-                                        Value="#1E293B" />
-                                <Setter Property="Foreground"
-                                        Value="#F1F5F9" />
-                            </Trigger>
-                            <Trigger Property="IsPressed"
-                                     Value="True">
-                                <Setter Property="Background"
-                                        Value="#0F172A" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="WinCloseButton"
-               TargetType="Button"
-               BasedOn="{StaticResource WinCtrlButton}">
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver"
-                         Value="True">
-                    <Setter Property="Background"
-                            Value="#7F1D1D" />
-                    <Setter Property="Foreground"
-                            Value="#FCA5A5" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
         <!-- ScrollBar -->
         <Style TargetType="ScrollBar">
             <Setter Property="Background"
@@ -190,8 +124,6 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <!-- Header / title bar -->
-            <RowDefinition Height="Auto" />
             <!-- Meta pill bar -->
             <RowDefinition Height="Auto" />
             <!-- Log path bar -->
@@ -201,82 +133,9 @@
             <!-- Footer toolbar -->
         </Grid.RowDefinitions>
 
-        <!-- ── Header / custom title bar ───────────────────────── -->
-        <Border Grid.Row="0"
-                Background="#0F1F35"
-                BorderBrush="#1E3A5F"
-                BorderThickness="0,0,0,1"
-                Height="62">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <!-- Title & subtitle — vùng này drag window -->
-                <StackPanel Grid.Column="0"
-                            VerticalAlignment="Center"
-                            Margin="20,0,0,0">
-                    <TextBlock x:Name="TitleText"
-                               Text="SYSi has crashed"
-                               FontSize="17"
-                               FontWeight="SemiBold"
-                               Foreground="#F8FAFC" />
-                    <TextBlock Text="The error information below may help diagnose the problem."
-                               FontSize="12"
-                               Foreground="#64748B"
-                               Margin="0,3,0,0" />
-                </StackPanel>
-
-                <!-- Window controls — dùng SystemCommands -->
-                <StackPanel Grid.Column="1"
-                            Orientation="Horizontal"
-                            VerticalAlignment="Top">
-                    <Button Style="{StaticResource WinCtrlButton}"
-                            Content="🗕"
-                            ToolTip="Minimize"
-                            Command="{x:Static SystemCommands.MinimizeWindowCommand}"
-                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" />
-                    <Button x:Name="MaximizeButton"
-                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
-                        <Button.Style>
-                            <Style TargetType="Button"
-                                   BasedOn="{StaticResource WinCtrlButton}">
-
-                                <Setter Property="Content"
-                                        Value="🗗" />
-
-                                <Setter Property="Command"
-                                        Value="{x:Static SystemCommands.MaximizeWindowCommand}" />
-
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=WindowState,
-                                      RelativeSource={RelativeSource AncestorType=Window}}"
-                                                 Value="{x:Static WindowState.Maximized}">
-
-                                        <Setter Property="Content"
-                                                Value="🗖" />
-
-                                        <Setter Property="Command"
-                                                Value="{x:Static SystemCommands.RestoreWindowCommand}" />
-                                    </DataTrigger>
-
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-                    <Button Style="{StaticResource WinCloseButton}"
-                            Content="✕"
-                            ToolTip="Close"
-                            Command="{x:Static SystemCommands.CloseWindowCommand}"
-                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" />
-                </StackPanel>
-            </Grid>
-        </Border>
-
         <!-- ── Meta pill bar ────────────────────────────────────── -->
-        <Border Grid.Row="1"
-                Background="#0B1627"
+        <Border Grid.Row="0"
+                Background="#B20B1627"
                 BorderBrush="#1E293B"
                 BorderThickness="0,0,0,1"
                 Padding="16,10">
@@ -288,8 +147,8 @@
         </Border>
 
         <!-- ── Log path bar ──────────────────────────────────────── -->
-        <Border Grid.Row="2"
-                Background="#0D1B2A"
+        <Border Grid.Row="1"
+                Background="#B20D1B2A"
                 BorderBrush="#1E293B"
                 BorderThickness="0,0,0,1"
                 Padding="16,8">
@@ -312,10 +171,10 @@
         </Border>
 
         <!-- ── Log viewer ────────────────────────────────────────── -->
-        <ScrollViewer Grid.Row="3"
+        <ScrollViewer Grid.Row="2"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Auto"
-                      Background="#0B1120"
+                      Background="#CC0B1120"
                       Padding="16,12">
             <TextBlock x:Name="LogBlock"
                        FontFamily="Consolas, Courier New"
@@ -325,8 +184,8 @@
         </ScrollViewer>
 
         <!-- ── Footer toolbar ────────────────────────────────────── -->
-        <Border Grid.Row="4"
-                Background="#0F1F35"
+        <Border Grid.Row="3"
+                Background="#B20F1F35"
                 BorderBrush="#1E293B"
                 BorderThickness="0,1,0,0"
                 Padding="16,10">
@@ -348,6 +207,11 @@
                             Content="🗑  Delete Log"
                             Style="{StaticResource DangerButton}"
                             Click="Delete_Click" />
+                    <Button x:Name="ReportBtn"
+                            Content="🐛  Report"
+                            Style="{StaticResource ActionButton}"
+                            Margin="8,0,0,0"
+                            Click="Report_Click" />
                 </StackPanel>
 
                 <Button Content="Close"
@@ -355,8 +219,7 @@
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Width="80"
-                        Command="{x:Static SystemCommands.CloseWindowCommand}"
-                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" />
+                        Click="CloseWindow_Click" />
             </Grid>
         </Border>
     </Grid>
