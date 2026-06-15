@@ -8,6 +8,9 @@
         public static string AuthorCreated = "Created by SM SOFT";
         public static string AppDescription = "System Information.";
         public static string CopyRight = "© 2026 Song Mai Software";
+        public static string DataDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "SYSi");
 
         public static string GetAppPath()
         {
