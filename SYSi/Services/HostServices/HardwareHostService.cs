@@ -84,7 +84,6 @@ namespace SYSi.Services.HostServices
                     })
                 );
             }
-            catch { }
             finally
             {
                 Interlocked.Exchange(ref refreshing, 0);

@@ -1,6 +1,6 @@
 ﻿namespace SYSi.ViewModels.Pages
 {
-    public partial class MotherboardViewModel : ObservableObject, INavigationAware
+    public partial class MotherboardViewModel : ObservableObject
     {
         private readonly HardwareHostService hardwareHostService;
 
@@ -12,17 +12,7 @@
         }
 
         [ObservableProperty]
-        private MotherboardInfo _motherboardInfo = new();
-
-        public Task OnNavigatedToAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task OnNavigatedFromAsync()
-        {
-            return Task.CompletedTask;
-        }
+        private MotherboardInfo? _motherboardInfo;
 
         private void InitializeViewModel()
         {

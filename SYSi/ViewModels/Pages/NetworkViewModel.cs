@@ -1,6 +1,6 @@
 ﻿namespace SYSi.ViewModels.Pages
 {
-    public partial class NetworkViewModel : ObservableObject, INavigationAware
+    public partial class NetworkViewModel : ObservableObject
     {
         private readonly HardwareHostService hardwareHostService;
 
@@ -12,17 +12,7 @@
         }
 
         [ObservableProperty]
-        private List<NetworkAdapterInfo> _adapters = new();
-
-        public Task OnNavigatedToAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task OnNavigatedFromAsync()
-        {
-            return Task.CompletedTask;
-        }
+        private List<NetworkAdapterInfo>? _adapters;
 
         private void InitializeViewModel()
         {

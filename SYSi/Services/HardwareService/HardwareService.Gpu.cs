@@ -15,7 +15,7 @@ public sealed partial class HardwareService
     private readonly object _pdhLock = new();
     private IntPtr _gpuQuery = IntPtr.Zero;
     private IntPtr _gpuCounter = IntPtr.Zero;
-    private bool _pdhReady;
+    private volatile bool _pdhReady;
     private Dictionary<(uint hi, uint lo), int> _luidToGpuIndex = [];
 
     // ── Public API ───────────────────────────────────────────────────────────
@@ -215,54 +215,55 @@ public sealed partial class HardwareService
 
     private static string? GetMonitorNameFromRegistry(string deviceId)
     {
-        try
-        {
-            // deviceId: "MONITOR\ACQ279Q1\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001"
-            using var monitorsKey = Registry.LocalMachine.OpenSubKey(
-                @"SYSTEM\CurrentControlSet\Enum\DISPLAY");
+        // deviceId: "MONITOR\ACQ279Q1\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001"
+        using var monitorsKey = Registry.LocalMachine.OpenSubKey(
+            @"SYSTEM\CurrentControlSet\Enum\DISPLAY");
 
-            if (monitorsKey == null)
+        if (monitorsKey == null)
+        {
+            return null;
+        }
+
+        foreach (string monitorId in monitorsKey.GetSubKeyNames())
+        {
+            if (!deviceId.Contains(monitorId, StringComparison.OrdinalIgnoreCase))
             {
-                return null;
+                continue;
             }
 
-            foreach (string monitorId in monitorsKey.GetSubKeyNames())
+            using var monitorKey = monitorsKey.OpenSubKey(monitorId);
+            if (monitorKey == null)
             {
-                using var monitorKey = monitorsKey.OpenSubKey(monitorId);
-                if (monitorKey == null)
+                continue;
+            }
+
+            foreach (string instanceId in monitorKey.GetSubKeyNames())
+            {
+                using var instanceKey = monitorKey.OpenSubKey(instanceId);
+                if (instanceKey == null)
                 {
                     continue;
                 }
 
-                foreach (string instanceId in monitorKey.GetSubKeyNames())
+                string? hwId = instanceKey.GetValue("HardwareID")?.ToString();
+                if (hwId == null || !deviceId.Contains(monitorId, StringComparison.OrdinalIgnoreCase))
                 {
-                    using var instanceKey = monitorKey.OpenSubKey(instanceId);
-                    if (instanceKey == null)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    string? hwId = instanceKey.GetValue("HardwareID")?.ToString();
-                    if (hwId == null || !deviceId.Contains(monitorId, StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
+                using var paramsKey = instanceKey.OpenSubKey(@"Device Parameters");
+                if (paramsKey?.GetValue("EDID") is not byte[] edid)
+                {
+                    continue;
+                }
 
-                    using var paramsKey = instanceKey.OpenSubKey(@"Device Parameters");
-                    if (paramsKey?.GetValue("EDID") is not byte[] edid)
-                    {
-                        continue;
-                    }
-
-                    string? name = ParseMonitorNameFromEdid(edid);
-                    if (!string.IsNullOrWhiteSpace(name))
-                    {
-                        return name;
-                    }
+                string? name = ParseMonitorNameFromEdid(edid);
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    return name;
                 }
             }
         }
-        catch { }
 
         return null;
     }
