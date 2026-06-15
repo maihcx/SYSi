@@ -8,24 +8,22 @@ public sealed partial class HardwareService
     public List<NetworkAdapterInfo> GetNetworkInfo()
     {
         var adapters = new List<NetworkAdapterInfo>();
-        try
+
+        foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
         {
-            foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
+            if (nic.NetworkInterfaceType == NetworkInterfaceType.Loopback)
             {
-                if (nic.NetworkInterfaceType == NetworkInterfaceType.Loopback)
-                {
-                    continue;
-                }
-
-                if (nic.OperationalStatus    == OperationalStatus.Unknown)
-                {
-                    continue;
-                }
-
-                adapters.Add(BuildAdapterInfo(nic));
+                continue;
             }
+
+            if (nic.OperationalStatus    == OperationalStatus.Unknown)
+            {
+                continue;
+            }
+
+            adapters.Add(BuildAdapterInfo(nic));
         }
-        catch { }
+
         return adapters;
     }
 

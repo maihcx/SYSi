@@ -39,15 +39,12 @@ public sealed partial class HardwareService
     public CpuInfo GetCpuInfo()
     {
         var info = new CpuInfo();
-        try
-        {
-            ReadBasicCpuInfo(info);
-            info.LogicalProcessors = Environment.ProcessorCount;
-            info.PhysicalCores = GetPhysicalCoreCount();
-            info.VirtualizationEnabled = GetVirtualizationEnabled();
-            EnrichCpuFromSmbios(info);
-        }
-        catch { }
+
+        ReadBasicCpuInfo(info);
+        info.LogicalProcessors = Environment.ProcessorCount;
+        info.PhysicalCores = GetPhysicalCoreCount();
+        info.VirtualizationEnabled = GetVirtualizationEnabled();
+        EnrichCpuFromSmbios(info);
 
         RefreshCPUInfo(info);
         return info;
