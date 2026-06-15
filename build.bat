@@ -5,7 +5,7 @@ echo ============================================
 echo   Building SYSi Installer (WPF)
 echo ============================================
 
-set APP_PROJECTS=SYSi
+set APP_PROJECTS=SYSi SYSi.BugTracker
 set INSTALLER_PROJECT=SYSi.Installer\SYSi.Installer.csproj
 set OUTPUT_DIR=.\installer-output
 set PAYLOAD_DIR=%OUTPUT_DIR%\publish
