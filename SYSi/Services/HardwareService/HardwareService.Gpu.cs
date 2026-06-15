@@ -141,45 +141,40 @@ public sealed partial class HardwareService
 
     private static void EnrichWithDisplayInfo(List<GpuInfo> gpus)
     {
-        if (gpus.Count == 0)
+        if (gpus.Count == 0) return;
+        try
         {
-            return;
+            var dd = new NativeMethods.DISPLAY_DEVICE
+            { cb = (uint)Marshal.SizeOf<NativeMethods.DISPLAY_DEVICE>() };
+
+            for (uint i = 0; NativeMethods.EnumDisplayDevices(null, i, ref dd, 0); i++)
+            {
+                if ((dd.StateFlags & MirroringFlag) != 0) continue;
+
+                var dm = default(NativeMethods.DEVMODE);
+                dm.dmSize = (ushort)Marshal.SizeOf<NativeMethods.DEVMODE>();
+
+                if (!NativeMethods.EnumDisplaySettings(
+                        dd.DeviceName, NativeMethods.ENUM_CURRENT_SETTINGS, ref dm)) continue;
+
+                string adapter = dd.DeviceString.Trim();
+                var match = gpus.FirstOrDefault(g =>
+                        adapter.Contains(g.Name, StringComparison.OrdinalIgnoreCase) ||
+                        g.Name.Contains(adapter, StringComparison.OrdinalIgnoreCase))
+                    ?? (gpus.Count == 1 ? gpus[0] : null);
+
+                if (match == null) continue;
+
+                match.Monitors.Add(new MonitorInfo
+                {
+                    DeviceName  = dd.DeviceName,
+                    Resolution  = $"{dm.dmPelsWidth} × {dm.dmPelsHeight}",
+                    RefreshRate = $"{dm.dmDisplayFrequency} Hz",
+                    BitsPerPixel= $"{dm.dmBitsPerPel} bit",
+                });
+            }
         }
-
-        NativeMethods.DISPLAY_DEVICE dd = new()
-        { cb = (uint)Marshal.SizeOf<NativeMethods.DISPLAY_DEVICE>() };
-
-        for (uint i = 0; NativeMethods.EnumDisplayDevices(null, i, ref dd, 0); i++)
-        {
-            if ((dd.StateFlags & MirroringFlag) != 0)
-            {
-                continue;
-            }
-
-            var dm = default(NativeMethods.DEVMODE);
-            dm.dmSize = (ushort)Marshal.SizeOf<NativeMethods.DEVMODE>();
-
-            if (!NativeMethods.EnumDisplaySettings(
-                    dd.DeviceName, NativeMethods.ENUM_CURRENT_SETTINGS, ref dm))
-            {
-                continue;
-            }
-
-            string adapter = dd.DeviceString.Trim();
-            var match = gpus.FirstOrDefault(g =>
-                    adapter.Contains(g.Name, StringComparison.OrdinalIgnoreCase) ||
-                    g.Name.Contains(adapter, StringComparison.OrdinalIgnoreCase))
-                ?? (gpus.Count == 1 ? gpus[0] : null);
-
-            if (match == null || !string.IsNullOrEmpty(match.Resolution))
-            {
-                continue;
-            }
-
-            match.Resolution   = $"{dm.dmPelsWidth} × {dm.dmPelsHeight}";
-            match.RefreshRate  = $"{dm.dmDisplayFrequency} Hz";
-            match.BitsPerPixel = $"{dm.dmBitsPerPel} bit";
-        }
+        catch { }
     }
 
     // ── GPU usage (PDH + DXGI LUID mapping) ──────────────────────────────────

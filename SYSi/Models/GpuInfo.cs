@@ -39,6 +39,9 @@
         public string _pnpDeviceId = string.Empty;
 
         [ObservableProperty]
+        public List<MonitorInfo> _monitors = new();
+
+        [ObservableProperty]
         public double _usagePercent = 0;
     }
 }
