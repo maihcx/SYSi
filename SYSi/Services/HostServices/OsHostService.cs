@@ -22,16 +22,17 @@ namespace SYSi.Services.HostServices
             TimerStart(stockTimerInterval);
         }
 
-        private void LoadStaticInfo()
+        private async void LoadStaticInfo()
         {
-            var wmiTask = Task.Run(LoadFromWmi);
-            var activationTask = Task.Run(LoadActivationStatus);
-            var updateTask = Task.Run(LoadWindowsUpdateStatus);
-
             LoadFromEnvironment();
             OnPropertyChanged(nameof(OsInfo));
 
-            Task.WaitAll(wmiTask, activationTask, updateTask);
+            await Task.WhenAll(
+                Task.Run(LoadFromWmi),
+                Task.Run(LoadActivationStatus),
+                Task.Run(LoadWindowsUpdateStatus)
+            );
+
             OnPropertyChanged(nameof(OsInfo));
         }
 

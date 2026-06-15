@@ -12,10 +12,9 @@ public sealed partial class HardwareService
 
     private IntPtr _cpuClockQuery = IntPtr.Zero;
     private IntPtr _cpuClockCounter = IntPtr.Zero;
-    private int _cpuBaseMHz;
     private readonly object _cpuClockLock = new();
 
-    private static int _cachedBaseMHz;
+    private static int? _cachedBaseMHz;
 
     public HardwareService()
     {
@@ -92,7 +91,7 @@ public sealed partial class HardwareService
 
     private void InitCpuClockPdh()
     {
-        _cpuBaseMHz = GetCpuBaseClockMHz();
+        int _cpuBaseMHz = GetCpuBaseClockMHz();
 
         if (_cpuBaseMHz == 0)
         {
@@ -116,24 +115,28 @@ public sealed partial class HardwareService
 
     private static int GetCpuBaseClockMHz()
     {
+        if (_cachedBaseMHz.HasValue)
+        {
+            return _cachedBaseMHz.Value;
+        }
+
+        _cachedBaseMHz = GetCpuBaseSpeedViaCpuid();
         if (_cachedBaseMHz == 0)
         {
-            _cachedBaseMHz = GetCpuBaseSpeedViaCpuid();
-            if (_cachedBaseMHz == 0)
+            using var searcher = new ManagementObjectSearcher("select CurrentClockSpeed from Win32_Processor");
+            foreach (var item in searcher.Get())
             {
-                using var searcher = new ManagementObjectSearcher("select CurrentClockSpeed from Win32_Processor");
-                foreach (var item in searcher.Get())
-                {
-                    _cachedBaseMHz = Convert.ToInt32((uint)item["CurrentClockSpeed"]);
-                }
+                _cachedBaseMHz = Convert.ToInt32((uint)item["CurrentClockSpeed"]);
             }
         }
 
-        return _cachedBaseMHz;
+        return _cachedBaseMHz.Value;
     }
 
     private double GetCurrentCpuSpeedGHz()
     {
+        int _cpuBaseMHz = GetCpuBaseClockMHz();
+
         try
         {
             if (_cpuClockQuery == IntPtr.Zero || _cpuBaseMHz == 0)
