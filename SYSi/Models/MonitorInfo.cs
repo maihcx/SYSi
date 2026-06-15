@@ -9,5 +9,9 @@
         public string BitsPerPixel { get; set; } = string.Empty;
 
         public string DeviceName { get; set; } = string.Empty;
+
+        public string MonitorName { get; set; } = string.Empty;
+
+        public string DisplayLabel { get; set; } = string.Empty;
     }
 }
