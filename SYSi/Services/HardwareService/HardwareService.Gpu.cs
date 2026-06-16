@@ -532,69 +532,54 @@ public sealed partial class HardwareService
 
     private static string LookupArchitecture(string vendor, string deviceId)
     {
-        return !int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber, null, out int dev)
-            ? "N/A"
-            : vendor switch
+        if (!int.TryParse(
+            deviceId,
+            System.Globalization.NumberStyles.HexNumber,
+            null,
+            out int device))
         {
-            "1002" => dev switch // AMD
-            {
-                0x7550 or 0x7551 or 0x7480
-                    or 0x7590 or 0x75A0 => "RDNA 4",
-                >= 0x1580 and <= 0x15BF => "RDNA 3.5",
-                >= 0x7440 and <= 0x745F => "RDNA 3",
-                >= 0x73A0 and <= 0x73FF => "RDNA 2",
-                (>= 0x7310 and <= 0x731F) or (>= 0x7340 and <= 0x734F) => "RDNA 1",
-                (>= 0x6860 and <= 0x687F) or (>= 0x66A0 and <= 0x66AF) => "GCN 5 (Vega)",
-                (>= 0x67C0 and <= 0x67FF) or (>= 0x6980 and <= 0x699F) => "GCN 4 (Polaris)",
-                _ => "AMD GCN",
-            },
-            "10DE" => dev switch // NVIDIA
-            {
-                >= 0x2600 and <= 0x27FF => "Ada Lovelace",
-                (>= 0x2200 and <= 0x25FF) or (>= 0x2480 and <= 0x249F) => "Ampere",
-                (>= 0x1E00 and <= 0x1FFF) or (>= 0x2180 and <= 0x21FF) => "Turing",
-                (>= 0x1B00 and <= 0x1B80) or (>= 0x1C00 and <= 0x1C8F) => "Pascal",
-                _ => "NVIDIA GPU",
-            },
-            "8086" => dev switch // Intel
-            {
-                (>= 0x4F80 and <= 0x4F90) or (>= 0x5690 and <= 0x56BF) => "Xe HPG (Arc)",
-                >= 0x9A40 and <= 0x9A7F => "Xe LP (Tiger Lake)",
-                >= 0x4C8A and <= 0x4C9A => "Xe LP (Rocket Lake)",
-                _ => "Intel Graphics",
-            },
-            _ => "N/A",
-        };
+            return "N/A";
+        }
+
+        var rule = HardwareDatabase.GpuArchitectureDatabase.FirstOrDefault(x =>
+            x.VendorId.Equals(vendor, StringComparison.OrdinalIgnoreCase) &&
+            device >= x.MinDeviceId &&
+            device <= x.MaxDeviceId);
+
+        if (rule != null)
+        {
+            return rule.Architecture;
+        }
+
+        return HardwareDatabase.GpuArchitectureDatabaseFallbacks.TryGetValue(vendor, out var fallback)
+            ? fallback
+            : "N/A";
     }
 
     private static string LookupVramType(string vendor, string deviceId)
     {
-        return !int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber, null, out int dev)
-            ? "N/A"
-            : vendor switch
+        if (!int.TryParse(
+                deviceId,
+                System.Globalization.NumberStyles.HexNumber,
+                null,
+                out int device))
         {
-            "1002" => dev switch // AMD
-            {
-                // RDNA 4 / 3 / 2 / 1
-                (0x7550 or 0x7551 or 0x7480 or 0x7590 or 0x75A0)
-                    or (>= 0x7440 and <= 0x745F)
-                    or (>= 0x73A0 and <= 0x73FF)
-                    or (>= 0x7310 and <= 0x734F) => "GDDR6",
-                (>= 0x6860 and <= 0x687F) or (>= 0x66A0 and <= 0x66AF) => "HBM2",
-                >= 0x67C0 and <= 0x67FF => "GDDR5",
-                _ => "GDDR",
-            },
-            "10DE" => dev switch // NVIDIA
-            {
-                >= 0x2600 and <= 0x27FF => "GDDR6X",  // Ada
-                >= 0x2200 and <= 0x25FF => "GDDR6",   // Ampere
-                >= 0x1E00 and <= 0x21FF => "GDDR6",   // Turing
-                >= 0x1B00 and <= 0x1C8F => "GDDR5X",  // Pascal
-                _ => "GDDR",
-            },
-            "8086" => "Shared",
-            _ => "N/A",
-        };
+            return "N/A";
+        }
+
+        var rule = HardwareDatabase.GpuVramDatabase.FirstOrDefault(x =>
+            x.VendorId.Equals(vendor, StringComparison.OrdinalIgnoreCase) &&
+            device >= x.MinDeviceId &&
+            device <= x.MaxDeviceId);
+
+        if (rule != null)
+        {
+            return rule.VramType;
+        }
+
+        return HardwareDatabase.GpuVramDatabaseFallbacks.TryGetValue(vendor, out var fallback)
+            ? fallback
+            : "N/A";
     }
 
     // ── Small helpers ────────────────────────────────────────────────────────
@@ -622,21 +607,10 @@ public sealed partial class HardwareService
         return string.IsNullOrWhiteSpace(mfg) ? "N/A" : mfg;
     }
 
-    private static string MapMemoryTypeCode(int code) => code switch
+    private static string MapMemoryTypeCode(int code)
     {
-        1 => "Other",
-        2 => "Unknown",
-        3 => "VRAM",
-        4 => "DRAM",
-        5 => "SRAM",
-        6 => "WRAM",
-        7 => "EDO RAM",
-        8 => "Burst Synchronous DRAM",
-        9 => "Pipelined Burst SRAM",
-        10 => "CDRAM",
-        11 => "3DRAM",
-        12 => "SDRAM",
-        13 => "SGRAM",
-        _ => $"Type {code}",
-    };
+        return HardwareDatabase.MemoryTypeDatabase.TryGetValue(code, out var name)
+            ? name
+            : $"Type {code}";
+    }
 }

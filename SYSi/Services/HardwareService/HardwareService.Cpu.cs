@@ -16,15 +16,53 @@ public sealed partial class HardwareService
 
     private static readonly Lazy<int> _cachedBaseMHz = new(
     () => {
-        int mhz = GetCpuBaseSpeedViaCpuid();
-        if (mhz == 0)
+        int mhz = 0;
+
+        int cpuCount = Environment.ProcessorCount;
+
+        int structSize = Marshal.SizeOf<NativeMethods.PROCESSOR_POWER_INFORMATION>();
+
+        IntPtr buffer = Marshal.AllocHGlobal(structSize * cpuCount);
+
+        try
         {
-            using var s = new ManagementObjectSearcher("select CurrentClockSpeed from Win32_Processor");
-            foreach (var item in s.Get())
+            uint status = NativeMethods.CallNtPowerInformation(
+                NativeMethods.POWER_INFORMATION_LEVEL.ProcessorInformation,
+                IntPtr.Zero,
+                0,
+                buffer,
+                (uint)(structSize * cpuCount));
+
+            if (status != 0)
             {
-                mhz = Convert.ToInt32((uint)item["CurrentClockSpeed"]);
+                mhz = 0;
+            }
+            else
+            {
+                var info = Marshal.PtrToStructure<NativeMethods.PROCESSOR_POWER_INFORMATION>(buffer);
+
+                mhz = (int)info.MaxMhz;
             }
         }
+        finally
+        {
+            Marshal.FreeHGlobal(buffer);
+        }
+
+        if (mhz == 0)
+        {
+            mhz = GetCpuBaseSpeedViaCpuid(); 
+            if (mhz == 0) 
+            {
+                using var s = new ManagementObjectSearcher("select MaxClockSpeed from Win32_Processor"); 
+                foreach (var item in s.Get()) 
+                {
+                    mhz = Convert.ToInt32((uint)item["MaxClockSpeed"]);
+                    break;
+                }
+            }
+        }
+
         return mhz;
     }, isThreadSafe: true);
 
@@ -281,7 +319,7 @@ public sealed partial class HardwareService
     {
         NativeMethods.GetNativeSystemInfo(out var si);
 
-        return HardwareDatabase.CpuArchitectures.TryGetValue(
+        return HardwareDatabase.CpuArchitecturesDatabase.TryGetValue(
             si.ProcessorArchitecture,
             out var architecture)
             ? architecture

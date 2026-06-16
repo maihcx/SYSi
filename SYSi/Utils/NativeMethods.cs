@@ -157,6 +157,14 @@ namespace SYSi.Utils
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate uint ReleaseDelegate(IntPtr obj);
 
+        [DllImport("powrprof.dll", SetLastError = true)]
+        public static extern uint CallNtPowerInformation(
+            POWER_INFORMATION_LEVEL informationLevel,
+            IntPtr inputBuffer,
+            uint inputBufferLength,
+            IntPtr outputBuffer,
+            uint outputBufferLength);
+
         // ── Structs ─────────────────────────────────────────────────────────────
 
         [StructLayout(LayoutKind.Sequential)]
@@ -355,6 +363,22 @@ namespace SYSi.Utils
         {
             public uint LowPart;
             public uint HighPart;
+        }
+
+        public enum POWER_INFORMATION_LEVEL
+        {
+            ProcessorInformation = 11
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct PROCESSOR_POWER_INFORMATION
+        {
+            public uint Number;
+            public uint MaxMhz;
+            public uint CurrentMhz;
+            public uint MhzLimit;
+            public uint MaxIdleState;
+            public uint CurrentIdleState;
         }
     }
 }

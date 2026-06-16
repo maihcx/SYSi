@@ -7,6 +7,7 @@
 /// </summary>
 public static class HardwareDatabase
 {
+    #region CPU
     public sealed record CpuModelRule(
         string Vendor,
         int Family,
@@ -30,7 +31,7 @@ public static class HardwareDatabase
         int Bit,
         string Name);
 
-    public static readonly Dictionary<ushort, string> CpuArchitectures = new()
+    public static readonly Dictionary<ushort, string> CpuArchitecturesDatabase = new()
     {
         [0]  = "x86",
         [5]  = "ARM",
@@ -154,4 +155,201 @@ public static class HardwareDatabase
         new(unchecked((int)0x80000001), 0, CpuidRegister.Edx, 29, "x86-64"),
         new(unchecked((int)0x80000001), 0, CpuidRegister.Edx, 31, "3DNow!")
     ];
+
+    #endregion
+
+    #region GPU
+    public sealed record GpuArchitectureRule(
+        string VendorId,
+        int MinDeviceId,
+        int MaxDeviceId,
+        string Architecture);
+
+    public static readonly GpuArchitectureRule[] GpuArchitectureDatabase =
+    [
+        // AMD
+        new("1002", 0x7550, 0x7550, "RDNA 4"),
+        new("1002", 0x7551, 0x7551, "RDNA 4"),
+        new("1002", 0x7480, 0x7480, "RDNA 4"),
+        new("1002", 0x7590, 0x7590, "RDNA 4"),
+        new("1002", 0x75A0, 0x75A0, "RDNA 4"),
+
+        new("1002", 0x1580, 0x15BF, "RDNA 3.5"),
+        new("1002", 0x7440, 0x745F, "RDNA 3"),
+        new("1002", 0x73A0, 0x73FF, "RDNA 2"),
+
+        new("1002", 0x7310, 0x731F, "RDNA 1"),
+        new("1002", 0x7340, 0x734F, "RDNA 1"),
+
+        new("1002", 0x6860, 0x687F, "GCN 5 (Vega)"),
+        new("1002", 0x66A0, 0x66AF, "GCN 5 (Vega)"),
+
+        new("1002", 0x67C0, 0x67FF, "GCN 4 (Polaris)"),
+        new("1002", 0x6980, 0x699F, "GCN 4 (Polaris)"),
+
+        // NVIDIA
+        new("10DE", 0x2600, 0x27FF, "Ada Lovelace"),
+
+        new("10DE", 0x2200, 0x25FF, "Ampere"),
+        new("10DE", 0x2480, 0x249F, "Ampere"),
+
+        new("10DE", 0x1E00, 0x1FFF, "Turing"),
+        new("10DE", 0x2180, 0x21FF, "Turing"),
+
+        new("10DE", 0x1B00, 0x1B80, "Pascal"),
+        new("10DE", 0x1C00, 0x1C8F, "Pascal"),
+
+        // Intel
+        new("8086", 0x4F80, 0x4F90, "Xe HPG (Arc)"),
+        new("8086", 0x5690, 0x56BF, "Xe HPG (Arc)"),
+
+        new("8086", 0x9A40, 0x9A7F, "Xe LP (Tiger Lake)"),
+        new("8086", 0x4C8A, 0x4C9A, "Xe LP (Rocket Lake)")
+    ];
+
+    public static readonly Dictionary<string, string> GpuArchitectureDatabaseFallbacks = new()
+    {
+        ["1002"] = "AMD GCN",
+        ["10DE"] = "NVIDIA GPU",
+        ["8086"] = "Intel Graphics"
+    };
+
+    public sealed record GpuVramRule(
+        string VendorId,
+        int MinDeviceId,
+        int MaxDeviceId,
+        string VramType);
+
+    public static readonly GpuVramRule[] GpuVramDatabase =
+    [
+        // AMD
+        new("1002", 0x7550, 0x7550, "GDDR6"),
+        new("1002", 0x7551, 0x7551, "GDDR6"),
+        new("1002", 0x7480, 0x7480, "GDDR6"),
+        new("1002", 0x7590, 0x7590, "GDDR6"),
+        new("1002", 0x75A0, 0x75A0, "GDDR6"),
+
+        new("1002", 0x7440, 0x745F, "GDDR6"),
+        new("1002", 0x73A0, 0x73FF, "GDDR6"),
+        new("1002", 0x7310, 0x734F, "GDDR6"),
+
+        new("1002", 0x6860, 0x687F, "HBM2"),
+        new("1002", 0x66A0, 0x66AF, "HBM2"),
+
+        new("1002", 0x67C0, 0x67FF, "GDDR5"),
+
+        // NVIDIA
+        new("10DE", 0x2600, 0x27FF, "GDDR6X"), // Ada
+
+        new("10DE", 0x2200, 0x25FF, "GDDR6"),  // Ampere
+        new("10DE", 0x1E00, 0x21FF, "GDDR6"),  // Turing
+
+        new("10DE", 0x1B00, 0x1C8F, "GDDR5X"), // Pascal
+
+        // Intel
+        new("8086", 0x0000, 0xFFFF, "Shared")
+    ];
+
+    public static readonly Dictionary<string, string> GpuVramDatabaseFallbacks = new()
+    {
+        ["1002"] = "GDDR",
+        ["10DE"] = "GDDR",
+        ["8086"] = "Shared"
+    };
+
+    public static readonly Dictionary<int, string> MemoryTypeDatabase = new()
+    {
+        [1]  = "Other",
+        [2]  = "Unknown",
+        [3]  = "VRAM",
+        [4]  = "DRAM",
+        [5]  = "SRAM",
+        [6]  = "WRAM",
+        [7]  = "EDO RAM",
+        [8]  = "Burst Synchronous DRAM",
+        [9]  = "Pipelined Burst SRAM",
+        [10] = "CDRAM",
+        [11] = "3DRAM",
+        [12] = "SDRAM",
+        [13] = "SGRAM"
+    };
+    #endregion
+
+    #region MOTHERBOARD
+    public static readonly Dictionary<string, Dictionary<string, (string Codename, string? ChipsetName, string BusSpecs)>> MotherboardChipsetInfoDatabase = new()
+    {
+        ["8086"] = new()
+        {
+            ["7A04"] = ("Intel Raptor Lake", "Intel Z790", "PCI-Express 4.0 (16.0 GT/s)"),
+            ["7A06"] = ("Intel Raptor Lake", "Intel B760", "PCI-Express 4.0 (16.0 GT/s)"),
+            ["7A08"] = ("Intel Raptor Lake", "Intel H770", "PCI-Express 4.0 (16.0 GT/s)"),
+            ["7A0C"] = ("Intel Raptor Lake", "Intel Q670", "PCI-Express 4.0 (16.0 GT/s)"),
+            ["7A14"] = ("Intel Raptor Lake", "Intel W680", "PCI-Express 4.0 (16.0 GT/s)"),
+
+            // 600-series PCH — Alder Lake — DMI 4.0 x8
+            ["7A84"] = ("Intel Alder Lake", "Intel Z690", "PCI-Express 4.0 (16.0 GT/s)"),
+            ["7A86"] = ("Intel Alder Lake", "Intel H670", "PCI-Express 4.0 (16.0 GT/s)"),
+            ["7A88"] = ("Intel Alder Lake", "Intel B660", "PCI-Express 4.0 (16.0 GT/s)"),
+            ["7A8C"] = ("Intel Alder Lake", "Intel Q670", "PCI-Express 4.0 (16.0 GT/s)"),
+
+            // 500-series PCH — Rocket Lake — DMI 3.0 x8
+            ["A0FC"] = ("Intel Rocket Lake", "Intel Z590", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["A0FE"] = ("Intel Rocket Lake", "Intel H570", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["A0F0"] = ("Intel Rocket Lake", "Intel B560", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["A0F4"] = ("Intel Rocket Lake", "Intel Q570", "PCI-Express 3.0 (8.0 GT/s)"),
+
+            // 400-series PCH — Comet Lake — DMI 3.0 x8
+            ["0684"] = ("Intel Comet Lake", "Intel Z490", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["0687"] = ("Intel Comet Lake", "Intel H470", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["06A4"] = ("Intel Comet Lake", "Intel B460", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["06A1"] = ("Intel Comet Lake", "Intel Q470", "PCI-Express 3.0 (8.0 GT/s)"),
+        },
+
+        ["1022"] = new()
+        {
+            ["790B"] = ("AMD Zen FCH", null, "PCI-Express 4.0 (16.0 GT/s)"), // SMBus
+            ["790E"] = ("AMD Zen FCH", null, "PCI-Express 4.0 (16.0 GT/s)"), // LPC Bridge
+        }
+    };
+
+    public static readonly string[] AmdChipsetDatabase =
+    [
+        "X670E",
+        "X670",
+        "X870E",
+        "X870",
+        "B650E",
+        "B650",
+        "B850",
+        "A620",
+        "X570",
+        "B550",
+        "A520",
+        "X470",
+        "B450",
+        "A320"
+    ];
+    #endregion
+
+    #region RAM
+    public static readonly Dictionary<byte, string> MemoryTechnologyDatabase = new()
+    {
+        [0x12] = "DDR",
+        [0x13] = "DDR2",
+        [0x14] = "DDR2 FB-DIMM",
+        [0x18] = "DDR3",
+        [0x1A] = "DDR4",
+        [0x20] = "LPDDR4",
+        [0x22] = "DDR5",
+        [0x23] = "LPDDR5"
+    };
+
+    public static readonly Dictionary<byte, string> MemoryFormFactorDatabase = new()
+    {
+        [0x09] = "DIMM",
+        [0x0D] = "SO-DIMM",
+        [0x0F] = "RIMM",
+        [0x11] = "FB-DIMM"
+    };
+    #endregion
 }
