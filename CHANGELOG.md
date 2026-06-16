@@ -1,3 +1,28 @@
+## v0.9.0
+
+## 🚀 Changelog
+## 🚀 Features
+
+- Add SYSi.BugTracker crash reporter and modernize UI (#101) — @maihcx
+
+## 🐛 Bug Fixes
+
+- Exclude non-physical network adapters (#105) — @maihcx
+
+## 🧹 Maintenance
+
+- Include BugTracker in installer build (#107) — @maihcx
+- Add hardware DBs and refactor lookups (#104) — @maihcx
+- Add HardwareDatabase and refactor CPU logic (#103) — @maihcx
+- Remove empty catches (#102) — @maihcx
+- Centralize DataDir in AppInfoHelper (#100) — @maihcx
+- Refactor HardwareService and ViewModels (#99) — @maihcx
+- Use SymbolIcon for InfoRow copy button (#98) — @maihcx
+- Adjust GPU page spacing and mark last InfoRow (#97) — @maihcx
+
+
+---
+
 ## v0.8.0
 
 ## 🚀 Changelog
