@@ -1,12 +1,10 @@
 ﻿namespace SYSi.ViewModels.Pages
 {
-    public partial class GpuViewModel : ObservableObject, INavigationAware
+    public partial class GpuViewModel : ObservableObject
     {
         private readonly HardwareHostService hardwareHostService;
 
         private List<GpuInfo> Gpus = new();
-
-        static string loadingText = LanguageBase.GetLangValue("loading_title");
 
         public GpuViewModel(HardwareHostService hardwareHostService)
         {
@@ -32,36 +30,8 @@
             GpuInfo = Gpus[Convert.ToInt32(value?.Value ?? "0")];
         }
 
-        private void setLoading()
-        {
-            GpuInfo.BitsPerPixel = loadingText;
-            GpuInfo.Manufacturer = loadingText;
-            GpuInfo.DriverVersion = loadingText;
-            GpuInfo.VramText = loadingText;
-            GpuInfo.VideoArchitecture = loadingText;
-            GpuInfo.VideoProcessor = loadingText;
-            GpuInfo.DriverDate = loadingText;
-            GpuInfo.PnpDeviceId = loadingText;
-            GpuInfo.Name = loadingText;
-            GpuInfo.RefreshRate = loadingText;
-            GpuInfo.Resolution = loadingText;
-            GpuInfo.VideoMemoryType = loadingText;
-        }
-
-        public Task OnNavigatedToAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task OnNavigatedFromAsync()
-        {
-            return Task.CompletedTask;
-        }
-
         private void InitializeViewModel()
         {
-            setLoading();
-
             LoadStaticInfo();
         }
 

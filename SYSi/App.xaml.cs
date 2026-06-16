@@ -5,9 +5,6 @@
     /// </summary>
     public partial class App
     {
-
-        private string logFile = Path.Combine(AppInfoHelper.GetAppPath(), "crash.log");
-
         public App()
         {
             RenderOptions.ProcessRenderMode = RenderMode.Default;
@@ -21,14 +18,22 @@
 
         public void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            var ex = e.ExceptionObject as Exception;
-            File.AppendAllText(logFile, $"[{DateTime.Now}] UnhandledException: {ex}\n");
+            if (e.ExceptionObject is Exception ex)
+            {
+                CrashHandler.Handle(ex, "AppDomain");
+            }
         }
 
         public void TaskScheduler_UnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
         {
-            File.AppendAllText(logFile, $"[{DateTime.Now}] UnobservedTaskException: {e.Exception}\n");
             e.SetObserved();
+            CrashHandler.WriteOnly(e.Exception, "TaskScheduler");
+        }
+
+        private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            e.Handled = true;
+            CrashHandler.Handle(e.Exception, "Dispatcher");
         }
 
         // The.NET Generic Host provides dependency injection, configuration, logging, and other services.
@@ -97,14 +102,6 @@
             Bootstrap.OnExit();
 
             _host.Dispose();
-        }
-
-        /// <summary>
-        /// Occurs when an exception is thrown by an application but not handled.
-        /// </summary>
-        private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
-        {
-            // For more info see https://docs.microsoft.com/en-us/dotnet/api/system.windows.application.dispatcherunhandledexception?view=windowsdesktop-6.0
         }
 
         /// <summary>

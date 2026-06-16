@@ -1,20 +1,10 @@
 ﻿namespace SYSi.ViewModels.PagesBottom
 {
-    public partial class AboutViewModel : ObservableObject, INavigationAware
+    public partial class AboutViewModel : ObservableObject
     {
         public AboutViewModel()
         {
             InitializeViewModel();
-        }
-
-        public Task OnNavigatedToAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task OnNavigatedFromAsync()
-        {
-            return Task.CompletedTask;
         }
 
         [ObservableProperty]

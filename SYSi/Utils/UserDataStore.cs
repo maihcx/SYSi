@@ -2,11 +2,7 @@
 {
     public static class UserDataStore
     {
-        private static readonly string DataDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "SYSi");
-
-        private static readonly string DataFile = Path.Combine(DataDir, "userdata.json");
+        private static readonly string DataFile = Path.Combine(AppInfoHelper.DataDir, "userdata.json");
 
         private static Dictionary<string, object> _data = new();
 
@@ -33,7 +29,7 @@
         {
             try
             {
-                Directory.CreateDirectory(DataDir);
+                Directory.CreateDirectory(AppInfoHelper.DataDir);
                 var json = JsonSerializer.Serialize(_data, new JsonSerializerOptions
                 {
                     WriteIndented = true

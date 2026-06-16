@@ -78,14 +78,10 @@
                             <ui:Button x:Name="PART_CopyButton"
                                        Grid.Column="2"
                                        ToolTip="Copy"
-                                       Padding="4,2"
-                                       Background="Transparent"
-                                       BorderThickness="0"
+                                       Padding="6,4"
+                                       Appearance="Transparent"
                                        Cursor="Hand"
-                                       Opacity="0.4"
-                                       Margin="6,0,0,0">
-                                <TextBlock Text="⎘"
-                                           FontSize="11" />
+                                       Icon="{ui:SymbolIcon DocumentCopy16}" >
                             </ui:Button>
                         </Grid>
                         <Separator Margin="0">

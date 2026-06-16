@@ -1,6 +1,6 @@
 ﻿namespace SYSi.ViewModels.Pages
 {
-    public partial class StorageViewModel : ObservableObject, INavigationAware
+    public partial class StorageViewModel : ObservableObject
     {
         private readonly HardwareHostService hardwareHostService;
 
@@ -13,16 +13,6 @@
 
         [ObservableProperty]
         private List<StorageDriveInfo> _drives = new();
-
-        public Task OnNavigatedToAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task OnNavigatedFromAsync()
-        {
-            return Task.CompletedTask;
-        }
 
         private void InitializeViewModel()
         {

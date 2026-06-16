@@ -5,12 +5,10 @@ public sealed partial class HardwareService
     public RamInfo GetRamInfo()
     {
         var info = new RamInfo();
-        try
-        {
-            ReadRamUsage(info);
-            ReadRamSlots(info);
-        }
-        catch { }
+
+        ReadRamUsage(info);
+        ReadRamSlots(info);
+
         return info;
     }
 
@@ -141,25 +139,23 @@ public sealed partial class HardwareService
 
     // ── SMBIOS decode tables ─────────────────────────────────────────────────
 
-    private static string ParseMemoryType(byte t) => t switch
+    private static string ParseMemoryType(byte type)
     {
-        0x12 => "DDR",
-        0x13 => "DDR2",
-        0x14 => "DDR2 FB-DIMM",
-        0x18 => "DDR3",
-        0x1A => "DDR4",
-        0x20 => "LPDDR4",
-        0x22 => "DDR5",
-        0x23 => "LPDDR5",
-        _ => t > 0 ? $"Type {t}" : "N/A",
-    };
+        return HardwareDatabase.MemoryTechnologyDatabase
+            .TryGetValue(type, out string? memoryType)
+                ? memoryType
+                : type > 0
+                    ? $"Type {type}"
+                    : "N/A";
+    }
 
-    private static string ParseFormFactor(byte f) => f switch
+    private static string ParseFormFactor(byte formFactor)
     {
-        0x09 => "DIMM",
-        0x0D => "SO-DIMM",
-        0x0F => "RIMM",
-        0x11 => "FB-DIMM",
-        _ => f > 0 ? $"Type {f}" : "N/A",
-    };
+        return HardwareDatabase.MemoryFormFactorDatabase
+            .TryGetValue(formFactor, out string? name)
+                ? name
+                : formFactor > 0
+                    ? $"Type {formFactor}"
+                    : "N/A";
+    }
 }

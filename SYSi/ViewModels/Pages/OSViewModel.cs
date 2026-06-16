@@ -1,6 +1,6 @@
 ﻿namespace SYSi.ViewModels.Pages
 {
-    public partial class OSViewModel : ObservableObject, INavigationAware
+    public partial class OSViewModel : ObservableObject
     {
         private readonly OsHostService osHostService;
 
@@ -13,16 +13,6 @@
 
         [ObservableProperty]
         private OsInfo _osInfo = new();
-
-        public Task OnNavigatedToAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task OnNavigatedFromAsync()
-        {
-            return Task.CompletedTask;
-        }
 
         private void InitializeViewModel()
         {
