@@ -11,20 +11,57 @@ public sealed partial class HardwareService
 
         foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
         {
-            if (nic.NetworkInterfaceType == NetworkInterfaceType.Loopback)
+            if (ShouldExclude(nic))
             {
                 continue;
             }
-
-            if (nic.OperationalStatus    == OperationalStatus.Unknown)
-            {
-                continue;
-            }
-
+            
             adapters.Add(BuildAdapterInfo(nic));
         }
 
         return adapters;
+    }
+
+    private static bool IsPhysicalAdapter(NetworkInterface nic)
+    {
+        string regKey = $@"SYSTEM\CurrentControlSet\Control\Network\{{4D36E972-E325-11CE-BFC1-08002BE10318}}\{nic.Id}\Connection";
+        using var rk = Registry.LocalMachine.OpenSubKey(regKey, false);
+
+        if (rk == null)
+        {
+            return false;
+        }
+
+        string pnpId = rk.GetValue("PnpInstanceID", "")?.ToString() ?? "";
+
+        if (pnpId.StartsWith("PCI", StringComparison.OrdinalIgnoreCase) ||
+            pnpId.StartsWith("USB", StringComparison.OrdinalIgnoreCase) ||
+            pnpId.StartsWith("BTH", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (pnpId.StartsWith("ROOT\\", StringComparison.OrdinalIgnoreCase) ||
+            pnpId.StartsWith("SWD\\MSRRAS\\", StringComparison.OrdinalIgnoreCase) ||
+            pnpId.Contains("vwifimp_wfd", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(pnpId))
+        {
+            return nic.Name.StartsWith("vEthernet", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return false;
+    }
+
+    private static bool ShouldExclude(NetworkInterface nic)
+    {
+        return nic.NetworkInterfaceType is NetworkInterfaceType.Loopback
+                                     or NetworkInterfaceType.Tunnel
+            ? true
+            : !IsPhysicalAdapter(nic);
     }
 
     private static NetworkAdapterInfo BuildAdapterInfo(NetworkInterface nic)
