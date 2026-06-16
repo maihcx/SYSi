@@ -59,9 +59,7 @@ public sealed partial class HardwareService
     private static bool ShouldExclude(NetworkInterface nic)
     {
         return nic.NetworkInterfaceType is NetworkInterfaceType.Loopback
-                                     or NetworkInterfaceType.Tunnel
-            ? true
-            : !IsPhysicalAdapter(nic);
+                                     or NetworkInterfaceType.Tunnel||!IsPhysicalAdapter(nic);
     }
 
     private static NetworkAdapterInfo BuildAdapterInfo(NetworkInterface nic)
