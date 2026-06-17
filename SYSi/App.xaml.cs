@@ -85,9 +85,9 @@
         /// <summary>
         /// Occurs when the application is loading.
         /// </summary>
-        private async void OnStartup(object sender, StartupEventArgs e)
+        private void OnStartup(object sender, StartupEventArgs e)
         {
-            _host?.StartAsync();
+            _host.StartAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             Bootstrap.OnStartup();
         }
@@ -95,9 +95,9 @@
         /// <summary>
         /// Occurs when the application is closing.
         /// </summary>
-        private async void OnExit(object sender, ExitEventArgs e)
+        private void OnExit(object sender, ExitEventArgs e)
         {
-            _host.StopAsync().Wait();
+            _host.StopAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
 
             Bootstrap.OnExit();
 
