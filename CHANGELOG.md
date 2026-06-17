@@ -1,13 +1,3 @@
-## v0.9.1
-
-## 🚀 Changelog
-## ⚡ Performance
-
-- Improve scrolling smoothness (#110) — @maihcx
-
-
----
-
 ## v0.9.0
 
 ## 🚀 Changelog
