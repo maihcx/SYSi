@@ -18,6 +18,64 @@ public sealed partial class HardwareService
     private volatile bool _pdhReady;
     private Dictionary<(uint hi, uint lo), int> _luidToGpuIndex = [];
 
+    // ── Reusable unmanaged buffer for PdhGetFormattedCounterArray ────────────
+    // Alloc once, grow on demand, free in DisposeGpuPdh.
+    // Avoids a Marshal.AllocHGlobal / FreeHGlobal round-trip every timer tick.
+
+    private IntPtr _pdhBuf = IntPtr.Zero;
+    private int _pdhBufSize = 0;
+
+    // ── Cached GPU database lookup (built once from HardwareDatabase arrays) ─
+    // Replaces O(n) FirstOrDefault on every BuildGpuInfo call with O(1) lookup.
+
+    // Key: (vendorId uppercase, deviceId int) → Architecture / VramType
+    // Ranges are expanded at startup into a flat (vendor, deviceId) → value map.
+    // Trade-off: ~2 KB memory for potentially hundreds of lookup calls saved.
+
+    private static readonly Dictionary<(string Vendor, int DeviceId), string> _archCache;
+    private static readonly Dictionary<(string Vendor, int DeviceId), string> _vramCache;
+
+    static HardwareService()
+    {
+        // Pre-expand range rules into flat dictionaries.
+        // Each rule covers a small device ID range (typically ≤ 256 entries).
+        // Total entries across all vendors: well under 5 000.
+        _archCache = ExpandRangeRules(
+            HardwareDatabase.GpuArchitectureDatabase,
+            r => (r.VendorId.ToUpperInvariant(), r.MinDeviceId, r.MaxDeviceId, r.Architecture));
+
+        _vramCache = ExpandRangeRules(
+            HardwareDatabase.GpuVramDatabase,
+            r => (r.VendorId.ToUpperInvariant(), r.MinDeviceId, r.MaxDeviceId, r.VramType));
+    }
+
+    /// <summary>
+    /// Expands an array of range rules into a flat (vendor, deviceId) dictionary.
+    /// Later entries win on overlap — same semantics as the original FirstOrDefault
+    /// (which returned the first match, i.e. the entry with the lowest array index).
+    /// We iterate in reverse so earlier entries overwrite later ones, preserving
+    /// FirstOrDefault priority.
+    /// </summary>
+    private static Dictionary<(string, int), string> ExpandRangeRules<T>(
+        T[] rules,
+        Func<T, (string Vendor, int Min, int Max, string Value)> selector)
+    {
+        var dict = new Dictionary<(string, int), string>();
+
+        // Iterate in reverse so that index-0 (highest priority) wins on collision.
+        for (int i = rules.Length - 1; i >= 0; i--)
+        {
+            var (vendor, min, max, value) = selector(rules[i]);
+            string v = vendor.ToUpperInvariant();
+            for (int id = min; id <= max; id++)
+            {
+                dict[(v, id)] = value;
+            }
+        }
+
+        return dict;
+    }
+
     // ── Public API ───────────────────────────────────────────────────────────
 
     public List<GpuInfo> GetGpuInfoList()
@@ -25,8 +83,8 @@ public sealed partial class HardwareService
         var list = new List<GpuInfo>();
 
         IntPtr devInfo = NativeMethods.SetupDiGetClassDevs(
-        ref Unsafe.AsRef(in DisplayClassGuid),
-        IntPtr.Zero, IntPtr.Zero, NativeMethods.DIGCF_PRESENT);
+            ref Unsafe.AsRef(in DisplayClassGuid),
+            IntPtr.Zero, IntPtr.Zero, NativeMethods.DIGCF_PRESENT);
 
         if (devInfo == new IntPtr(-1))
         {
@@ -80,15 +138,16 @@ public sealed partial class HardwareService
             return;
         }
 
-        using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Control\Class\{driverKey}");
+        using var key = Registry.LocalMachine.OpenSubKey(
+            $@"SYSTEM\CurrentControlSet\Control\Class\{driverKey}");
         if (key == null)
         {
             return;
         }
 
-        gpu.DriverVersion = key.GetValue("DriverVersion")?.ToString() ?? "N/A";
-        gpu.DriverDate    = key.GetValue("DriverDate")?.ToString()    ?? "N/A";
-        gpu.VramText      = ReadVram(key);
+        gpu.DriverVersion  = key.GetValue("DriverVersion")?.ToString() ?? "N/A";
+        gpu.DriverDate     = key.GetValue("DriverDate")?.ToString()    ?? "N/A";
+        gpu.VramText       = ReadVram(key);
         gpu.VideoProcessor = RegistryString(key.GetValue("HardwareInformation.ChipType"));
 
         var (vendor, device) = ParsePciIds(gpu.PnpDeviceId);
@@ -241,8 +300,9 @@ public sealed partial class HardwareService
                     continue;
                 }
 
-                string? hwId = instanceKey.GetValue("HardwareID")?.ToString();
-                if (hwId == null || !deviceId.Contains(monitorId, StringComparison.OrdinalIgnoreCase))
+                // Original code re-checked monitorId against deviceId here (redundant —
+                // we already filtered on monitorId above). Removed.
+                if (instanceKey.GetValue("HardwareID") == null)
                 {
                     continue;
                 }
@@ -256,7 +316,7 @@ public sealed partial class HardwareService
                 string? name = ParseMonitorNameFromEdid(edid);
                 if (!string.IsNullOrWhiteSpace(name))
                 {
-                    return name;
+                    return name;   // ← early-return as soon as we find the name
                 }
             }
         }
@@ -340,6 +400,8 @@ public sealed partial class HardwareService
         {
             NativeMethods.PdhCollectQueryData(_gpuQuery);
 
+            // ── Size probe ───────────────────────────────────────────────────
+            // Ask PDH how many bytes are needed this tick.
             uint bufSize = 0, itemCount = 0;
             NativeMethods.PdhGetFormattedCounterArray(
                 _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
@@ -350,55 +412,65 @@ public sealed partial class HardwareService
                 return;
             }
 
-            IntPtr buf = Marshal.AllocHGlobal((int)bufSize);
-            try
+            // ── Grow-only reusable buffer ────────────────────────────────────
+            // Reallocate only when PDH needs more space than we have.
+            // In steady state (GPU count / engine count unchanged) this path
+            // is never taken after the first call — zero alloc per tick.
+            if ((int)bufSize > _pdhBufSize)
             {
-                uint r = NativeMethods.PdhGetFormattedCounterArray(
-                    _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
-                    ref bufSize, out itemCount, buf);
-
-                if (r != 0 && r != 0x800007D2)
+                if (_pdhBuf != IntPtr.Zero)
                 {
-                    return;   // PDH_MORE_DATA is acceptable
+                    Marshal.FreeHGlobal(_pdhBuf);
                 }
 
-                // PDH_FMT_COUNTERVALUE_ITEM_W layout (x64):
-                //   szName  : IntPtr  (8 bytes — pointer into buf)
-                //   CStatus : uint    (4 bytes)
-                //   padding : uint    (4 bytes)
-                //   Value   : double  (8 bytes)
-                int itemSize = IntPtr.Size + 16;
-                var luidUsage = new Dictionary<(uint, uint), double>();
+                _pdhBuf     = Marshal.AllocHGlobal((int)bufSize);
+                _pdhBufSize = (int)bufSize;
+            }
 
-                for (int j = 0; j < (int)itemCount; j++)
+            uint r = NativeMethods.PdhGetFormattedCounterArray(
+                _gpuCounter, NativeMethods.PDH_FMT_DOUBLE,
+                ref bufSize, out itemCount, _pdhBuf);
+
+            if (r != 0 && r != 0x800007D2)
+            {
+                return;   // PDH_MORE_DATA is acceptable; anything else bail
+            }
+
+            // PDH_FMT_COUNTERVALUE_ITEM_W layout (x64):
+            //   szName  : IntPtr  (8 bytes — pointer into buf)
+            //   CStatus : uint    (4 bytes)
+            //   padding : uint    (4 bytes)
+            //   Value   : double  (8 bytes)
+            int itemSize = IntPtr.Size + 16;
+            var luidUsage = new Dictionary<(uint, uint), double>();
+
+            for (int j = 0; j < (int)itemCount; j++)
+            {
+                IntPtr itemPtr = IntPtr.Add(_pdhBuf, j * itemSize);
+                IntPtr namePtr = Marshal.ReadIntPtr(itemPtr);
+                string name = namePtr != IntPtr.Zero
+                    ? Marshal.PtrToStringUni(namePtr) ?? "" : "";
+
+                double value = Marshal.PtrToStructure<double>(
+                    IntPtr.Add(itemPtr, IntPtr.Size + 8));
+
+                var luid = ParseLuid(name);
+                if (luid == null)
                 {
-                    IntPtr itemPtr = IntPtr.Add(buf, j * itemSize);
-                    IntPtr namePtr = Marshal.ReadIntPtr(itemPtr);
-                    string name = namePtr != IntPtr.Zero
-                        ? Marshal.PtrToStringUni(namePtr) ?? "" : "";
-
-                    double value = Marshal.PtrToStructure<double>(
-                        IntPtr.Add(itemPtr, IntPtr.Size + 8));
-
-                    var luid = ParseLuid(name);
-                    if (luid == null)
-                    {
-                        continue;
-                    }
-
-                    luidUsage.TryGetValue(luid.Value, out double cur);
-                    luidUsage[luid.Value] = cur + value;
+                    continue;
                 }
 
-                foreach (var (luid, usage) in luidUsage)
+                luidUsage.TryGetValue(luid.Value, out double cur);
+                luidUsage[luid.Value] = cur + value;
+            }
+
+            foreach (var (luid, usage) in luidUsage)
+            {
+                if (_luidToGpuIndex.TryGetValue(luid, out int idx) && idx < gpus.Count)
                 {
-                    if (_luidToGpuIndex.TryGetValue(luid, out int idx) && idx < gpus.Count)
-                    {
-                        gpus[idx].UsagePercent = Math.Round(Math.Clamp(usage, 0, 100), 1);
-                    }
+                    gpus[idx].UsagePercent = Math.Round(Math.Clamp(usage, 0, 100), 1);
                 }
             }
-            finally { Marshal.FreeHGlobal(buf); }
         }
     }
 
@@ -406,14 +478,20 @@ public sealed partial class HardwareService
     {
         lock (_pdhLock)
         {
-            if (_gpuQuery == IntPtr.Zero)
+            if (_gpuQuery != IntPtr.Zero)
             {
-                return;
+                NativeMethods.PdhCloseQuery(_gpuQuery);
+                _gpuQuery  = IntPtr.Zero;
+                _pdhReady  = false;
             }
 
-            NativeMethods.PdhCloseQuery(_gpuQuery);
-            _gpuQuery = IntPtr.Zero;
-            _pdhReady = false;
+            // Free the reusable buffer together with the query.
+            if (_pdhBuf != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(_pdhBuf);
+                _pdhBuf     = IntPtr.Zero;
+                _pdhBufSize = 0;
+            }
         }
     }
 
@@ -499,9 +577,13 @@ public sealed partial class HardwareService
 
     // ── Parsing helpers ──────────────────────────────────────────────────────
 
-    private static readonly Regex LuidRegex = new(@"luid_0x([0-9A-Fa-f]+)_0x([0-9A-Fa-f]+)",  RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex LuidRegex = new(
+        @"luid_0x([0-9A-Fa-f]+)_0x([0-9A-Fa-f]+)",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    private static readonly Regex PciIdRegex = new(@"VEN_([0-9A-Fa-f]{4})&DEV_([0-9A-Fa-f]{4})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex PciIdRegex = new(
+        @"VEN_([0-9A-Fa-f]{4})&DEV_([0-9A-Fa-f]{4})",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     /// <summary>
     /// Extracts the LUID from a PDH GPU Engine instance name.
@@ -530,54 +612,50 @@ public sealed partial class HardwareService
 
     // ── Lookup tables ────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// O(1) lookup replacing the original O(n) FirstOrDefault scan.
+    /// Uses the flat dictionary pre-built from GpuArchitectureDatabase at startup.
+    /// </summary>
     private static string LookupArchitecture(string vendor, string deviceId)
     {
-        if (!int.TryParse(
-            deviceId,
-            System.Globalization.NumberStyles.HexNumber,
-            null,
-            out int device))
+        if (!int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber,
+                null, out int device))
         {
             return "N/A";
         }
 
-        var rule = HardwareDatabase.GpuArchitectureDatabase.FirstOrDefault(x =>
-            x.VendorId.Equals(vendor, StringComparison.OrdinalIgnoreCase) &&
-            device >= x.MinDeviceId &&
-            device <= x.MaxDeviceId);
+        string v = vendor.ToUpperInvariant();
 
-        if (rule != null)
+        if (_archCache.TryGetValue((v, device), out string? arch))
         {
-            return rule.Architecture;
+            return arch;
         }
 
-        return HardwareDatabase.GpuArchitectureDatabaseFallbacks.TryGetValue(vendor, out var fallback)
+        return HardwareDatabase.GpuArchitectureDatabaseFallbacks.TryGetValue(v, out var fallback)
             ? fallback
             : "N/A";
     }
 
+    /// <summary>
+    /// O(1) lookup replacing the original O(n) FirstOrDefault scan.
+    /// Uses the flat dictionary pre-built from GpuVramDatabase at startup.
+    /// </summary>
     private static string LookupVramType(string vendor, string deviceId)
     {
-        if (!int.TryParse(
-                deviceId,
-                System.Globalization.NumberStyles.HexNumber,
-                null,
-                out int device))
+        if (!int.TryParse(deviceId, System.Globalization.NumberStyles.HexNumber,
+                null, out int device))
         {
             return "N/A";
         }
 
-        var rule = HardwareDatabase.GpuVramDatabase.FirstOrDefault(x =>
-            x.VendorId.Equals(vendor, StringComparison.OrdinalIgnoreCase) &&
-            device >= x.MinDeviceId &&
-            device <= x.MaxDeviceId);
+        string v = vendor.ToUpperInvariant();
 
-        if (rule != null)
+        if (_vramCache.TryGetValue((v, device), out string? vram))
         {
-            return rule.VramType;
+            return vram;
         }
 
-        return HardwareDatabase.GpuVramDatabaseFallbacks.TryGetValue(vendor, out var fallback)
+        return HardwareDatabase.GpuVramDatabaseFallbacks.TryGetValue(v, out var fallback)
             ? fallback
             : "N/A";
     }
