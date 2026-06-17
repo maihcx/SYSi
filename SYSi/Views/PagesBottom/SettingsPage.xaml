@@ -242,6 +242,7 @@
                         TextWrapping="Wrap"
                         VerticalScrollBarVisibility="Auto"
                         Text="{Binding ViewModel.ReleaseNotes, Mode=OneWay}"
+                        ui:SmoothScrollBehavior.IsEnabled="True"
                         Visibility="{Binding ViewModel.ReleaseNotes, Converter={StaticResource NullToCollapsedConverter}}" />
                 </Grid>
             </ui:Card>
