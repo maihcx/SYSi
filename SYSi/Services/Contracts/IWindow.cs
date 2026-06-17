@@ -11,6 +11,14 @@ public interface IWindow
 
     event SizeChangedEventHandler SizeChanged;
 
+    event EventHandler Activated;
+
+    event EventHandler Deactivated;
+
+    event EventHandler StateChanged;
+
+    WindowState WindowState { get; }
+
     double Width { get; }
 
     void Show();

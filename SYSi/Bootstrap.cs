@@ -111,11 +111,28 @@
 
             App.GetRequiredService<OsHostService>().SetRefreshInterval(refreshInfoInterval);
 
+            PowerModeService.PowerModeChanged += EfficiencyModeService_EfficiencyModeChanged;
+
             SplashScreen?.Close(new TimeSpan(0, 0, 0, 0, 0));
+        }
+
+        private static void EfficiencyModeService_EfficiencyModeChanged(PowerModeService.PowerModeState oldMode, PowerModeService.PowerModeState newMode)
+        {
+            int refreshInfoInterval = 0;
+            if (newMode != PowerModeService.PowerModeState.EfficiencyAdvanced)
+            {
+                refreshInfoInterval = UserDataStore.GetValue<int>("RefreshInfoInterval");
+            }
+
+            App.GetRequiredService<HardwareHostService>().SetRefreshInterval(refreshInfoInterval);
+
+            App.GetRequiredService<OsHostService>().SetRefreshInterval(refreshInfoInterval);
         }
 
         public static void OnExit()
         {
+            PowerModeService.PowerModeChanged -= EfficiencyModeService_EfficiencyModeChanged;
+
             _pipeCts.Cancel();
             if (_mutex != null)
             {
