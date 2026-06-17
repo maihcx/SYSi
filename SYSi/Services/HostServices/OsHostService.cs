@@ -22,15 +22,17 @@ namespace SYSi.Services.HostServices
             TimerStart(stockTimerInterval);
         }
 
-        private async void LoadStaticInfo()
+        private async Task LoadStaticInfo()
         {
             LoadFromEnvironment();
             OnPropertyChanged(nameof(OsInfo));
 
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
             await Task.WhenAll(
-                Task.Run(LoadFromWmi),
-                Task.Run(LoadActivationStatus),
-                Task.Run(LoadWindowsUpdateStatus)
+                Task.Run(LoadFromWmi, cts.Token),
+                Task.Run(LoadActivationStatus, cts.Token),
+                Task.Run(LoadWindowsUpdateStatus, cts.Token)
             );
 
             OnPropertyChanged(nameof(OsInfo));

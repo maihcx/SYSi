@@ -14,57 +14,26 @@ public sealed partial class HardwareService
     private IntPtr _cpuClockCounter = IntPtr.Zero;
     private readonly object _cpuClockLock = new();
 
+    // Base MHz: computed once, never changes at runtime.
     private static readonly Lazy<int> _cachedBaseMHz = new(
-    () => {
-        int mhz = 0;
+        ReadBaseMHz, isThreadSafe: true);
 
-        int cpuCount = Environment.ProcessorCount;
+    // ── CPU rule lookup cache ─────────────────────────────────────────────────
+    // CpuRulesDatabase is a flat array searched with FirstOrDefault (O(n)) on
+    // every GetCpuInfo call. We convert it once into a nested dictionary:
+    //   vendor (lowercase) → family → list of rules sorted by MinModel.
+    // FindCpuRule then does two O(1) dictionary lookups + a tiny linear scan
+    // over rules that share the same vendor+family — typically 1–3 entries.
 
-        int structSize = Marshal.SizeOf<NativeMethods.PROCESSOR_POWER_INFORMATION>();
+    private static readonly Dictionary<string, Dictionary<int, List<HardwareDatabase.CpuModelRule>>>
+        _cpuRuleIndex = BuildCpuRuleIndex();
 
-        IntPtr buffer = Marshal.AllocHGlobal(structSize * cpuCount);
+    // TDP lookup: CpuTdpDatabase is already a Dictionary, but GetCpuMaxTdp
+    // iterates it with string.Contains which is O(n * keyLen). We keep the
+    // original dictionary as-is since it's small (~15 entries) and only called
+    // once at startup — no meaningful gain from further caching.
 
-        try
-        {
-            uint status = NativeMethods.CallNtPowerInformation(
-                NativeMethods.POWER_INFORMATION_LEVEL.ProcessorInformation,
-                IntPtr.Zero,
-                0,
-                buffer,
-                (uint)(structSize * cpuCount));
-
-            if (status != 0)
-            {
-                mhz = 0;
-            }
-            else
-            {
-                var info = Marshal.PtrToStructure<NativeMethods.PROCESSOR_POWER_INFORMATION>(buffer);
-
-                mhz = (int)info.MaxMhz;
-            }
-        }
-        finally
-        {
-            Marshal.FreeHGlobal(buffer);
-        }
-
-        if (mhz == 0)
-        {
-            mhz = GetCpuBaseSpeedViaCpuid(); 
-            if (mhz == 0) 
-            {
-                using var s = new ManagementObjectSearcher("select MaxClockSpeed from Win32_Processor"); 
-                foreach (var item in s.Get()) 
-                {
-                    mhz = Convert.ToInt32((uint)item["MaxClockSpeed"]);
-                    break;
-                }
-            }
-        }
-
-        return mhz;
-    }, isThreadSafe: true);
+    // ── Constructor ──────────────────────────────────────────────────────────
 
     public HardwareService()
     {
@@ -79,8 +48,8 @@ public sealed partial class HardwareService
         var info = new CpuInfo();
 
         ReadBasicCpuInfo(info);
-        info.LogicalProcessors = Environment.ProcessorCount;
-        info.PhysicalCores = GetPhysicalCoreCount();
+        info.LogicalProcessors     = Environment.ProcessorCount;
+        info.PhysicalCores         = GetPhysicalCoreCount();
         info.VirtualizationEnabled = GetVirtualizationEnabled();
         EnrichCpuFromSmbios(info);
 
@@ -95,8 +64,10 @@ public sealed partial class HardwareService
         double currentCpuClock = GetCurrentCpuSpeedGHz();
 
         info.CurrentClockGHz = $"{currentCpuClock:F2} GHz";
-        info.BoostRatio = $"{((currentCpuClock / (GetCpuBaseClockMHz() / 1000.0)) * 100):F2} %";
+        info.BoostRatio      = $"{currentCpuClock / (GetCpuBaseClockMHz() / 1000.0) * 100:F2} %";
     }
+
+    // ── CPU usage (delta-based GetSystemTimes) ────────────────────────────────
 
     /// <summary>Delta-based CPU usage via GetSystemTimes — no PerformanceCounter overhead.</summary>
     private double GetCpuUsage()
@@ -117,7 +88,9 @@ public sealed partial class HardwareService
             }
 
             long total = dKernel + dUser;
-            return total <= 0 ? 0 : Math.Round(Math.Clamp((1.0 - (double)dIdle / total) * 100.0, 0, 100), 1);
+            return total <= 0
+                ? 0
+                : Math.Round(Math.Clamp((1.0 - (double)dIdle / total) * 100.0, 0, 100), 1);
         }
         catch { return 0; }
     }
@@ -134,7 +107,7 @@ public sealed partial class HardwareService
         info.BaseClockGHz = baseMHz > 0 ? $"{baseMHz / 1000.0:F2} GHz" : "N/A";
     }
 
-    // ── PDH current clock ────────────────────────────────────────────────────
+    // ── PDH current clock ─────────────────────────────────────────────────────
 
     private void InitCpuClockPdh()
     {
@@ -154,14 +127,12 @@ public sealed partial class HardwareService
                 _cpuClockQuery,
                 @"\Processor Information(_Total)\% Processor Performance",
                 0, out _cpuClockCounter);
+
             NativeMethods.PdhCollectQueryData(_cpuClockQuery);
         }
     }
 
-    private static int GetCpuBaseClockMHz()
-    {
-        return _cachedBaseMHz.Value;
-    }
+    private static int GetCpuBaseClockMHz() => _cachedBaseMHz.Value;
 
     private double GetCurrentCpuSpeedGHz()
     {
@@ -205,13 +176,70 @@ public sealed partial class HardwareService
             if (_cpuClockQuery != IntPtr.Zero)
             {
                 NativeMethods.PdhCloseQuery(_cpuClockQuery);
-                _cpuClockQuery  = IntPtr.Zero;
+                _cpuClockQuery   = IntPtr.Zero;
                 _cpuClockCounter = IntPtr.Zero;
             }
         }
     }
 
-    // ── Speed helpers ────────────────────────────────────────────────────────
+    // ── Base MHz (Lazy, computed once) ────────────────────────────────────────
+
+    /// <summary>
+    /// Reads base clock MHz. Tried in priority order:
+    ///   1. NtPowerInformation (fastest, no WMI)
+    ///   2. CPUID leaf 0x16 (Intel only)
+    ///   3. WMI Win32_Processor (last resort — slowest)
+    /// </summary>
+    private static int ReadBaseMHz()
+    {
+        // ── 1. NtPowerInformation ─────────────────────────────────────────────
+        int cpuCount = Environment.ProcessorCount;
+        int structSize = Marshal.SizeOf<NativeMethods.PROCESSOR_POWER_INFORMATION>();
+        IntPtr buffer = Marshal.AllocHGlobal(structSize * cpuCount);
+
+        try
+        {
+            uint status = NativeMethods.CallNtPowerInformation(
+                NativeMethods.POWER_INFORMATION_LEVEL.ProcessorInformation,
+                IntPtr.Zero, 0,
+                buffer, (uint)(structSize * cpuCount));
+
+            if (status == 0)
+            {
+                int mhz = (int)Marshal.PtrToStructure<NativeMethods.PROCESSOR_POWER_INFORMATION>(buffer).MaxMhz;
+                if (mhz > 0)
+                {
+                    return mhz;
+                }
+            }
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(buffer);
+        }
+
+        // ── 2. CPUID leaf 0x16 (Intel Skylake+) ──────────────────────────────
+        int cpuidMhz = GetCpuBaseSpeedViaCpuid();
+        if (cpuidMhz > 0)
+        {
+            return cpuidMhz;
+        }
+
+        // ── 3. WMI fallback ───────────────────────────────────────────────────
+        try
+        {
+            using var s = new ManagementObjectSearcher("SELECT MaxClockSpeed FROM Win32_Processor");
+            foreach (var item in s.Get())
+            {
+                return Convert.ToInt32((uint)item["MaxClockSpeed"]);
+            }
+        }
+        catch { }
+
+        return 0;
+    }
+
+    // ── Speed helpers ─────────────────────────────────────────────────────────
 
     private static int GetCpuBaseSpeedViaCpuid()
     {
@@ -225,7 +253,7 @@ public sealed partial class HardwareService
         return eax & 0xFFFF;
     }
 
-    // ── Brand / vendor ───────────────────────────────────────────────────────
+    // ── Brand / vendor ────────────────────────────────────────────────────────
 
     private static readonly uint[] BrandLeaves = [0x80000002, 0x80000003, 0x80000004];
 
@@ -234,7 +262,7 @@ public sealed partial class HardwareService
         var sb = new StringBuilder(48);
         foreach (uint leaf in BrandLeaves)
         {
-            var (Eax, Ebx, Ecx, Edx)= X86Base.CpuId((int)leaf, 0);
+            var (Eax, Ebx, Ecx, Edx) = X86Base.CpuId((int)leaf, 0);
             AppendLeaf(sb, Eax);
             AppendLeaf(sb, Ebx);
             AppendLeaf(sb, Ecx);
@@ -262,7 +290,7 @@ public sealed partial class HardwareService
         }
     }
 
-    // ── System times ─────────────────────────────────────────────────────────
+    // ── System times ──────────────────────────────────────────────────────────
 
     private static void ReadSystemTimes(out long idle, out long kernel, out long user)
     {
@@ -275,7 +303,7 @@ public sealed partial class HardwareService
     private static long ToLong(NativeMethods.FILETIME ft)
         => ((long)ft.dwHighDateTime << 32) | ft.dwLowDateTime;
 
-    // ── Physical core count ──────────────────────────────────────────────────
+    // ── Physical core count ───────────────────────────────────────────────────
 
     private static int GetPhysicalCoreCount()
     {
@@ -298,6 +326,7 @@ public sealed partial class HardwareService
 
                 int size = Marshal.SizeOf<NativeMethods.SYSTEM_LOGICAL_PROCESSOR_INFORMATION>();
                 int count = 0;
+
                 for (int i = 0; i + size <= (int)len; i += size)
                 {
                     var item = Marshal.PtrToStructure<NativeMethods.SYSTEM_LOGICAL_PROCESSOR_INFORMATION>(buf + i);
@@ -306,6 +335,7 @@ public sealed partial class HardwareService
                         count++;
                     }
                 }
+
                 return count > 0 ? count : Environment.ProcessorCount;
             }
             finally { Marshal.FreeHGlobal(buf); }
@@ -313,20 +343,19 @@ public sealed partial class HardwareService
         catch { return Environment.ProcessorCount; }
     }
 
-    // ── Architecture ─────────────────────────────────────────────────────────
+    // ── Architecture ──────────────────────────────────────────────────────────
 
     private static string GetCpuArchitecture()
     {
         NativeMethods.GetNativeSystemInfo(out var si);
 
         return HardwareDatabase.CpuArchitecturesDatabase.TryGetValue(
-            si.ProcessorArchitecture,
-            out var architecture)
+            si.ProcessorArchitecture, out var architecture)
             ? architecture
             : $"Unknown ({si.ProcessorArchitecture})";
     }
 
-    // ── Cache ────────────────────────────────────────────────────────────────
+    // ── Cache ─────────────────────────────────────────────────────────────────
 
     private static (string L1, string L2, string L3) GetCpuCaches()
     {
@@ -335,6 +364,7 @@ public sealed partial class HardwareService
             uint len = 0;
             NativeMethods.GetLogicalProcessorInformationEx(
                 NativeMethods.LOGICAL_PROCESSOR_RELATIONSHIP.RelationCache, IntPtr.Zero, ref len);
+
             if (len == 0)
             {
                 return ("N/A", "N/A", "N/A");
@@ -344,7 +374,7 @@ public sealed partial class HardwareService
             try
             {
                 if (!NativeMethods.GetLogicalProcessorInformationEx(
-                    NativeMethods.LOGICAL_PROCESSOR_RELATIONSHIP.RelationCache, buf, ref len))
+                        NativeMethods.LOGICAL_PROCESSOR_RELATIONSHIP.RelationCache, buf, ref len))
                 {
                     return ("N/A", "N/A", "N/A");
                 }
@@ -357,10 +387,12 @@ public sealed partial class HardwareService
                 {
                     IntPtr cur = IntPtr.Add(buf, (int)offset);
                     var header = Marshal.PtrToStructure<NativeMethods.SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(cur);
+
                     if (header.Relationship == NativeMethods.LOGICAL_PROCESSOR_RELATIONSHIP.RelationCache)
                     {
                         var cache = Marshal.PtrToStructure<NativeMethods.CACHE_DESCRIPTOR>(
                             IntPtr.Add(cur, headerSize));
+
                         switch (cache.Level)
                         {
                             case 1: l1 += cache.Size; break;
@@ -368,8 +400,10 @@ public sealed partial class HardwareService
                             case 3: l3 += cache.Size; break;
                         }
                     }
+
                     offset += header.Size;
                 }
+
                 return (FormatBytes(l1), FormatBytes(l2), FormatBytes(l3));
             }
             finally { Marshal.FreeHGlobal(buf); }
@@ -377,7 +411,7 @@ public sealed partial class HardwareService
         catch { return ("N/A", "N/A", "N/A"); }
     }
 
-    // ── CPU signature ────────────────────────────────────────────────────────
+    // ── CPU signature ─────────────────────────────────────────────────────────
 
     private static (int Family, int Model, int Stepping, string ProcessorId) GetCpuSignature()
     {
@@ -389,9 +423,9 @@ public sealed partial class HardwareService
         var cpuid = X86Base.CpuId(1, 0);
         int eax = cpuid.Eax;
 
-        int stepping = eax & 0xF;
-        int model = (eax >> 4)  & 0xF;
-        int family = (eax >> 8)  & 0xF;
+        int stepping = eax         & 0xF;
+        int model = (eax >>  4) & 0xF;
+        int family = (eax >>  8) & 0xF;
         int extModel = (eax >> 16) & 0xF;
         int extFamily = (eax >> 20) & 0xFF;
 
@@ -402,7 +436,7 @@ public sealed partial class HardwareService
             $"{(uint)cpuid.Edx:X8}{(uint)cpuid.Eax:X8}");
     }
 
-    // ── Enrich from SMBIOS ───────────────────────────────────────────────────
+    // ── Enrich from SMBIOS ────────────────────────────────────────────────────
 
     private static void EnrichCpuFromSmbios(CpuInfo info)
     {
@@ -415,7 +449,10 @@ public sealed partial class HardwareService
         info.Stepping    = $"{sig.Stepping:X}";
         info.ProcessorId = sig.ProcessorId;
 
-        info.CodeName     = GetCpuCodeName(info.Manufacturer, sig.Family, sig.Model);
+        // Single FindCpuRule call — result shared across CodeName, Socket, TDP
+        var rule = FindCpuRule(info.Manufacturer, sig.Family, sig.Model);
+
+        info.CodeName     = rule?.CodeName ?? "N/A";
         info.Instructions = string.Join(", ", GetSupportedInstructions());
         info.MaxTdp       = GetCpuMaxTdp(info.ShortName, info.Name);
 
@@ -423,13 +460,15 @@ public sealed partial class HardwareService
         {
             if (s.Length > 0x08)
             {
-                info.Socket = GetCpuSocketName(s.Str(0x04), info, info.Manufacturer, sig.Family, sig.Model);
+                string rawSocket = s.Str(0x04);
+                // Prefer database socket over raw SMBIOS string when available
+                info.Socket = rule?.Socket ?? rawSocket;
             }
             break;
         }
     }
 
-    // ── Virtualization ───────────────────────────────────────────────────────
+    // ── Virtualization ────────────────────────────────────────────────────────
 
     private static bool GetVirtualizationEnabled()
     {
@@ -440,8 +479,13 @@ public sealed partial class HardwareService
 
         var (_, _, ecx, _) = X86Base.CpuId(1, 0);
 
-        bool vmxSupported = (ecx & (1 << 5)) != 0;
+        bool vmxSupported = (ecx & (1 << 5))  != 0;
         bool hypervisorPresent = (ecx & (1 << 31)) != 0;
+
+        if (hypervisorPresent)
+        {
+            return true;
+        }
 
         bool svmSupported = false;
         var (maxExt, _, _, _) = X86Base.CpuId(unchecked((int)0x80000000), 0);
@@ -451,15 +495,10 @@ public sealed partial class HardwareService
             svmSupported = (ecxExt & (1 << 2)) != 0;
         }
 
-        if (hypervisorPresent)
-        {
-            return true;
-        }
-
         return vmxSupported || svmSupported;
     }
 
-    // ── Misc ─────────────────────────────────────────────────────────────────
+    // ── Misc ──────────────────────────────────────────────────────────────────
 
     private static string ParseCpuName(string cpuName)
         => cpuName.Replace("Intel(R) Core(TM)", "Core");
@@ -477,6 +516,8 @@ public sealed partial class HardwareService
         return "N/A";
     }
 
+    // ── Instruction set detection ─────────────────────────────────────────────
+
     private static List<string> GetSupportedInstructions()
     {
         var instructions = new List<string>();
@@ -489,6 +530,8 @@ public sealed partial class HardwareService
         var (maxLeaf, _, _, _) = X86Base.CpuId(0, 0);
         var (maxExt, _, _, _) = X86Base.CpuId(unchecked((int)0x80000000), 0);
 
+        // Cache CPUID results — avoid redundant kernel transitions for
+        // features that share the same (leaf, subleaf).
         var cpuidCache = new Dictionary<(int Leaf, int SubLeaf), (int Eax, int Ebx, int Ecx, int Edx)>();
 
         foreach (var feature in HardwareDatabase.CpuFeaturesDatabase)
@@ -526,25 +569,73 @@ public sealed partial class HardwareService
         return instructions;
     }
 
-    private static string GetCpuCodeName(string manufacturer, int family, int model)
+    // ── CPU rule index ────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Builds a two-level index over CpuRulesDatabase:
+    ///   vendor (lowercase) → family → rules list
+    /// Replaces O(n) FirstOrDefault with two O(1) dictionary lookups +
+    /// a short linear scan over rules sharing the same vendor+family (typically 1–3).
+    /// Built once at static init; never modified afterward.
+    /// </summary>
+    private static Dictionary<string, Dictionary<int, List<HardwareDatabase.CpuModelRule>>>
+        BuildCpuRuleIndex()
     {
-        return FindCpuRule(manufacturer, family, model)?.CodeName ?? "N/A";
+        var index = new Dictionary<string, Dictionary<int, List<HardwareDatabase.CpuModelRule>>>(
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var rule in HardwareDatabase.CpuRulesDatabase)
+        {
+            if (!index.TryGetValue(rule.Vendor, out var byFamily))
+            {
+                byFamily = new Dictionary<int, List<HardwareDatabase.CpuModelRule>>();
+                index[rule.Vendor] = byFamily;
+            }
+
+            if (!byFamily.TryGetValue(rule.Family, out var list))
+            {
+                list = new List<HardwareDatabase.CpuModelRule>();
+                byFamily[rule.Family] = list;
+            }
+
+            list.Add(rule);
+        }
+
+        return index;
     }
 
-    private static string GetCpuSocketName(string raw, CpuInfo info, string manufacturer, int family, int model)
-    {
-        return FindCpuRule(info.Manufacturer, family, model)?.Socket ?? raw;
-    }
-
+    /// <summary>
+    /// Finds the first matching CPU rule for the given manufacturer, family, and model.
+    /// Uses the pre-built index for O(1) vendor+family lookup, then scans the
+    /// (usually tiny) per-family list for a model range match.
+    /// </summary>
     private static HardwareDatabase.CpuModelRule? FindCpuRule(
-        string manufacturer,
-        int family,
-        int model)
+        string manufacturer, int family, int model)
     {
-        return HardwareDatabase.CpuRulesDatabase.FirstOrDefault(x =>
-            manufacturer.Contains(x.Vendor, StringComparison.OrdinalIgnoreCase) &&
-            x.Family == family &&
-            model >= x.MinModel &&
-            model <= x.MaxModel);
+        // Match any vendor keyword present in the manufacturer string.
+        foreach (var (vendor, byFamily) in _cpuRuleIndex)
+        {
+            if (!manufacturer.Contains(vendor, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (!byFamily.TryGetValue(family, out var rules))
+            {
+                return null;
+            }
+
+            foreach (var rule in rules)
+            {
+                if (model >= rule.MinModel && model <= rule.MaxModel)
+                {
+                    return rule;
+                }
+            }
+
+            return null;
+        }
+
+        return null;
     }
 }
