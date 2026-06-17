@@ -54,6 +54,8 @@
 
                 services.AddHostedService<ApplicationHostService>();
 
+                services.AddHostedService<PowerModeHostService>();
+
                 // Main window with navigation
                 services.AddSingleton<IWindow, MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
