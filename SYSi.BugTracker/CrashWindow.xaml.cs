@@ -15,26 +15,6 @@ public partial class CrashWindow : Window
     private string? _logPath;
     private string _rawLog = string.Empty;
 
-    // ── DWM ──────────────────────────────────────────────────────────────────
-
-    [DllImport("dwmapi.dll")]
-    private static extern int DwmSetWindowAttribute(
-        IntPtr hwnd, int attr, ref int attrValue, int attrSize);
-
-    [DllImport("dwmapi.dll")]
-    private static extern int DwmExtendFrameIntoClientArea(
-        IntPtr hwnd, ref Margins margins);
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct Margins { public int Left, Right, Top, Bottom; }
-
-    private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
-    private const int DWMWA_CAPTION_COLOR = 35;
-    private const int DWMWA_TEXT_COLOR = 36;
-    private const int DWMWA_BORDER_COLOR = 34;
-    private const int DWMWA_SYSTEMBACKDROP_TYPE = 38;
-    private const int DWMSBT_MAINWINDOW = 2; // Mica
-
     // ── Palette ──────────────────────────────────────────────────────────────
 
     private static readonly SolidColorBrush BrushDefault = MakeBrush("#CBD5E1");
@@ -71,27 +51,27 @@ public partial class CrashWindow : Window
     {
         // Dark mode title bar
         int dark = 1;
-        DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ref dark, sizeof(int));
+        NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_USE_IMMERSIVE_DARK_MODE, ref dark, sizeof(int));
 
         // Caption màu khớp header: #0F1F35
         int caption = ToBgr(0x0F, 0x1F, 0x35);
-        DwmSetWindowAttribute(hwnd, DWMWA_CAPTION_COLOR, ref caption, sizeof(int));
+        NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_CAPTION_COLOR, ref caption, sizeof(int));
 
         // Text trắng
         int text = ToBgr(0xF8, 0xFA, 0xFC);
-        DwmSetWindowAttribute(hwnd, DWMWA_TEXT_COLOR, ref text, sizeof(int));
+        NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_TEXT_COLOR, ref text, sizeof(int));
 
         // Border màu accent
         int border = ToBgr(0x1E, 0x3A, 0x5F);
-        DwmSetWindowAttribute(hwnd, DWMWA_BORDER_COLOR, ref border, sizeof(int));
+        NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_BORDER_COLOR, ref border, sizeof(int));
 
         // Mica backdrop
-        int mica = DWMSBT_MAINWINDOW;
-        DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, ref mica, sizeof(int));
+        int mica = NativeMethods.DWMSBT_MAINWINDOW;
+        NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_SYSTEMBACKDROP_TYPE, ref mica, sizeof(int));
 
         // Extend frame — cần thiết để Mica render vào client area
-        var margins = new Margins { Left = -1, Right = -1, Top = -1, Bottom = -1 };
-        DwmExtendFrameIntoClientArea(hwnd, ref margins);
+        var margins = new NativeMethods.Margins { Left = -1, Right = -1, Top = -1, Bottom = -1 };
+        NativeMethods.DwmExtendFrameIntoClientArea(hwnd, ref margins);
     }
 
     // DWM dùng 0x00BBGGRR
