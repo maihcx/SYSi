@@ -1,3 +1,13 @@
+## v0.9.2
+
+## 🚀 Changelog
+## 🐛 Bug Fixes
+
+- Run host start/stop synchronously on app lifecycle (#114) — @maihcx
+
+
+---
+
 ## v0.9.1
 
 ## 🚀 Changelog
