@@ -1,3 +1,25 @@
+## v0.10.0
+
+## 🚀 Changelog
+## 🚀 Features
+
+- Add GPU usage history and chart (#122) — @maihcx
+- Add RAM usage history and chart (#120) — @maihcx
+- Add CPU usage history and chart (#119) — @maihcx
+- Add PerformanceChart control (#118) — @maihcx
+
+## 🐛 Bug Fixes
+
+- Subscribe to hardwareHostService PropertyChanged (#121) — @maihcx
+- Fix refresh interval paused handling and storage for PR#116 (#117) — @maihcx
+
+## 🧹 Maintenance
+
+- Use TimeSpan for refresh intervals (#116) — @maihcx
+
+
+---
+
 ## v0.9.2
 
 ## 🚀 Changelog
