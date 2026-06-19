@@ -232,10 +232,10 @@ namespace SYSi.ViewModels.PagesBottom
 
         partial void OnSelectedRefreshIntervalChanged(ComboBoxItemInt? value)
         {
-            int intValue = value?.Value ?? -1;
-            UserDataStore.SetValue("RefreshInfoInterval", intValue);
-            hardwareHostService.SetRefreshInterval(intValue);
-            osHostService.SetRefreshInterval(intValue);
+            TimeSpan timeValue = TimeSpan.FromMilliseconds(value?.Value ?? -1);
+            UserDataStore.SetValue("RefreshInfoInterval", timeValue.Milliseconds);
+            hardwareHostService.SetRefreshInterval(timeValue);
+            osHostService.SetRefreshInterval(timeValue);
         }
         #endregion
 

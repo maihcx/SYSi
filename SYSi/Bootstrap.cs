@@ -105,7 +105,7 @@
 
         public static void OnStartup()
         {
-            int refreshInfoInterval = UserDataStore.GetValue<int>("RefreshInfoInterval");
+            TimeSpan refreshInfoInterval = TimeSpan.FromMilliseconds(UserDataStore.GetValue<int>("RefreshInfoInterval"));
 
             App.GetRequiredService<HardwareHostService>().SetRefreshInterval(refreshInfoInterval);
 
@@ -118,10 +118,10 @@
 
         private static void EfficiencyModeService_EfficiencyModeChanged(PowerModeService.PowerModeState oldMode, PowerModeService.PowerModeState newMode)
         {
-            int refreshInfoInterval = 0;
+            TimeSpan refreshInfoInterval = TimeSpan.Zero;
             if (newMode != PowerModeService.PowerModeState.EfficiencyAdvanced)
             {
-                refreshInfoInterval = UserDataStore.GetValue<int>("RefreshInfoInterval");
+                refreshInfoInterval = TimeSpan.FromMilliseconds(UserDataStore.GetValue<int>("RefreshInfoInterval"));
             }
 
             App.GetRequiredService<HardwareHostService>().SetRefreshInterval(refreshInfoInterval);
