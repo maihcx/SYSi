@@ -37,7 +37,7 @@
         private void LoadStaticInfo()
         {
             RamInfo = hardwareHostService.RamInfo;
-            hardwareHostService.PropertyChanged += HardwareHostService_PropertyChanged; ;
+            hardwareHostService.PropertyChanged += HardwareHostService_PropertyChanged;
         }
 
         private void MemoryViewModel_RefreshIntervalChanged(TimeSpan refreshInterval)
