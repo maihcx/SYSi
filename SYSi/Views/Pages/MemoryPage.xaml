@@ -152,9 +152,20 @@
                             <Run Text="%" />
                         </TextBlock>
                     </Grid>
-                    <ProgressBar Value="{Binding ViewModel.RamInfo.UsagePercent}"
-                                 Maximum="100"
-                                 Height="12" />
+                    <controls:PerformanceChart Height="250"
+                                               Values="{Binding ViewModel.RamUsageHistory}"
+                                               Title="{utils:Localization percent_utilization_title}"
+                                               MaxValue="100"
+                                               MaxCapacityLabel="100%"
+                                               HorizontalGridLines="9"
+                                               VerticalGridLines="15"
+                                               ShowGridLines="True"
+                                               FooterLabel="0"
+                                               AxisLabelBrush="{DynamicResource TextFillColorSecondaryBrush}"
+                                               FillBrush="{DynamicResource AccentButtonBackground}"
+                                               BorderBrushEx="{DynamicResource SystemFillColorSolidNeutralBrush}"
+                                               LineBrush="Transparent"
+                                               LineThickness="0" />
                 </StackPanel>
             </ui:CardAction>
 
