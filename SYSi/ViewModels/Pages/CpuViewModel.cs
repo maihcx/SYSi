@@ -56,12 +56,12 @@
         private void LoadStaticInfo()
         {
             CpuInfo = hardwareHostService.CpuInfo;
-            CpuInfo.PropertyChanged += CpuInfo_PropertyChanged;
+            hardwareHostService.PropertyChanged += HardwareHostService_PropertyChanged;
         }
 
-        private void CpuInfo_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void HardwareHostService_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(CpuInfo.UsagePercent))
+            if (e.PropertyName == nameof(CpuInfo))
             {
                 PushCpuUsage(CpuInfo?.UsagePercent ?? 0);
             }
