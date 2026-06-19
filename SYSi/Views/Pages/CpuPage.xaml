@@ -38,6 +38,24 @@
                                  Height="12" />
                 </StackPanel>
             </ui:CardAction>
+            
+            <ui:CardAction 
+                Margin="0 0 0 8" 
+                IsChevronVisible="False">
+                <controls:PerformanceChart Height="250"
+                                           Values="{Binding ViewModel.CpuUsageHistory}"
+                                           CurrentValue="{Binding ViewModel.CpuInfo.UsagePercent}"
+                                           Title="{utils:Localization percent_utilization_title}"
+                                           LineColor="#0078D4"
+                                           MaxValue="100"
+                                           Unit="%"
+                                           MaxCapacityLabel="100%"
+                                           TimeWindowSeconds="60"
+                                           HorizontalGridLines="9"
+                                           VerticalGridLines="15"
+                                           ShowGridLines="True"
+                                           ShowAxisLabels="True" />
+            </ui:CardAction>
 
             <!-- Info Grid -->
             <ItemsControl Margin="0 0 0 0">
