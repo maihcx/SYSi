@@ -16,7 +16,7 @@
                 <ResourceDictionary Source="Controls/GalleryNavigationPresenter.xaml" />
                 <ResourceDictionary Source="Controls/FormFieldCard.xaml" />
                 <ResourceDictionary Source="Controls/InfoRow.xaml" />
-                <ResourceDictionary Source="Controls/PerformanceChart/PerformanceChart.Generic.xaml" />
+                <ResourceDictionary Source="Controls/PerformanceChart.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <helpers:BoolToGreenRedBrush x:Key="BoolToGreenRedBrush" />
