@@ -22,6 +22,10 @@ namespace SYSi.Services.HostServices
 
         private readonly TimeSpan stockTimerInterval = TimeSpan.FromSeconds(1);
 
+        public delegate void RefreshIntervalEventHandle(TimeSpan refreshInterval);
+
+        public event RefreshIntervalEventHandle? RefreshIntervalChanged;
+
         public HardwareHostService(HardwareService.HardwareService hardware)
         {
             _hardware = hardware;
@@ -38,6 +42,7 @@ namespace SYSi.Services.HostServices
             {
                 TimerStart(_timerInterval);
             }
+            RefreshIntervalChanged?.Invoke(_timerInterval);
         }
 
         private void LoadStaticInfo()
