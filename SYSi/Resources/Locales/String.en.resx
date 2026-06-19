@@ -660,4 +660,7 @@
   <data name="memory_serial_number_title" xml:space="preserve">
     <value>Serial Number</value>
   </data>
+  <data name="percent_utilization_title" xml:space="preserve">
+    <value>% Utilization</value>
+  </data>
 </root>

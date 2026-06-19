@@ -11,7 +11,7 @@ namespace SYSi.Services.HostServices
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private readonly int stockTimerInterval = 1000;
+        private readonly TimeSpan stockTimerInterval = TimeSpan.FromSeconds(1);
 
         public OsHostService()
         {
@@ -175,10 +175,10 @@ namespace SYSi.Services.HostServices
         private void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-        private void TimerStart(int _timerInterval)
+        private void TimerStart(TimeSpan _timerInterval)
         {
             _timer.Elapsed += TimerElapsed;
-            _timer.Interval = _timerInterval;
+            _timer.Interval = _timerInterval.TotalMilliseconds;
             _timer.Start();
         }
 
@@ -194,10 +194,10 @@ namespace SYSi.Services.HostServices
             _timer.Dispose();
         }
 
-        public void SetRefreshInterval(int _timerInterval)
+        public void SetRefreshInterval(TimeSpan _timerInterval)
         {
             TimerStop();
-            if (_timerInterval > 0)
+            if (_timerInterval.TotalMilliseconds > 0)
             {
                 TimerStart(_timerInterval);
             }

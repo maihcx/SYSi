@@ -20,7 +20,11 @@ namespace SYSi.Services.HostServices
 
         private int refreshing = 0;
 
-        private readonly int stockTimerInterval = 1000;
+        private readonly TimeSpan stockTimerInterval = TimeSpan.FromSeconds(1);
+
+        public delegate void RefreshIntervalEventHandle(TimeSpan refreshInterval);
+
+        public event RefreshIntervalEventHandle? RefreshIntervalChanged;
 
         public HardwareHostService(HardwareService.HardwareService hardware)
         {
@@ -31,13 +35,14 @@ namespace SYSi.Services.HostServices
             TimerStart(stockTimerInterval);
         }
 
-        public void SetRefreshInterval(int _timerInterval)
+        public void SetRefreshInterval(TimeSpan _timerInterval)
         {
             TimerStop();
-            if (_timerInterval > 0)
+            if (_timerInterval.TotalMilliseconds > 0)
             {
                 TimerStart(_timerInterval);
             }
+            RefreshIntervalChanged?.Invoke(_timerInterval);
         }
 
         private void LoadStaticInfo()
@@ -108,10 +113,10 @@ namespace SYSi.Services.HostServices
                 new PropertyChangedEventArgs(propertyName));
         }
 
-        private void TimerStart(int _timerInterval)
+        private void TimerStart(TimeSpan _timerInterval)
         {
             _timer.Elapsed += TimerElapsed;
-            _timer.Interval = _timerInterval;
+            _timer.Interval = _timerInterval.TotalMilliseconds;
             _timer.Start();
         }
 

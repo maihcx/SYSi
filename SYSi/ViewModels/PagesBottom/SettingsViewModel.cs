@@ -199,7 +199,7 @@ namespace SYSi.ViewModels.PagesBottom
             {500, "high_title" },
             {1000, "normal_title" },
             {2000, "low_title" },
-            {-1, "paused_title" },
+            {0, "paused_title" },
 
         };
 
@@ -219,7 +219,7 @@ namespace SYSi.ViewModels.PagesBottom
             },
             new()
             {
-                Value = -1, ContentKey = refreshIntervalList[-1]
+                Value = 0, ContentKey = refreshIntervalList[0]
             }
         };
 
@@ -232,10 +232,10 @@ namespace SYSi.ViewModels.PagesBottom
 
         partial void OnSelectedRefreshIntervalChanged(ComboBoxItemInt? value)
         {
-            int intValue = value?.Value ?? -1;
-            UserDataStore.SetValue("RefreshInfoInterval", intValue);
-            hardwareHostService.SetRefreshInterval(intValue);
-            osHostService.SetRefreshInterval(intValue);
+            TimeSpan timeValue = TimeSpan.FromMilliseconds(value?.Value ?? 0);
+            UserDataStore.SetValue("RefreshInfoInterval", timeValue.TotalMilliseconds);
+            hardwareHostService.SetRefreshInterval(timeValue);
+            osHostService.SetRefreshInterval(timeValue);
         }
         #endregion
 
