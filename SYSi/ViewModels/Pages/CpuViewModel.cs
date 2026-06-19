@@ -25,7 +25,8 @@
 
         private void InitializeViewModel()
         {
-            CpuHistorySize = (int)((1000 / UserDataStore.GetValue<double>("RefreshInfoInterval")) * HistoryCapacitySecond);
+            refreshInterval = TimeSpan.FromMilliseconds(UserDataStore.GetValue<double>("RefreshInfoInterval"));
+            CpuHistorySize = (int)((1000 / refreshInterval.TotalMilliseconds) * HistoryCapacitySecond);
             _cpuRing = new double[CpuHistorySize];
             LoadStaticInfo();
 
