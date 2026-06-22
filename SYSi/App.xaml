@@ -25,7 +25,6 @@
             <helpers:BooleanToString x:Key="BooleanToString" />
             <helpers:WidthToColumnsConverter x:Key="WidthToColumnsConverter" />
             <helpers:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" />
-            <helpers:BoolToBadgeBrushConverter x:Key="BoolToBadgeBrushConverter" />
             <helpers:MvToVoltConverter x:Key="MvToVoltConverter" />
             <helpers:ZeroToCollapsedConverter x:Key="ZeroToCollapsedConverter" />
         </ResourceDictionary>

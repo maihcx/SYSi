@@ -237,18 +237,44 @@
                                           ValueHorizontalAlign="Right">
                             <controls:InfoRow.ValueContent>
                                 <Border CornerRadius="{DynamicResource ControlCornerRadius}"
-                                        Background="{Binding ViewModel.OsInfo.IsUpToDate,
-                                            Converter={StaticResource BoolToBadgeBrushConverter}}"
                                         Padding="11,5"
                                         Margin="11,0">
+
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background"
+                                                    Value="{DynamicResource SystemFillColorCautionBackgroundBrush}" />
+
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ViewModel.OsInfo.IsUpToDate}"
+                                                             Value="True">
+                                                    <Setter Property="Background"
+                                                            Value="{DynamicResource SystemFillColorSuccessBackgroundBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+
                                     <TextBlock Text="{Binding ViewModel.OsInfo.WindowsUpdateStatus}"
                                                FontSize="12"
-                                               Padding="0"
-                                               Margin="0"
-                                               TextTrimming="CharacterEllipsis"
-                                               Foreground="{Binding ViewModel.OsInfo.IsUpToDate,
-                                                        Converter={StaticResource BoolToBadgeBrushConverter},
-                                                        ConverterParameter=foreground}" />
+                                               TextTrimming="CharacterEllipsis">
+
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground"
+                                                        Value="{DynamicResource SystemFillColorCautionBrush}" />
+
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ViewModel.OsInfo.IsUpToDate}"
+                                                                 Value="True">
+                                                        <Setter Property="Foreground"
+                                                                Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+
+                                    </TextBlock>
                                 </Border>
                             </controls:InfoRow.ValueContent>
                         </controls:InfoRow>
@@ -258,18 +284,46 @@
                                           ValueHorizontalAlign="Right">
                             <controls:InfoRow.ValueContent>
                                 <Border CornerRadius="{DynamicResource ControlCornerRadius}"
-                                        Background="{Binding ViewModel.OsInfo.IsActivated,
-                                            Converter={StaticResource BoolToBadgeBrushConverter}}"
                                         Padding="11,5"
                                         Margin="11,0">
+
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background"
+                                                    Value="{DynamicResource SystemFillColorCautionBackgroundBrush}" />
+
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ViewModel.OsInfo.IsActivated}"
+                                                             Value="True">
+                                                    <Setter Property="Background"
+                                                            Value="{DynamicResource SystemFillColorSuccessBackgroundBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+
                                     <TextBlock Text="{Binding ViewModel.OsInfo.ActivationStatus}"
                                                FontSize="12"
                                                Padding="0"
                                                Margin="0"
-                                               TextTrimming="CharacterEllipsis"
-                                               Foreground="{Binding ViewModel.OsInfo.IsActivated,
-                                                        Converter={StaticResource BoolToBadgeBrushConverter},
-                                                        ConverterParameter=foreground}" />
+                                               TextTrimming="CharacterEllipsis">
+
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground"
+                                                        Value="{DynamicResource SystemFillColorCautionBrush}" />
+
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ViewModel.OsInfo.IsActivated}"
+                                                                 Value="True">
+                                                        <Setter Property="Foreground"
+                                                                Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+
+                                    </TextBlock>
                                 </Border>
                             </controls:InfoRow.ValueContent>
                         </controls:InfoRow>
