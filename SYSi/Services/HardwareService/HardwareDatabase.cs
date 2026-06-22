@@ -173,9 +173,8 @@ public static class HardwareDatabase
         new(6, 0xC5, 0xC5, 2,  -1, "Core Ultra 9 285K"),
 
         // Raptor Lake — family 6, model 0xB7
-        new(6, 0xB7, 0xB7, 0,  24, "Core i9-13900K (ES)"),
+        new(6, 0xB7, 0xB7, 0,  24, "13th Gen Intel(R) Core(TM) i9-13900 (ES)"),
         new(6, 0xB7, 0xB7, 0,  16, "Core i7-13700K (ES)"),
-        new(6, 0xB7, 0xB7, 1,  -1, "Core i9-13900K (QS)"),
 
         // Alder Lake — family 6, model 0x97
         new(6, 0x97, 0x97, 0,  -1, "Core i9-12900K (ES)"),
