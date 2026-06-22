@@ -5,7 +5,6 @@
 
     <Style TargetType="{x:Type controls:PerformanceChart}">
 
-        <!-- ✅ dùng theme brush -->
         <Setter Property="Background"
                 Value="{DynamicResource ControlFillColorDefaultBrush}" />
 
@@ -61,7 +60,7 @@
                                 <Path x:Name="PART_Fill"
                                       IsHitTestVisible="False"
                                       StrokeThickness="0"
-                                      Opacity="0.8" />
+                                      Opacity="0.6" />
 
                                 <!-- LINE -->
                                 <Polyline x:Name="PART_Line"
