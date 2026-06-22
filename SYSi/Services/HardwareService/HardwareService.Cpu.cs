@@ -1,5 +1,6 @@
 using System.Management;
 using System.Runtime.Intrinsics.X86;
+using static SYSi.Services.HardwareService.HardwareDatabase;
 
 namespace SYSi.Services.HardwareService;
 
@@ -52,6 +53,16 @@ public sealed partial class HardwareService
         info.PhysicalCores         = GetPhysicalCoreCount();
         info.VirtualizationEnabled = GetVirtualizationEnabled();
         EnrichCpuFromSmbios(info);
+
+        if (IsEngineeringSample(info))
+        {
+            EsSampleRule? esMatch = FindEsMatch(info);
+            if (esMatch != null)
+            {
+                info.Name = esMatch.RetailName;
+                info.ShortName = ParseCpuName(info.Name);
+            }
+        }
 
         RefreshCPUInfo(info);
         return info;
@@ -514,6 +525,43 @@ public sealed partial class HardwareService
             }
         }
         return "N/A";
+    }
+
+    private static bool IsEngineeringSample(CpuInfo info)
+    {
+        bool brandEs = info.Name.Contains("Genuine Intel", StringComparison.OrdinalIgnoreCase);
+
+        bool steppingEs = int.TryParse(info.Stepping, System.Globalization.NumberStyles.HexNumber,
+                                       null, out int stepping) && stepping < 1;
+
+        return brandEs || steppingEs;
+    }
+
+    public static EsSampleRule? FindEsMatch(CpuInfo info)
+    {
+        if (!int.TryParse(info.Family, NumberStyles.HexNumber, null, out int family))
+        {
+            return null;
+        }
+
+        if (!int.TryParse(info.Model, NumberStyles.HexNumber, null, out int model))
+        {
+            return null;
+        }
+
+        if (!int.TryParse(info.Stepping, NumberStyles.HexNumber, null, out int stepping))
+        {
+            return null;
+        }
+
+        int cores = info.PhysicalCores;
+
+        return EsSamplesDatabase.FirstOrDefault(r =>
+            r.Family   == family                      &&
+            model      >= r.MinModel                  &&
+            model      <= r.MaxModel                  &&
+            (r.Stepping == -1 || r.Stepping == stepping) &&
+            (r.CoreCount == -1 || r.CoreCount == cores));
     }
 
     // ── Instruction set detection ─────────────────────────────────────────────

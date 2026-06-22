@@ -31,6 +31,15 @@ public static class HardwareDatabase
         int Bit,
         string Name);
 
+    public record EsSampleRule(
+        int Family,
+        int MinModel,
+        int MaxModel,
+        int Stepping,      // -1 = any
+        int CoreCount,     // -1 = any
+        string RetailName    // "Core i9-14900K"
+    );
+
     public static readonly Dictionary<ushort, string> CpuArchitecturesDatabase = new()
     {
         [0]  = "x86",
@@ -154,6 +163,27 @@ public static class HardwareDatabase
         // 0x80000001 EDX
         new(unchecked((int)0x80000001), 0, CpuidRegister.Edx, 29, "x86-64"),
         new(unchecked((int)0x80000001), 0, CpuidRegister.Edx, 31, "3DNow!")
+    ];
+
+    public static readonly EsSampleRule[] EsSamplesDatabase =
+    [
+        // Arrow Lake — family 6, model 0xC5
+        new(6, 0xC5, 0xC5, 0,  -1, "Core Ultra 9 285K (ES)"),
+        new(6, 0xC5, 0xC5, 1,  -1, "Core Ultra 9 285K (QS)"),
+        new(6, 0xC5, 0xC5, 2,  -1, "Core Ultra 9 285K"),
+
+        // Raptor Lake — family 6, model 0xB7
+        new(6, 0xB7, 0xB7, 0,  24, "Core i9-13900K (ES)"),
+        new(6, 0xB7, 0xB7, 0,  16, "Core i7-13700K (ES)"),
+        new(6, 0xB7, 0xB7, 1,  -1, "Core i9-13900K (QS)"),
+
+        // Alder Lake — family 6, model 0x97
+        new(6, 0x97, 0x97, 0,  -1, "Core i9-12900K (ES)"),
+        new(6, 0x97, 0x97, 1,  -1, "Core i9-12900K (QS)"),
+
+        // Meteor Lake — family 6, model 0xAA
+        new(6, 0xAA, 0xAA, 0,  -1, "Core Ultra 9 185H (ES)"),
+        new(6, 0xAA, 0xAA, 1,  -1, "Core Ultra 9 185H (QS)"),
     ];
 
     #endregion
