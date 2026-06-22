@@ -53,17 +53,6 @@ public sealed partial class HardwareService
         info.PhysicalCores         = GetPhysicalCoreCount();
         info.VirtualizationEnabled = GetVirtualizationEnabled();
         EnrichCpuFromSmbios(info);
-
-        if (IsEngineeringSample(info))
-        {
-            EsSampleRule? esMatch = FindEsMatch(info);
-            if (esMatch != null)
-            {
-                info.Name = esMatch.RetailName;
-                info.ShortName = ParseCpuName(info.Name);
-            }
-        }
-
         RefreshCPUInfo(info);
         return info;
     }
@@ -460,6 +449,16 @@ public sealed partial class HardwareService
         info.Stepping    = $"{sig.Stepping:X}";
         info.ProcessorId = sig.ProcessorId;
 
+        if (IsEngineeringSample(info))
+        {
+            EsSampleRule? esMatch = FindEsMatch(info);
+            if (esMatch != null)
+            {
+                info.Name = esMatch.RetailName;
+                info.ShortName = ParseCpuName(info.Name);
+            }
+        }
+
         // Single FindCpuRule call — result shared across CodeName, Socket, TDP
         var rule = FindCpuRule(info.Manufacturer, sig.Family, sig.Model);
 
@@ -539,29 +538,35 @@ public sealed partial class HardwareService
 
     public static EsSampleRule? FindEsMatch(CpuInfo info)
     {
-        if (!int.TryParse(info.Family, NumberStyles.HexNumber, null, out int family))
+        if (info == null)
         {
             return null;
         }
 
-        if (!int.TryParse(info.Model, NumberStyles.HexNumber, null, out int model))
-        {
-            return null;
-        }
-
-        if (!int.TryParse(info.Stepping, NumberStyles.HexNumber, null, out int stepping))
+        if (!int.TryParse(info.Family, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int family) ||
+            !int.TryParse(info.Model, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int model) ||
+            !int.TryParse(info.Stepping, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int stepping))
         {
             return null;
         }
 
         int cores = info.PhysicalCores;
 
-        return EsSamplesDatabase.FirstOrDefault(r =>
-            r.Family   == family                      &&
-            model      >= r.MinModel                  &&
-            model      <= r.MaxModel                  &&
-            (r.Stepping == -1 || r.Stepping == stepping) &&
-            (r.CoreCount == -1 || r.CoreCount == cores));
+        for (int i = 0; i < EsSamplesDatabase.Length; i++)
+        {
+            var r = EsSamplesDatabase[i];
+
+            if (r.Family == family &&
+                model >= r.MinModel &&
+                model <= r.MaxModel &&
+                (r.Stepping == -1 || r.Stepping == stepping) &&
+                (r.CoreCount == -1 || r.CoreCount == cores))
+            {
+                return r;
+            }
+        }
+
+        return null;
     }
 
     // ── Instruction set detection ─────────────────────────────────────────────
