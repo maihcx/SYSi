@@ -449,6 +449,8 @@ public sealed partial class HardwareService
         info.Stepping    = $"{sig.Stepping:X}";
         info.ProcessorId = sig.ProcessorId;
 
+        info.DesignId = $"{sig.Family}-0x{sig.Model:X2}-0x{sig.Model:X2}-{sig.Stepping}-{info.PhysicalCores}";
+
         if (IsEngineeringSample(info))
         {
             EsSampleRule? esMatch = FindEsMatch(info);

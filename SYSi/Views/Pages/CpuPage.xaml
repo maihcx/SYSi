@@ -125,6 +125,10 @@
                                           ValueText="{Binding ViewModel.CpuInfo.ProcessorId}"
                                           ValueHorizontalAlign="Right" />
                         <controls:InfoRow LabelWidth="100"
+                                          LabelText="Design ID"
+                                          ValueText="{Binding ViewModel.CpuInfo.DesignId}"
+                                          ValueHorizontalAlign="Right" />
+                        <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization instructions_title}"
                                           ValueText="{Binding ViewModel.CpuInfo.Instructions}"
                                           ValueHorizontalAlign="Right"
