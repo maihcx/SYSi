@@ -35,9 +35,11 @@ public static class HardwareDatabase
         int Family,
         int MinModel,
         int MaxModel,
-        int Stepping,      // -1 = any
-        int CoreCount,     // -1 = any
-        string RetailName    // "Core i9-14900K"
+        int Stepping,       // -1 = any
+        int CoreCount,      // -1 = any
+        int ThreadCount,    // -1 = any
+        string RetailName,
+        string? ProcessorIdMask = null   // null = skip; '?' = wildcard per char
     );
 
     public static readonly Dictionary<ushort, string> CpuArchitecturesDatabase = new()
@@ -167,22 +169,42 @@ public static class HardwareDatabase
 
     public static readonly EsSampleRule[] EsSamplesDatabase =
     [
-        // Arrow Lake — family 6, model 0xC5
-        new(6, 0xC5, 0xC5, 0,  -1, "Core Ultra 9 285K (ES)"),
-        new(6, 0xC5, 0xC5, 1,  -1, "Core Ultra 9 285K (QS)"),
-        new(6, 0xC5, 0xC5, 2,  -1, "Core Ultra 9 285K"),
+        // ── Intel Arrow Lake — family 6, model 0xC5 ──────────────────────────────
+        new(6, 0xC5, 0xC5,  0, -1, -1, "Core Ultra 9 285K (ES)",
+            ProcessorIdMask: "????????000C0C50"),
+        new(6, 0xC5, 0xC5,  1, -1, -1, "Core Ultra 9 285K (QS)",
+            ProcessorIdMask: "????????000C0C51"),
+        new(6, 0xC5, 0xC5,  2, -1, -1, "Core Ultra 9 285K",
+            ProcessorIdMask: "????????000C0C52"),
 
-        // Raptor Lake — family 6, model 0xB7
-        new(6, 0xB7, 0xB7, 0,  24, "13th Gen Intel(R) Core(TM) i9-13900 (ES)"),
-        new(6, 0xB7, 0xB7, 0,  16, "Core i7-13700K (ES)"),
+        // ── Intel Raptor Lake — family 6, model 0xB7 ─────────────────────────────
+        new(6, 0xB7, 0xB7,  0, 24, 32, "13th Gen Intel(R) Core(TM) i9-13900K (ES)",
+            ProcessorIdMask: "????????000906B0"),
+        new(6, 0xB7, 0xB7,  0, 16, 24, "13th Gen Intel(R) Core(TM) i7-13700K (ES)",
+            ProcessorIdMask: "????????000906B0"),
+        new(6, 0xB7, 0xB7, -1, 24, -1, "13th Gen Intel(R) Core(TM) i9-13900 (ES)"),
 
-        // Alder Lake — family 6, model 0x97
-        new(6, 0x97, 0x97, 0,  -1, "Core i9-12900K (ES)"),
-        new(6, 0x97, 0x97, 1,  -1, "Core i9-12900K (QS)"),
+        // ── Intel Alder Lake — family 6, model 0x97 ──────────────────────────────
+        new(6, 0x97, 0x97,  0, -1, -1, "12th Gen Intel(R) Core(TM) i9-12900K (ES)",
+            ProcessorIdMask: "????????00090670"),
+        new(6, 0x97, 0x97,  1, -1, -1, "12th Gen Intel(R) Core(TM) i9-12900K (QS)",
+            ProcessorIdMask: "????????00090671"),
 
-        // Meteor Lake — family 6, model 0xAA
-        new(6, 0xAA, 0xAA, 0,  -1, "Core Ultra 9 185H (ES)"),
-        new(6, 0xAA, 0xAA, 1,  -1, "Core Ultra 9 185H (QS)"),
+        // ── Intel Meteor Lake — family 6, model 0xAA ─────────────────────────────
+        new(6, 0xAA, 0xAA,  0, -1, -1, "Core Ultra 9 185H (ES)",
+            ProcessorIdMask: "????????000A06A0"),
+        new(6, 0xAA, 0xAA,  1, -1, -1, "Core Ultra 9 185H (QS)",
+            ProcessorIdMask: "????????000A06A1"),
+
+        // ── AMD Zen 4 — family 0x19, model range 0x10–0x1F ───────────────────────
+        new(0x19, 0x10, 0x1F, -1, 16, 32, "Ryzen 9 7950X (ES)"),
+        new(0x19, 0x10, 0x1F, -1, 12, 24, "Ryzen 9 7900X (ES)"),
+        new(0x19, 0x10, 0x1F, -1,  8, 16, "Ryzen 7 7700X (ES)"),
+        new(0x19, 0x10, 0x1F, -1,  6, 12, "Ryzen 5 7600X (ES)"),
+
+        // ── AMD Zen 5 — family 0x1A ───────────────────────────────────────────────
+        new(0x1A, 0x00, 0x0F, -1, 16, 32, "Ryzen 9 9950X (ES)"),
+        new(0x1A, 0x00, 0x0F, -1,  8, 16, "Ryzen 7 9700X (ES)"),
     ];
 
     #endregion
