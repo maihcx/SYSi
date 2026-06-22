@@ -530,12 +530,7 @@ public sealed partial class HardwareService
 
     private static bool IsEngineeringSample(CpuInfo info)
     {
-        bool brandEs = info.Name.Contains("Genuine Intel", StringComparison.OrdinalIgnoreCase);
-
-        bool steppingEs = int.TryParse(info.Stepping, System.Globalization.NumberStyles.HexNumber,
-                                       null, out int stepping) && stepping < 1;
-
-        return brandEs || steppingEs;
+        return info.Name.Contains("Genuine Intel", StringComparison.OrdinalIgnoreCase);
     }
 
     public static EsSampleRule? FindEsMatch(CpuInfo info)
