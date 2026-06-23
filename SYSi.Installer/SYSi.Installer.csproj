@@ -13,8 +13,8 @@
     <Platforms>AnyCPU;x64</Platforms>
     <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
     <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-    <AssemblyVersion>0.10.0.0</AssemblyVersion>
-    <FileVersion>0.10.0.0</FileVersion>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <FileVersion>0.0.0.0</FileVersion>
 
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>false</SelfContained>
@@ -25,13 +25,19 @@
     <AssemblyName>SYSi.Installer</AssemblyName>
     <RootNamespace>SYSi.Installer</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Authors>SM SOFT</Authors>
+    <Authors>Song Mai Software</Authors>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/maihcx/SYSi</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <Resource Include="Assets\app.ico" />
     <Resource Include="Assets\app-256.png" />
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Include="Resources\Locales\String.Designer.cs" />
     <EmbeddedResource Include="..\LICENSE" Condition="Exists('..\LICENSE')">
       <LogicalName>SYSi.Installer.LICENSE</LogicalName>

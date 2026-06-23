@@ -45,6 +45,9 @@
         public string _processorId = string.Empty;
 
         [ObservableProperty]
+        public string _designId = string.Empty;
+
+        [ObservableProperty]
         public string _stepping = string.Empty;
 
         [ObservableProperty]
