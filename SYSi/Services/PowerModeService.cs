@@ -2,6 +2,9 @@
 {
     public static class PowerModeService
     {
+        [DllImport("psapi.dll")]
+        static extern bool EmptyWorkingSet(IntPtr hProcess);
+
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool SetProcessInformation(
             IntPtr hProcess,
@@ -84,6 +87,15 @@
                 PROCESS_INFORMATION_CLASS.ProcessPowerThrottling,
                 ref state,
                 (uint)Marshal.SizeOf(state));
+
+            if (mode != PowerModeState.Normal)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+
+                EmptyWorkingSet(Process.GetCurrentProcess().Handle);
+            }
 
             PowerModeChanged?.Invoke(oldMode, mode);
         }
