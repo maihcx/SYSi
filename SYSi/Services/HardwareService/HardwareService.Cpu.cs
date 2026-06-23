@@ -1,5 +1,6 @@
 using System.Management;
 using System.Runtime.Intrinsics.X86;
+using static SYSi.Services.HardwareService.HardwareDatabase;
 
 namespace SYSi.Services.HardwareService;
 
@@ -52,7 +53,6 @@ public sealed partial class HardwareService
         info.PhysicalCores         = GetPhysicalCoreCount();
         info.VirtualizationEnabled = GetVirtualizationEnabled();
         EnrichCpuFromSmbios(info);
-
         RefreshCPUInfo(info);
         return info;
     }
@@ -449,6 +449,18 @@ public sealed partial class HardwareService
         info.Stepping    = $"{sig.Stepping:X}";
         info.ProcessorId = sig.ProcessorId;
 
+        info.DesignId = $"{sig.Family}-0x{sig.Model:X2}-0x{sig.Model:X2}-{sig.Stepping}-{info.PhysicalCores}";
+
+        if (IsEngineeringSample(info))
+        {
+            EsSampleRule? esMatch = FindEsMatch(info);
+            if (esMatch != null)
+            {
+                info.Name = esMatch.RetailName;
+                info.ShortName = ParseCpuName(info.Name);
+            }
+        }
+
         // Single FindCpuRule call — result shared across CodeName, Socket, TDP
         var rule = FindCpuRule(info.Manufacturer, sig.Family, sig.Model);
 
@@ -514,6 +526,147 @@ public sealed partial class HardwareService
             }
         }
         return "N/A";
+    }
+
+    private static bool IsEngineeringSample(CpuInfo info)
+    {
+        if (info.Name.Contains("Genuine Intel", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (info.Name.Contains("Engineering Sample", StringComparison.OrdinalIgnoreCase) ||
+            info.Name.Contains("Eng Sample", StringComparison.OrdinalIgnoreCase) ||
+            info.Name.StartsWith("AMD ES-", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return info.Name.EndsWith(" ES", StringComparison.OrdinalIgnoreCase) ||
+            info.Name.EndsWith(" QS", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool MatchesProcessorIdMask(string processorId, string mask)
+    {
+        if (processorId.Length != mask.Length)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < mask.Length; i++)
+        {
+            if (mask[i] == '?')
+            {
+                continue;
+            }
+
+            if (char.ToUpperInvariant(mask[i]) != char.ToUpperInvariant(processorId[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static EsSampleRule? FindEsMatch(CpuInfo info)
+    {
+        if (info == null)
+        {
+            return null;
+        }
+
+        if (!int.TryParse(info.Family, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int family)  ||
+            !int.TryParse(info.Model, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int model)   ||
+            !int.TryParse(info.Stepping, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int stepping))
+        {
+            return null;
+        }
+
+        int cores = info.PhysicalCores;
+        int threads = info.LogicalProcessors;
+        string processorId = info.ProcessorId ?? string.Empty;
+
+        EsSampleRule? best = null;
+        int bestScore = -1;
+
+        foreach (var r in EsSamplesDatabase)
+        {
+            if (r.Family != family)
+            {
+                continue;
+            }
+
+            if (model < r.MinModel || model > r.MaxModel)
+            {
+                continue;
+            }
+
+            if (r.Stepping    != -1 && r.Stepping    != stepping)
+            {
+                continue;
+            }
+
+            if (r.CoreCount   != -1 && r.CoreCount   != cores)
+            {
+                continue;
+            }
+
+            if (r.ThreadCount != -1 && r.ThreadCount != threads)
+            {
+                continue;
+            }
+
+            if (r.ProcessorIdMask != null &&
+                !MatchesProcessorIdMask(processorId, r.ProcessorIdMask))
+            {
+                continue;
+            }
+
+            int score = 0;
+
+            if (r.MinModel == r.MaxModel)
+            {
+                score++;
+            }
+
+            if (r.Stepping    != -1)
+            {
+                score++;
+            }
+
+            if (r.CoreCount   != -1)
+            {
+                score++;
+            }
+
+            if (r.ThreadCount != -1)
+            {
+                score++;
+            }
+
+            if (r.ProcessorIdMask != null)
+            {
+                int fixedChars = 0;
+                foreach (char c in r.ProcessorIdMask)
+                {
+                    if (c != '?')
+                    {
+                        fixedChars++;
+                    }
+                }
+
+                score += fixedChars;
+            }
+
+            if (score > bestScore)
+            {
+                bestScore = score;
+                best      = r;
+            }
+        }
+
+        return best;
     }
 
     // ── Instruction set detection ─────────────────────────────────────────────
