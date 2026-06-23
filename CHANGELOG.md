@@ -1,3 +1,13 @@
+## v0.10.2
+
+## 🚀 Changelog
+## 🐛 Bug Fixes
+
+- Pass backdrop type when applying system theme (#131) — @maihcx
+
+
+---
+
 ## v0.10.1
 
 ## 🚀 Changelog
