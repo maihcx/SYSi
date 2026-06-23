@@ -64,7 +64,8 @@
             ThemeType _ThemeType = ThemeType.Unknown;
             if (UserDataStore.GetValue<string>("IThemeType") == "Auto")
             {
-                ApplicationThemeManager.ApplySystemTheme();
+                WindowBackdropType windowBackdropType = GetBackdropType();
+                ApplicationThemeManager.ApplySystemTheme(windowBackdropType, true);
                 _ThemeType = ApplicationThemeManager.GetAppTheme();
             }
             else
