@@ -73,8 +73,7 @@
                 BreadcrumbBar.Visibility = Visibility.Collapsed;
                 BreadcrumbBarHolder.Visibility = Visibility.Visible;
             }
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+            _ = MemoryOptimizer.OptimizeAsync();
         }
 
         public void ShowWithEffect()

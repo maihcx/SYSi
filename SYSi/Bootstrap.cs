@@ -114,6 +114,8 @@
             PowerModeService.PowerModeChanged += EfficiencyModeService_EfficiencyModeChanged;
 
             SplashScreen?.Close(new TimeSpan(0, 0, 0, 0, 0));
+
+            _ = MemoryOptimizer.OptimizeAfterStartupAsync();
         }
 
         private static void EfficiencyModeService_EfficiencyModeChanged(PowerModeService.PowerModeState oldMode, PowerModeService.PowerModeState newMode)
