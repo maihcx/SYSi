@@ -66,7 +66,7 @@
             {
                 WindowBackdropType windowBackdropType = GetBackdropType();
                 ApplicationThemeManager.ApplySystemTheme(windowBackdropType, true);
-                _ThemeType = ApplicationThemeManager.GetAppTheme();
+                _ThemeType = ApplicationThemeManager.GetSystemAppTheme();
             }
             else
             {
