@@ -1,3 +1,23 @@
+## v0.10.1
+
+## 🚀 Changelog
+## 🐛 Bug Fixes
+
+- Fix WindowsUpdateStatus and ActivationStatus color on HightContrast mode (#127) — @maihcx
+
+## ⚡ Performance
+
+- Optimize PerformanceChart rendering & add scrolling (#124) — @maihcx
+
+## 🧹 Maintenance
+
+- Add package metadata and include README in csproj (#130) — @maihcx
+- Enhance detection and labeling for Intel engineering samples (#126) — @maihcx
+- Bump package versions to 10.0.9 (#125) — @maihcx
+
+
+---
+
 ## v0.10.0
 
 ## 🚀 Changelog
