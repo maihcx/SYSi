@@ -231,103 +231,25 @@
                                        FontWeight="SemiBold"
                                        FontSize="14" />
                         </StackPanel>
-                        
-                        <controls:InfoRow LabelWidth="100"
-                                          LabelText="{utils:Localization windows_update_title}"
+
+                        <controls:InfoRow LabelText="{utils:Localization windows_update_title}"
                                           ValueHorizontalAlign="Right">
                             <controls:InfoRow.ValueContent>
-                                <Border CornerRadius="{DynamicResource ControlCornerRadius}"
-                                        Padding="11,5"
-                                        Margin="11,0">
-
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Background"
-                                                    Value="{DynamicResource SystemFillColorCautionBackgroundBrush}" />
-
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding ViewModel.OsInfo.IsUpToDate}"
-                                                             Value="True">
-                                                    <Setter Property="Background"
-                                                            Value="{DynamicResource SystemFillColorSuccessBackgroundBrush}" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-
-                                    <TextBlock Text="{Binding ViewModel.OsInfo.WindowsUpdateStatus}"
-                                               FontSize="12"
-                                               TextTrimming="CharacterEllipsis">
-
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Foreground"
-                                                        Value="{DynamicResource SystemFillColorCautionBrush}" />
-
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding ViewModel.OsInfo.IsUpToDate}"
-                                                                 Value="True">
-                                                        <Setter Property="Foreground"
-                                                                Value="{DynamicResource SystemFillColorSuccessBrush}" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-
-                                    </TextBlock>
-                                </Border>
+                                <controls:StatusBadge Text="{Binding ViewModel.OsInfo.WindowsUpdateStatus}"
+                                                      IsSuccess="{Binding ViewModel.OsInfo.IsUpToDate}"
+                                                      Margin="11,0" />
                             </controls:InfoRow.ValueContent>
                         </controls:InfoRow>
-                        
-                        <controls:InfoRow LabelWidth="100"
-                                          LabelText="{utils:Localization activation_title}"
+
+                        <controls:InfoRow LabelText="{utils:Localization activation_title}"
                                           ValueHorizontalAlign="Right">
                             <controls:InfoRow.ValueContent>
-                                <Border CornerRadius="{DynamicResource ControlCornerRadius}"
-                                        Padding="11,5"
-                                        Margin="11,0">
-
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Background"
-                                                    Value="{DynamicResource SystemFillColorCautionBackgroundBrush}" />
-
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding ViewModel.OsInfo.IsActivated}"
-                                                             Value="True">
-                                                    <Setter Property="Background"
-                                                            Value="{DynamicResource SystemFillColorSuccessBackgroundBrush}" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-
-                                    <TextBlock Text="{Binding ViewModel.OsInfo.ActivationStatus}"
-                                               FontSize="12"
-                                               Padding="0"
-                                               Margin="0"
-                                               TextTrimming="CharacterEllipsis">
-
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Foreground"
-                                                        Value="{DynamicResource SystemFillColorCautionBrush}" />
-
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding ViewModel.OsInfo.IsActivated}"
-                                                                 Value="True">
-                                                        <Setter Property="Foreground"
-                                                                Value="{DynamicResource SystemFillColorSuccessBrush}" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-
-                                    </TextBlock>
-                                </Border>
+                                <controls:StatusBadge Text="{Binding ViewModel.OsInfo.ActivationStatus}"
+                                                      IsSuccess="{Binding ViewModel.OsInfo.IsActivated}"
+                                                      Margin="11,0" />
                             </controls:InfoRow.ValueContent>
                         </controls:InfoRow>
-                        
+
                         <controls:InfoRow LabelWidth="100"
                                           LabelText="{utils:Localization edition_title}"
                                           ValueText="{Binding ViewModel.OsInfo.OsEdition}"

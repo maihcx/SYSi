@@ -17,6 +17,7 @@
                 <ResourceDictionary Source="Controls/FormFieldCard.xaml" />
                 <ResourceDictionary Source="Controls/InfoRow.xaml" />
                 <ResourceDictionary Source="Controls/PerformanceChart.xaml" />
+                <ResourceDictionary Source="Controls/StatusBadge.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <helpers:BoolToGreenRedBrush x:Key="BoolToGreenRedBrush" />
