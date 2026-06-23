@@ -1,3 +1,13 @@
+## v0.10.3
+
+## 🚀 Changelog
+## ⚡ Performance
+
+- Add MemoryOptimizer and use for trimming (#135) — @maihcx
+
+
+---
+
 ## v0.10.2
 
 ## 🚀 Changelog

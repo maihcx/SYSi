@@ -15,8 +15,8 @@
 		<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 
-		<AssemblyVersion>0.10.2.0</AssemblyVersion>
-		<FileVersion>0.10.2.0</FileVersion>
+		<AssemblyVersion>0.10.3.0</AssemblyVersion>
+		<FileVersion>0.10.3.0</FileVersion>
 		<Authors>Song Mai Software</Authors>
 		<PackageProjectUrl>https://github.com/maihcx/SYSi</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
