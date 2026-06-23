@@ -17,6 +17,7 @@
                 <ResourceDictionary Source="Controls/FormFieldCard.xaml" />
                 <ResourceDictionary Source="Controls/InfoRow.xaml" />
                 <ResourceDictionary Source="Controls/PerformanceChart.xaml" />
+                <ResourceDictionary Source="Controls/StatusBadge.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <helpers:BoolToGreenRedBrush x:Key="BoolToGreenRedBrush" />
@@ -25,7 +26,6 @@
             <helpers:BooleanToString x:Key="BooleanToString" />
             <helpers:WidthToColumnsConverter x:Key="WidthToColumnsConverter" />
             <helpers:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" />
-            <helpers:BoolToBadgeBrushConverter x:Key="BoolToBadgeBrushConverter" />
             <helpers:MvToVoltConverter x:Key="MvToVoltConverter" />
             <helpers:ZeroToCollapsedConverter x:Key="ZeroToCollapsedConverter" />
         </ResourceDictionary>
