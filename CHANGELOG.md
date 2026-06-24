@@ -1,3 +1,17 @@
+## v0.10.5
+
+## 🚀 Changelog
+## 🐛 Bug Fixes
+
+- Application crashes with ES CPU (#145) — @maihcx
+
+## ⚡ Performance
+
+- Optimize memory after theme changes (#144) — @maihcx
+
+
+---
+
 ## v0.10.4
 
 ## 🚀 Changelog
