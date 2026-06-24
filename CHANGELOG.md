@@ -1,3 +1,23 @@
+## v0.10.4
+
+## 🚀 Changelog
+## 🐛 Bug Fixes
+
+- Add BaseClockMHz to ES sample matching (#137) — @maihcx
+
+## ⚡ Performance
+
+- Rename memory optimizer to timed OptimizeAfterAsync (#142) — @maihcx
+
+## 🧹 Maintenance
+
+- Update Intel and AMD chipset database (#140) — @maihcx
+- Reorganize and extend CPU rules database (#139) — @maihcx
+- Expand CPU TDP database entries (#138) — @maihcx
+
+
+---
+
 ## v0.10.3
 
 ## 🚀 Changelog
