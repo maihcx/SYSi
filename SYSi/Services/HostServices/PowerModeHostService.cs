@@ -52,6 +52,7 @@
             else
             {
                 PowerModeService.SetPowerMode(PowerModeService.PowerModeState.Normal);
+                _ = MemoryOptimizer.OptimizeAfterAsync(TimeSpan.FromSeconds(2));
             }
         }
 
