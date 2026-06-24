@@ -43,6 +43,11 @@
                 ShowUpdateBanner(release.TagName);
             });
 
+            ApplicationThemeManager.Changed += (currentApplicationTheme, systemAccent) =>
+            {
+                _ = MemoryOptimizer.OptimizeAfterAsync(TimeSpan.FromSeconds(1));
+            };
+
             RestoreWindow();
         }
 
