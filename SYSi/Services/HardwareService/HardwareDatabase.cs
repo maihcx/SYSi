@@ -511,54 +511,99 @@ public static class HardwareDatabase
 
     public static readonly CpuModelRule[] CpuRulesDatabase =
     [
-        // Intel Family 6
-        new("Intel", 6, 0xBA, 0xBA, "Raptor Lake", "LGA1700"),
+        #region Intel
+        // Arrow Lake (Core Ultra 200 Desktop)
+        new("Intel", 6, 0xC6, 0xC6, "Arrow Lake", "LGA1851"),
+
+        // Lunar Lake (Core Ultra Series 2)
+        new("Intel", 6, 0xBD, 0xBD, "Lunar Lake", "BGA"),
+
+        // Meteor Lake (Core Ultra Series 1)
+        new("Intel", 6, 0xAA, 0xAA, "Meteor Lake", "BGA"),
+        new("Intel", 6, 0xAC, 0xAC, "Meteor Lake", "BGA"),
+
+        // Raptor Lake Refresh / Raptor Lake
+        new("Intel", 6, 0xBA, 0xBA, "Raptor Lake Refresh", "LGA1700"),
         new("Intel", 6, 0xB7, 0xB7, "Raptor Lake", "LGA1700"),
         new("Intel", 6, 0xB5, 0xB5, "Raptor Lake", "LGA1700"),
 
+        // Alder Lake
         new("Intel", 6, 0x97, 0x97, "Alder Lake", "LGA1700"),
         new("Intel", 6, 0x9A, 0x9A, "Alder Lake", "LGA1700"),
 
+        // Sapphire Rapids
         new("Intel", 6, 0x8F, 0x8F, "Sapphire Rapids", "LGA4677"),
 
+        // Tiger Lake
         new("Intel", 6, 0x8C, 0x8C, "Tiger Lake", "BGA"),
         new("Intel", 6, 0x8D, 0x8D, "Tiger Lake", "BGA"),
 
+        // Rocket Lake
+        new("Intel", 6, 0xA7, 0xA7, "Rocket Lake", "LGA1200"),
+
+        // Comet Lake
         new("Intel", 6, 0xA5, 0xA5, "Comet Lake", "LGA1200"),
         new("Intel", 6, 0xA6, 0xA6, "Comet Lake", "LGA1200"),
 
-        new("Intel", 6, 0x9E, 0x9E, "Coffee Lake / Kaby Lake", "LGA1151"),
-        new("Intel", 6, 0x9D, 0x9D, "Coffee Lake / Kaby Lake", "LGA1151"),
+        // Coffee Lake Refresh / Coffee Lake
+        new("Intel", 6, 0x9E, 0x9E, "Coffee Lake", "LGA1151"),
+        new("Intel", 6, 0x9D, 0x9D, "Coffee Lake", "LGA1151"),
 
+        // Skylake-X / Cascade Lake-X
         new("Intel", 6, 0x55, 0x55, "Skylake-X", "LGA2066"),
 
+        // Skylake
         new("Intel", 6, 0x4E, 0x4E, "Skylake", "LGA1151"),
         new("Intel", 6, 0x5E, 0x5E, "Skylake", "LGA1151"),
 
+        // Broadwell
         new("Intel", 6, 0x3D, 0x3D, "Broadwell", "LGA1150"),
         new("Intel", 6, 0x47, 0x47, "Broadwell", "LGA1150"),
 
+        // Haswell
         new("Intel", 6, 0x3C, 0x3C, "Haswell", "LGA1150"),
         new("Intel", 6, 0x45, 0x45, "Haswell", "LGA1150"),
         new("Intel", 6, 0x46, 0x46, "Haswell", "LGA1150"),
 
+        // Ivy Bridge
         new("Intel", 6, 0x3A, 0x3A, "Ivy Bridge", "LGA1155"),
-        new("Intel", 6, 0x3E, 0x3E, "Ivy Bridge", "LGA2011"),
+        new("Intel", 6, 0x3E, 0x3E, "Ivy Bridge-E", "LGA2011"),
 
+        // Sandy Bridge
         new("Intel", 6, 0x2A, 0x2A, "Sandy Bridge", "LGA1155"),
-        new("Intel", 6, 0x2D, 0x2D, "Sandy Bridge", "LGA2011"),
+        new("Intel", 6, 0x2D, 0x2D, "Sandy Bridge-E", "LGA2011"),
+        #endregion
 
-        // AMD Family 1Ah
+        #region AMD
+        // =========================
+        // AMD
+        // =========================
+
+        // Zen 5
         new("AMD", 0x1A, 0x00, 0xFF, "Zen 5", "AM5"),
 
-        // AMD Family 19h
-        new("AMD", 0x19, 0x60, 0x6F, "Zen 4 (Mobile)", "AM5"),
+        // Zen 4
+        new("AMD", 0x19, 0x60, 0x6F, "Zen 4", "AM5"),
+        new("AMD", 0x19, 0x70, 0x7F, "Zen 4", "AM5"),
         new("AMD", 0x19, 0x10, 0x1F, "Zen 4", "AM5"),
-        new("AMD", 0x19, 0x40, 0x5F, "Zen 3+", "AM4"),
 
-        // AMD Family 17h
-        new("AMD", 0x17, 0x30, 0xFF, "Zen 2", "AM4"),
-        new("AMD", 0x17, 0x00, 0x2F, "Zen / Zen+", "AM4"),
+        // Zen 3+
+        new("AMD", 0x19, 0x40, 0x5F, "Zen 3+", "FP7"),
+
+        // Zen 3
+        new("AMD", 0x19, 0x20, 0x2F, "Zen 3", "AM4"),
+
+        // Zen 2
+        new("AMD", 0x17, 0x30, 0x3F, "Zen 2", "AM4"),
+        new("AMD", 0x17, 0x60, 0x6F, "Zen 2", "AM4"),
+        new("AMD", 0x17, 0x70, 0x7F, "Zen 2", "AM4"),
+
+        // Zen+
+        new("AMD", 0x17, 0x10, 0x1F, "Zen+", "AM4"),
+
+        // Zen
+        new("AMD", 0x17, 0x00, 0x0F, "Zen", "AM4"),
+        #endregion
     ];
 
     public static readonly CpuFeature[] CpuFeaturesDatabase =
