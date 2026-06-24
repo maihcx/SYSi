@@ -586,7 +586,7 @@ public sealed partial class HardwareService
         int cores = info.PhysicalCores;
         int threads = info.LogicalProcessors;
         string processorId = info.ProcessorId ?? string.Empty;
-        int baseClockMHz = Convert.ToInt32(info.BaseClockGHz.Replace("GHz", "")) * 1000;
+        int baseClockMHz = (int)(Convert.ToDouble(info.BaseClockGHz.Replace("GHz", "").Trim()) * 1000);
 
         EsSampleRule? best = null;
         int bestScore = -1;
