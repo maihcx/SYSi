@@ -820,36 +820,74 @@ public static class HardwareDatabase
     {
         ["8086"] = new()
         {
+            // Intel 800 Series (Arrow Lake)
+            ["E104"] = ("Intel Arrow Lake", "Intel Z890", "PCI-Express 5.0 (32.0 GT/s)"),
+            ["E106"] = ("Intel Arrow Lake", "Intel B860", "PCI-Express 5.0 (32.0 GT/s)"),
+            ["E108"] = ("Intel Arrow Lake", "Intel H810", "PCI-Express 5.0 (32.0 GT/s)"),
+            ["E10C"] = ("Intel Arrow Lake", "Intel Q870", "PCI-Express 5.0 (32.0 GT/s)"),
+            ["E114"] = ("Intel Arrow Lake", "Intel W880", "PCI-Express 5.0 (32.0 GT/s)"),
+
+            // Intel 700 Series
             ["7A04"] = ("Intel Raptor Lake", "Intel Z790", "PCI-Express 4.0 (16.0 GT/s)"),
             ["7A06"] = ("Intel Raptor Lake", "Intel B760", "PCI-Express 4.0 (16.0 GT/s)"),
             ["7A08"] = ("Intel Raptor Lake", "Intel H770", "PCI-Express 4.0 (16.0 GT/s)"),
             ["7A0C"] = ("Intel Raptor Lake", "Intel Q670", "PCI-Express 4.0 (16.0 GT/s)"),
             ["7A14"] = ("Intel Raptor Lake", "Intel W680", "PCI-Express 4.0 (16.0 GT/s)"),
 
-            // 600-series PCH — Alder Lake — DMI 4.0 x8
+            // Intel 600 Series
             ["7A84"] = ("Intel Alder Lake", "Intel Z690", "PCI-Express 4.0 (16.0 GT/s)"),
             ["7A86"] = ("Intel Alder Lake", "Intel H670", "PCI-Express 4.0 (16.0 GT/s)"),
             ["7A88"] = ("Intel Alder Lake", "Intel B660", "PCI-Express 4.0 (16.0 GT/s)"),
             ["7A8C"] = ("Intel Alder Lake", "Intel Q670", "PCI-Express 4.0 (16.0 GT/s)"),
+            ["7A8E"] = ("Intel Alder Lake", "Intel H610", "PCI-Express 4.0 (16.0 GT/s)"),
 
-            // 500-series PCH — Rocket Lake — DMI 3.0 x8
+            // Intel 500 Series
             ["A0FC"] = ("Intel Rocket Lake", "Intel Z590", "PCI-Express 3.0 (8.0 GT/s)"),
             ["A0FE"] = ("Intel Rocket Lake", "Intel H570", "PCI-Express 3.0 (8.0 GT/s)"),
             ["A0F0"] = ("Intel Rocket Lake", "Intel B560", "PCI-Express 3.0 (8.0 GT/s)"),
             ["A0F4"] = ("Intel Rocket Lake", "Intel Q570", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["A082"] = ("Intel Rocket Lake", "Intel H510", "PCI-Express 3.0 (8.0 GT/s)"),
 
-            // 400-series PCH — Comet Lake — DMI 3.0 x8
+            // Intel 400 Series
             ["0684"] = ("Intel Comet Lake", "Intel Z490", "PCI-Express 3.0 (8.0 GT/s)"),
             ["0687"] = ("Intel Comet Lake", "Intel H470", "PCI-Express 3.0 (8.0 GT/s)"),
             ["06A4"] = ("Intel Comet Lake", "Intel B460", "PCI-Express 3.0 (8.0 GT/s)"),
             ["06A1"] = ("Intel Comet Lake", "Intel Q470", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["06D2"] = ("Intel Comet Lake", "Intel H410", "PCI-Express 3.0 (8.0 GT/s)"),
+
+            // Intel 300 Series
+            ["A2C9"] = ("Intel Coffee Lake", "Intel Z390", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["A2CC"] = ("Intel Coffee Lake", "Intel Z370", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["A303"] = ("Intel Coffee Lake", "Intel B365", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["A30D"] = ("Intel Coffee Lake", "Intel B360", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["A30C"] = ("Intel Coffee Lake", "Intel H370", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["A31E"] = ("Intel Coffee Lake", "Intel H310", "PCI-Express 3.0 (8.0 GT/s)"),
         },
 
         ["1022"] = new()
         {
-            ["790B"] = ("AMD Zen FCH", null, "PCI-Express 4.0 (16.0 GT/s)"), // SMBus
-            ["790E"] = ("AMD Zen FCH", null, "PCI-Express 4.0 (16.0 GT/s)"), // LPC Bridge
-        }
+            // AM5
+            ["14D8"] = ("AMD Zen 4/5", "X870E", "PCI-Express 5.0 (32.0 GT/s)"),
+            ["14D9"] = ("AMD Zen 4/5", "X870", "PCI-Express 5.0 (32.0 GT/s)"),
+            ["14DA"] = ("AMD Zen 4/5", "B850", "PCI-Express 5.0 (32.0 GT/s)"),
+            ["14DB"] = ("AMD Zen 4/5", "B840", "PCI-Express 4.0 (16.0 GT/s)"),
+            ["43B5"] = ("AMD Zen 4", "X670E", "PCI-Express 5.0 (32.0 GT/s)"),
+            ["43B6"] = ("AMD Zen 4", "X670", "PCI-Express 5.0 (32.0 GT/s)"),
+            ["43B7"] = ("AMD Zen 4", "B650E", "PCI-Express 5.0 (32.0 GT/s)"),
+            ["43B8"] = ("AMD Zen 4", "B650", "PCI-Express 5.0 (32.0 GT/s)"),
+            ["43B9"] = ("AMD Zen 4", "A620", "PCI-Express 4.0 (16.0 GT/s)"),
+
+            // AM4
+            ["790B"] = ("AMD Zen", "X570", "PCI-Express 4.0 (16.0 GT/s)"),
+            ["790E"] = ("AMD Zen", "X570", "PCI-Express 4.0 (16.0 GT/s)"),
+            ["43C5"] = ("AMD Zen", "B550", "PCI-Express 4.0 (16.0 GT/s)"),
+            ["43C6"] = ("AMD Zen", "A520", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["1450"] = ("AMD Zen", "X470", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["1451"] = ("AMD Zen", "B450", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["1452"] = ("AMD Zen", "X370", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["1453"] = ("AMD Zen", "B350", "PCI-Express 3.0 (8.0 GT/s)"),
+            ["1454"] = ("AMD Zen", "A320", "PCI-Express 3.0 (8.0 GT/s)"),
+        },
     };
 
     public static readonly string[] AmdChipsetDatabase =
