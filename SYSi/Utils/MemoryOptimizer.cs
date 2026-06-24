@@ -28,10 +28,12 @@
             }
         }
 
-        public static async Task OptimizeAfterStartupAsync(
-            int delayMilliseconds = 5000)
+        internal static async Task OptimizeAfterAsync(TimeSpan? delay = null)
         {
-            await Task.Delay(delayMilliseconds);
+            if (!delay.HasValue) {
+                delay = TimeSpan.FromSeconds(5);
+            }
+            await Task.Delay((int)delay.Value.TotalMilliseconds);
 
             await OptimizeAsync();
         }
