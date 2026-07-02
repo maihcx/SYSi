@@ -24,6 +24,8 @@
 
             InitializeComponent();
 
+            this.WindowBackdropType = ThemeManagerService.GetBackdropType();
+
             snackbarService.SetSnackbarPresenter(GlobalSnackbar);
             navigationService.SetNavigationControl(RootNavigation);
 
