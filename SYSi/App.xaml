@@ -18,6 +18,7 @@
                 <ResourceDictionary Source="Controls/InfoRow.xaml" />
                 <ResourceDictionary Source="Controls/PerformanceChart.xaml" />
                 <ResourceDictionary Source="Controls/StatusBadge.xaml" />
+                <ResourceDictionary Source="Controls/AcrylicPanel.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <helpers:BoolToGreenRedBrush x:Key="BoolToGreenRedBrush" />

@@ -18,11 +18,13 @@
       mc:Ignorable="d">
 
     <StackPanel Margin="0 0 0 30">
-        <controls:ReferralCard Margin="5 5 5 14"
+        <controls:ReferralCard x:Name="RootReferralCard"
+                               Margin="5 5 5 14"
                                Title="{Binding ViewModel.SortAuthor, Mode=OneWay}"
                                Subtitle="{Binding ViewModel.Author, Mode=OneWay}"
                                Description="{Binding ViewModel.AppDescription, Mode=OneWay}"
-                               FooterText="{Binding ViewModel.AuthorCreated, Mode=OneWay}">
+                               FooterText="{Binding ViewModel.AuthorCreated, Mode=OneWay}"
+                               ImageSource="/Assets/wallpaper.png">
             <controls:ReferralCard.FooterContent>
                 <StackPanel>
                     <!-- Usage cards row -->
@@ -56,9 +58,13 @@
                         </ItemsControl.Resources>
 
                         <!-- CPU -->
-                        <ui:CardAction Margin="0 0 4 4"
-                                       Command="{Binding ViewModel.NavigateCPUCommand}"
-                                       IsChevronVisible="False">
+                        <controls:AcrylicPanel Margin="0 0 4 4"
+                                               BackgroundSource="{Binding ElementName=PART_ImageLayer}"
+                                               Background="{DynamicResource WindowBackground}"
+                                               CornerRadius="{DynamicResource ControlCornerRadius}"
+                                               TintBrush="#00ffffff"
+                                               BlurRadius="20"
+                                               Command="{Binding ViewModel.NavigateCPUCommand}">
                             <StackPanel Height="104">
                                 <Grid HorizontalAlignment="Stretch">
                                     <Grid.ColumnDefinitions>
@@ -100,12 +106,16 @@
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
-                        </ui:CardAction>
-
+                        </controls:AcrylicPanel>
+                        
                         <!-- GPU card -->
-                        <ui:CardAction Margin="0 0 4 4"
-                                       Command="{Binding ViewModel.NavigateGPUCommand}"
-                                       IsChevronVisible="False">
+                        <controls:AcrylicPanel Margin="0 0 4 4"
+                                               BackgroundSource="{Binding ElementName=PART_ImageLayer}"
+                                               Background="{DynamicResource WindowBackground}"
+                                               CornerRadius="{DynamicResource ControlCornerRadius}"
+                                               TintBrush="#00ffffff"
+                                               BlurRadius="20"
+                                               Command="{Binding ViewModel.NavigateGPUCommand}">
                             <Grid Height="104">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
@@ -221,12 +231,16 @@
                                     </ItemsControl>
                                 </ui:DynamicScrollViewer>
                             </Grid>
-                        </ui:CardAction>
+                        </controls:AcrylicPanel>
 
                         <!-- RAM -->
-                        <ui:CardAction Margin="0 0 4 4"
-                                       Command="{Binding ViewModel.NavigateMemoryCommand}"
-                                       IsChevronVisible="False">
+                        <controls:AcrylicPanel Margin="0 0 4 4"
+                                               BackgroundSource="{Binding ElementName=PART_ImageLayer}"
+                                               Background="{DynamicResource WindowBackground}"
+                                               CornerRadius="{DynamicResource ControlCornerRadius}"
+                                               TintBrush="#00ffffff"
+                                               BlurRadius="20"
+                                               Command="{Binding ViewModel.NavigateMemoryCommand}">
                             <StackPanel Height="104">
                                 <Grid HorizontalAlignment="Stretch">
                                     <Grid.ColumnDefinitions>
@@ -281,12 +295,16 @@
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
-                        </ui:CardAction>
+                        </controls:AcrylicPanel>
 
                         <!-- OS / Uptime -->
-                        <ui:CardAction Margin="0 0 4 4"
-                                       Command="{Binding ViewModel.NavigateOSCommand}"
-                                       IsChevronVisible="False">
+                        <controls:AcrylicPanel Margin="0 0 4 4"
+                                               BackgroundSource="{Binding ElementName=PART_ImageLayer}"
+                                               Background="{DynamicResource WindowBackground}"
+                                               CornerRadius="{DynamicResource ControlCornerRadius}"
+                                               TintBrush="#00ffffff"
+                                               BlurRadius="20"
+                                               Command="{Binding ViewModel.NavigateOSCommand}">
                             <StackPanel Height="104">
                                 <Grid HorizontalAlignment="Stretch">
                                     <Grid.ColumnDefinitions>
@@ -331,7 +349,7 @@
                                     </TextBlock>
                                 </StackPanel>
                             </StackPanel>
-                        </ui:CardAction>
+                        </controls:AcrylicPanel>
                     </ItemsControl>
                 </StackPanel>
             </controls:ReferralCard.FooterContent>

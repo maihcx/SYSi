@@ -33,11 +33,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Remove="Assets\logo_256.png" />
-		<None Remove="Assets\logo_1024.png" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Reference Include="Wpf.Ui">
 			<HintPath>..\WPF-UI.LIB\Wpf.Ui.dll</HintPath>
 		</Reference>
@@ -52,6 +47,7 @@
 	<ItemGroup>
 		<Resource Include="Assets\logo_256.png" />
 		<Resource Include="Assets\logo_1024.png" />
+		<Resource Include="Assets\wallpaper.png" />
 	</ItemGroup>
 
 	<ItemGroup>
