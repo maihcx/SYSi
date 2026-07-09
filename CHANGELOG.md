@@ -1,23 +1,3 @@
-## v0.10.6
-
-## 🚀 Changelog
-## 🐛 Bug Fixes
-
-- Initialize window backdrop type from theme service (#147) — @maihcx
-
-## ⚡ Performance
-
-- Update Library and Optimize installer (#151) — @maihcx
-
-## 🧹 Maintenance
-
-- Add AcrylicPanel control and use it in HomePage (#150) — @maihcx
-- Remove unused using statements (#149) — @maihcx
-- Update app icons and logos (#148) — @maihcx
-
-
----
-
 ## v0.10.5
 
 ## 🚀 Changelog
