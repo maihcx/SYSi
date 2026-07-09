@@ -48,7 +48,7 @@
                                  Value="True">
                             <Setter TargetName="PART_BackgroundBorder"
                                     Property="Opacity"
-                                    Value="0.8" />
+                                    Value="0.5" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
