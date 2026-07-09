@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Navigation;
-
-namespace SYSi.Services.HostServices
+﻿namespace SYSi.Services.HostServices
 {
     public partial class NavigationPanelHostService : ObservableObject, IHostedService
     {

@@ -17,39 +17,31 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:ReferralCard}">
-                    <Border CornerRadius="{TemplateBinding Border.CornerRadius}">
-                        <Border.Background>
-                            <ImageBrush ImageSource="{Binding ImageSource, RelativeSource={RelativeSource TemplatedParent}}"
-                                        RenderOptions.BitmapScalingMode="HighQuality"
-                                        Stretch="UniformToFill" />
-                        </Border.Background>
-                        <Border CornerRadius="{TemplateBinding Border.CornerRadius}">
+                    <Grid>
+                        <Border x:Name="PART_ImageLayer"
+                                CornerRadius="{TemplateBinding Border.CornerRadius}">
                             <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0.5"
-                                                     EndPoint="1,0.5">
-                                    <GradientStop Offset="0.25"
-                                                  Color="#B312788A" />
-                                    <GradientStop Offset="0.50"
-                                                  Color="#B0006587" />
-                                    <GradientStop Offset="0.75"
-                                                  Color="#B0004478" />
-                                    <GradientStop Offset="1.00"
-                                                  Color="#B0002B57" />
-                                </LinearGradientBrush>
+                                <ImageBrush ImageSource="{Binding ImageSource, RelativeSource={RelativeSource TemplatedParent}}"
+                                            RenderOptions.BitmapScalingMode="HighQuality"
+                                            Stretch="UniformToFill"
+                                            Opacity="0.8" />
                             </Border.Background>
+                        </Border>
+
+                        <Border CornerRadius="{TemplateBinding Border.CornerRadius}">
                             <StackPanel>
                                 <StackPanel Margin="48 30 0 10"
                                             HorizontalAlignment="Left"
                                             VerticalAlignment="Center"
                                             Background="Transparent">
                                     <ui:TextBlock FontTypography="Title"
-                                                  Foreground="#FFFFFF"
+                                                  Foreground="#E4000000"
                                                   Text="{TemplateBinding Title}" />
                                     <ui:TextBlock FontTypography="Subtitle"
-                                                  Foreground="#B7FFFFFF"
+                                                  Foreground="#2A7AD5"
                                                   Text="{TemplateBinding Subtitle}" />
                                     <ui:TextBlock FontTypography="BodyStrong"
-                                                  Foreground="#B7FFFFFF"
+                                                  Foreground="#363636"
                                                   Text="{TemplateBinding Description}" />
                                 </StackPanel>
                                 <ContentPresenter Content="{TemplateBinding FooterContent}"
@@ -62,7 +54,7 @@
                                               Text="{TemplateBinding FooterText}" />
                             </StackPanel>
                         </Border>
-                    </Border>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
