@@ -2,4 +2,5 @@
   <Project Path="SYSi.BugTracker/SYSi.BugTracker.csproj" Id="39c97dc2-e654-4c79-abde-ba8f8008a99d" />
   <Project Path="SYSi.Installer/SYSi.Installer.csproj" />
   <Project Path="SYSi/SYSi.csproj" />
+  <Project Path="tools/ShaderCompiler/ShaderCompiler.csproj" />
 </Solution>

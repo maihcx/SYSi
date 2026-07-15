@@ -1,0 +1,1 @@
+﻿ShaderCompiler LiquidGlass.hlsl LiquidGlass.ps main
