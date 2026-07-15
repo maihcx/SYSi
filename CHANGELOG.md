@@ -1,3 +1,14 @@
+## v0.10.7
+
+## 🚀 Changelog
+## 🧹 Maintenance
+
+- Add LiquidGlass shader and AcrylicPanel refactor (#157) — @maihcx
+- Bump package versions to 10.0.10 (#156) — @maihcx
+
+
+---
+
 ## v0.10.6
 
 ## 🚀 Changelog
