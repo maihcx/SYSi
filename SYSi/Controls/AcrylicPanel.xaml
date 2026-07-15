@@ -32,7 +32,7 @@
                 Value="0.06" />
 
         <Setter Property="BackgroundOpacity"
-                Value="0.3" />
+                Value="0.2" />
 
         <Setter Property="SheenOpacity"
                 Value="0.10" />
@@ -41,14 +41,18 @@
         <Setter Property="RefractionDepth"
                 Value="20" />
 
+        <!-- Width of the real refractive glass ring around the perimeter. -->
+        <Setter Property="RimWidth"
+                Value="1.2" />
+
         <Setter Property="RefractionStrength"
                 Value="120" />
 
         <Setter Property="ChromaticAberration"
-                Value="10" />
+                Value="20" />
 
         <Setter Property="Saturation"
-                Value="1.18" />
+                Value="1.8" />
 
         <Setter Property="Brightness"
                 Value="1.04" />
@@ -156,42 +160,21 @@
                             </Border.Background>
                         </Border>
 
-                        <Border x:Name="PART_RimLayer"
-                                IsHitTestVisible="False"
-                                CornerRadius="{TemplateBinding CornerRadius}"
-                                BorderThickness="0.5">
+                        <!--
+                            Real glass rim. This is not a BorderBrush: the layer
+                            displays the actual backdrop and is clipped in code to
+                            a rounded ring. A dedicated shader instance gives the
+                            perimeter stronger refraction and chromatic separation.
+                        -->
+                        <Grid x:Name="PART_GlassRimHost"
+                              IsHitTestVisible="False"
+                              SnapsToDevicePixels="True">
 
-                            <Border.BorderBrush>
-                                <LinearGradientBrush StartPoint="0,0"
-                                                     EndPoint="1,1">
-
-                                    <GradientStop Offset="0"
-                                                  Color="{Binding Background,
-                                                      RelativeSource={RelativeSource TemplatedParent},
-                                                      Converter={StaticResource BrushAlphaColorConverter},
-                                                      ConverterParameter=0.95}" />
-
-                                    <GradientStop Offset="0.32"
-                                                  Color="{Binding Background,
-                                                      RelativeSource={RelativeSource TemplatedParent},
-                                                      Converter={StaticResource BrushAlphaColorConverter},
-                                                      ConverterParameter=0.48}" />
-
-                                    <GradientStop Offset="0.72"
-                                                  Color="{Binding Background,
-                                                      RelativeSource={RelativeSource TemplatedParent},
-                                                      Converter={StaticResource BrushAlphaColorConverter},
-                                                      ConverterParameter=0.16}" />
-
-                                    <GradientStop Offset="1"
-                                                  Color="{Binding Background,
-                                                      RelativeSource={RelativeSource TemplatedParent},
-                                                      Converter={StaticResource BrushAlphaColorConverter},
-                                                      ConverterParameter=0.58}" />
-
-                                </LinearGradientBrush>
-                            </Border.BorderBrush>
-                        </Border>
+                            <Border x:Name="PART_GlassRimLayer"
+                                    Background="{TemplateBinding BlurBrush}"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    Opacity="{TemplateBinding GlassOpacity}" />
+                        </Grid>
 
                         <ContentPresenter Margin="{TemplateBinding Padding}"
                                           Content="{TemplateBinding Content}"
@@ -214,7 +197,7 @@
                                  Value="True">
                             <Setter TargetName="PART_BackgroundBorder"
                                     Property="Opacity"
-                                    Value="0.2" />
+                                    Value="0.28" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
