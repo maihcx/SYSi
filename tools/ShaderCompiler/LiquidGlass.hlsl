@@ -16,7 +16,10 @@ float2 LightDirection        : register(c8);
 float RoundedRectDistance(float2 position, float2 halfSize, float radius)
 {
     float2 q = abs(position) - (halfSize - radius);
-    return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - radius;
+
+    return length(max(q, 0.0))
+         + min(max(q.x, q.y), 0.0)
+         - radius;
 }
 
 float2 RoundedRectNormal(float2 position, float2 halfSize, float radius)
@@ -24,12 +27,24 @@ float2 RoundedRectNormal(float2 position, float2 halfSize, float radius)
     const float epsilon = 0.75;
 
     float dx =
-        RoundedRectDistance(position + float2(epsilon, 0.0), halfSize, radius) -
-        RoundedRectDistance(position - float2(epsilon, 0.0), halfSize, radius);
+        RoundedRectDistance(
+            position + float2(epsilon, 0.0),
+            halfSize,
+            radius) -
+        RoundedRectDistance(
+            position - float2(epsilon, 0.0),
+            halfSize,
+            radius);
 
     float dy =
-        RoundedRectDistance(position + float2(0.0, epsilon), halfSize, radius) -
-        RoundedRectDistance(position - float2(0.0, epsilon), halfSize, radius);
+        RoundedRectDistance(
+            position + float2(0.0, epsilon),
+            halfSize,
+            radius) -
+        RoundedRectDistance(
+            position - float2(0.0, epsilon),
+            halfSize,
+            radius);
 
     float2 gradient = float2(dx, dy);
     float gradientLength = max(length(gradient), 0.0001);
@@ -39,8 +54,14 @@ float2 RoundedRectNormal(float2 position, float2 halfSize, float radius)
 
 float3 ApplySaturation(float3 color, float saturation)
 {
-    float luminance = dot(color, float3(0.2126, 0.7152, 0.0722));
-    return lerp(float3(luminance, luminance, luminance), color, saturation);
+    float luminance = dot(
+        color,
+        float3(0.2126, 0.7152, 0.0722));
+
+    return lerp(
+        float3(luminance, luminance, luminance),
+        color,
+        saturation);
 }
 
 float4 main(float2 uv : TEXCOORD) : COLOR
@@ -54,22 +75,34 @@ float4 main(float2 uv : TEXCOORD) : COLOR
 
     float2 position = (uv - 0.5) * size;
     float2 absolutePosition = abs(position);
-    float2 innerHalfSize = max(halfSize - radius, float2(0.001, 0.001));
+    float2 innerHalfSize = max(
+        halfSize - radius,
+        float2(0.001, 0.001));
 
-    float signedDistance = RoundedRectDistance(position, halfSize, radius);
+    float signedDistance =
+        RoundedRectDistance(position, halfSize, radius);
 
     clip(0.90 - signedDistance);
 
-    float shapeMask = 1.0 - smoothstep(-0.90, 0.90, signedDistance);
+    float shapeMask =
+        1.0 - smoothstep(-0.90, 0.90, signedDistance);
+
     float insideDistance = max(-signedDistance, 0.0);
 
     float requestedDepth = max(RefractionDepth, 0.5);
-    float maximumPanelDepth = max(1.0, minimumHalfSize * 0.72);
-    float safeRequestedDepth = min(requestedDepth, maximumPanelDepth);
+    float maximumPanelDepth =
+        max(1.0, minimumHalfSize * 0.72);
 
-    float2 normal = RoundedRectNormal(position, halfSize, radius);
+    float safeRequestedDepth =
+        min(requestedDepth, maximumPanelDepth);
 
-    float2 distanceInsideCornerJoin = innerHalfSize - absolutePosition;
+    // Signed rounded-rectangle normal:
+    // left/right and top/bottom automatically use opposite signs.
+    float2 normal =
+        RoundedRectNormal(position, halfSize, radius);
+
+    float2 distanceInsideCornerJoin =
+        innerHalfSize - absolutePosition;
 
     float distanceFromCornerJoin = max(
         distanceInsideCornerJoin.x,
@@ -77,15 +110,21 @@ float4 main(float2 uv : TEXCOORD) : COLOR
 
     float cornerTransitionWidth = max(
         radius * 1.35,
-        min(safeRequestedDepth * 0.62, minimumHalfSize * 0.42));
+        min(
+            safeRequestedDepth * 0.62,
+            minimumHalfSize * 0.42));
 
-    float cornerInfluence = 1.0 - smoothstep(
-        0.0,
-        max(cornerTransitionWidth, 1.0),
-        distanceFromCornerJoin);
+    float cornerInfluence =
+        1.0 - smoothstep(
+            0.0,
+            max(cornerTransitionWidth, 1.0),
+            distanceFromCornerJoin);
 
-    float maximumCornerDepth = max(1.0, radius * 0.88);
-    float cornerSafeDepth = min(safeRequestedDepth, maximumCornerDepth);
+    float maximumCornerDepth =
+        max(1.0, radius * 0.88);
+
+    float cornerSafeDepth =
+        min(safeRequestedDepth, maximumCornerDepth);
 
     float localDepth = lerp(
         safeRequestedDepth,
@@ -94,61 +133,100 @@ float4 main(float2 uv : TEXCOORD) : COLOR
 
     localDepth = max(localDepth, 0.5);
 
-    float normalizedDepth = saturate(insideDistance / localDepth);
+    float normalizedDepth =
+        saturate(insideDistance / localDepth);
+
     float smoothDepth =
-        normalizedDepth * normalizedDepth *
+        normalizedDepth *
+        normalizedDepth *
         (3.0 - 2.0 * normalizedDepth);
 
     float edge = 1.0 - smoothDepth;
 
-    float depthRatio = saturate(localDepth / max(safeRequestedDepth, 0.5));
-    float opticalEdge = edge * lerp(0.82, 1.0, depthRatio);
+    float depthRatio =
+        saturate(
+            localDepth /
+            max(safeRequestedDepth, 0.5));
 
-    float cornerBoost = 1.0 + cornerInfluence * 0.12;
+    float opticalEdge =
+        edge *
+        lerp(0.82, 1.0, depthRatio);
+
+    float cornerBoost =
+        1.0 + cornerInfluence * 0.12;
 
     float baseDisplacementPixels = min(
         RefractionStrength * 0.045 * cornerBoost,
         localDepth * 0.40);
 
-    float chromaticStrength =
-        ChromaticAberration * opticalEdge *
-        (1.0 + cornerInfluence * 0.62);
+    // Main inward refraction.
+    float refractionPixels =
+        baseDisplacementPixels * opticalEdge;
 
-    float redDisplacementPixels = min(
-        baseDisplacementPixels + chromaticStrength * 0.68,
-        localDepth * 0.54);
+    float2 inwardDirection =
+        -normal / size;
 
-    float greenDisplacementPixels = min(
-        baseDisplacementPixels + chromaticStrength * 0.32,
-        localDepth * 0.48);
+    float2 baseUv =
+        uv + inwardDirection * refractionPixels;
 
-    float blueDisplacementPixels = baseDisplacementPixels;
+    // Symmetric chromatic dispersion around the main refracted ray.
+    //
+    // Red   = less refracted
+    // Green = reference ray
+    // Blue  = more refracted
+    //
+    // Because inwardDirection is signed, the color order automatically
+    // reverses on opposite edges and rotates continuously around corners.
+    float requestedChromaticPixels =
+        ChromaticAberration *
+        0.12 *
+        opticalEdge *
+        (1.0 + cornerInfluence * 0.35);
 
-    float2 inwardDirection = -normal / size;
+    float maximumChromaticPixels = min(
+        localDepth * 0.18,
+        refractionPixels * 0.82);
 
-    float2 redUv = saturate(
-        uv + inwardDirection * redDisplacementPixels * opticalEdge);
+    float chromaticPixels = min(
+        requestedChromaticPixels,
+        maximumChromaticPixels);
 
-    float2 greenUv = saturate(
-        uv + inwardDirection * greenDisplacementPixels * opticalEdge);
+    float2 chromaticVector =
+        inwardDirection * chromaticPixels;
 
-    float2 blueUv = saturate(
-        uv + inwardDirection * blueDisplacementPixels * opticalEdge);
+    float2 redUv =
+        saturate(baseUv - chromaticVector);
 
-    float4 redSample = tex2D(Input, redUv);
-    float4 greenSample = tex2D(Input, greenUv);
-    float4 blueSample = tex2D(Input, blueUv);
+    float2 greenUv =
+        saturate(baseUv);
+
+    float2 blueUv =
+        saturate(baseUv + chromaticVector);
+
+    float4 redSample =
+        tex2D(Input, redUv);
+
+    float4 greenSample =
+        tex2D(Input, greenUv);
+
+    float4 blueSample =
+        tex2D(Input, blueUv);
 
     float3 color = float3(
         redSample.r,
         greenSample.g,
         blueSample.b);
 
-    color = ApplySaturation(color, max(Saturation, 0.0));
+    color = ApplySaturation(
+        color,
+        max(Saturation, 0.0));
+
     color *= max(Brightness, 0.0);
 
-    float2 normalizedLightDirection = normalize(
-        LightDirection + float2(0.0001, 0.0001));
+    float2 normalizedLightDirection =
+        normalize(
+            LightDirection +
+            float2(0.0001, 0.0001));
 
     float lightFacing = saturate(
         dot(-normal, normalizedLightDirection) * 0.5 + 0.5);
@@ -157,17 +235,22 @@ float4 main(float2 uv : TEXCOORD) : COLOR
         dot(normal, normalizedLightDirection) * 0.5 + 0.5);
 
     float brightRim =
-        opticalEdge * EdgeHighlight *
+        opticalEdge *
+        EdgeHighlight *
         (0.12 + 0.88 * pow(lightFacing, 5.0));
 
     float darkRim =
-        opticalEdge * EdgeHighlight * 0.18 *
+        opticalEdge *
+        EdgeHighlight *
+        0.18 *
         pow(oppositeFacing, 4.0);
 
     color += brightRim;
     color -= darkRim;
 
-    float alpha = max(redSample.a, max(greenSample.a, blueSample.a));
+    float alpha = max(
+        redSample.a,
+        max(greenSample.a, blueSample.a));
 
     color = saturate(color) * shapeMask;
     alpha *= shapeMask;
