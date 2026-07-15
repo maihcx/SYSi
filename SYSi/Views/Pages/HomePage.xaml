@@ -62,8 +62,6 @@
                                                BackgroundSource="{Binding ElementName=PART_ImageLayer}"
                                                Background="{DynamicResource WindowBackground}"
                                                CornerRadius="{DynamicResource ControlCornerRadius}"
-                                               TintBrush="#00ffffff"
-                                               BlurRadius="20"
                                                Command="{Binding ViewModel.NavigateCPUCommand}">
                             <StackPanel Height="104">
                                 <Grid HorizontalAlignment="Stretch">
@@ -77,12 +75,12 @@
                                                    Symbol="BrainCircuit24"
                                                    FontSize="20"
                                                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
-                                    <TextBlock Grid.Column="1"
-                                               Text="{utils:Localization cpu_usage_title}"
-                                               FontSize="13"
-                                               FontWeight="Medium"
-                                               VerticalAlignment="Center"
-                                               Margin="8,0,0,0" />
+                                    <ui:TextBlock Grid.Column="1"
+                                                  Text="{utils:Localization cpu_usage_title}"
+                                                  FontSize="13"
+                                                  FontWeight="Medium"
+                                                  VerticalAlignment="Center"
+                                                  Margin="8,0,0,0" />
                                     <ui:SymbolIcon Grid.Column="2"
                                                    Symbol="ChevronCircleRight24"
                                                    FontSize="20" />
@@ -113,8 +111,6 @@
                                                BackgroundSource="{Binding ElementName=PART_ImageLayer}"
                                                Background="{DynamicResource WindowBackground}"
                                                CornerRadius="{DynamicResource ControlCornerRadius}"
-                                               TintBrush="#00ffffff"
-                                               BlurRadius="20"
                                                Command="{Binding ViewModel.NavigateGPUCommand}">
                             <Grid Height="104">
                                 <Grid.RowDefinitions>
@@ -238,8 +234,6 @@
                                                BackgroundSource="{Binding ElementName=PART_ImageLayer}"
                                                Background="{DynamicResource WindowBackground}"
                                                CornerRadius="{DynamicResource ControlCornerRadius}"
-                                               TintBrush="#00ffffff"
-                                               BlurRadius="20"
                                                Command="{Binding ViewModel.NavigateMemoryCommand}">
                             <StackPanel Height="104">
                                 <Grid HorizontalAlignment="Stretch">
@@ -302,8 +296,6 @@
                                                BackgroundSource="{Binding ElementName=PART_ImageLayer}"
                                                Background="{DynamicResource WindowBackground}"
                                                CornerRadius="{DynamicResource ControlCornerRadius}"
-                                               TintBrush="#00ffffff"
-                                               BlurRadius="20"
                                                Command="{Binding ViewModel.NavigateOSCommand}">
                             <StackPanel Height="104">
                                 <Grid HorizontalAlignment="Stretch">

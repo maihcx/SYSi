@@ -29,6 +29,7 @@
             <helpers:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" />
             <helpers:MvToVoltConverter x:Key="MvToVoltConverter" />
             <helpers:ZeroToCollapsedConverter x:Key="ZeroToCollapsedConverter" />
+            <helpers:BrushAlphaColorConverter x:Key="BrushAlphaColorConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -1,54 +1,220 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:controls="clr-namespace:SYSi.Controls"
-                    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+                    xmlns:helpers="clr-namespace:SYSi.Helpers">
 
     <Thickness x:Key="CardControlPadding">14,16,14,16</Thickness>
+
+    <helpers:BrushAlphaColorConverter x:Key="BrushAlphaColorConverter" />
 
     <Style TargetType="{x:Type controls:AcrylicPanel}">
         <Setter Property="Padding"
                 Value="{StaticResource CardControlPadding}" />
+
         <Setter Property="Background"
                 Value="Transparent" />
+
+        <!-- The reference implementation normally uses almost no blur. -->
         <Setter Property="BlurRadius"
-                Value="24" />
+                Value="8" />
+
+        <!-- Higher than the acrylic version because refraction needs detail. -->
+        <Setter Property="BackdropScale"
+                Value="0.65" />
+
+        <Setter Property="IsLiquidGlassEnabled"
+                Value="True" />
+
+        <Setter Property="GlassOpacity"
+                Value="1" />
+
+        <Setter Property="TintOpacity"
+                Value="0.06" />
+
+        <Setter Property="BackgroundOpacity"
+                Value="0.3" />
+
+        <Setter Property="SheenOpacity"
+                Value="0.10" />
+
+        <!-- Values intentionally mirror the public API of the reference. -->
+        <Setter Property="RefractionDepth"
+                Value="20" />
+
+        <Setter Property="RefractionStrength"
+                Value="120" />
+
+        <Setter Property="ChromaticAberration"
+                Value="10" />
+
+        <Setter Property="Saturation"
+                Value="1.18" />
+
+        <Setter Property="Brightness"
+                Value="1.04" />
+
+        <Setter Property="EdgeHighlight"
+                Value="0.16" />
+
+        <Setter Property="LightDirection"
+                Value="-0.72,-0.69" />
+
+        <Setter Property="ReduceEffectsWhileScrolling"
+                Value="False" />
+
+        <Setter Property="HorizontalContentAlignment"
+                Value="Stretch" />
+
+        <Setter Property="VerticalContentAlignment"
+                Value="Stretch" />
+
+        <Setter Property="SnapsToDevicePixels"
+                Value="True" />
+
+        <Setter Property="UseLayoutRounding"
+                Value="True" />
+
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:AcrylicPanel}">
-                    <Border Background="Transparent"
-                            CornerRadius="{TemplateBinding CornerRadius}">
+                    <Grid x:Name="PART_RootGrid"
+                          Background="Transparent"
+                          SnapsToDevicePixels="True">
 
-                        <Grid x:Name="PART_RootGrid">
-                            <Rectangle Fill="{TemplateBinding BlurBrush}">
-                                <Rectangle.Effect>
-                                    <BlurEffect Radius="{Binding BlurRadius, RelativeSource={RelativeSource TemplatedParent}}" />
-                                </Rectangle.Effect>
-                            </Rectangle>
+                        <!--
+                            Keep only the GPU ShaderEffect layer inside its own
+                            composition host. Do not apply an OpacityMask to a
+                            subtree that also contains opaque/tint UI layers;
+                            WPF can render that subtree through an intermediate
+                            surface and expose moving tile seams.
+                        -->
+                        <Grid x:Name="PART_EffectHost"
+                              IsHitTestVisible="False"
+                              SnapsToDevicePixels="True">
 
-                            <Rectangle Fill="{TemplateBinding TintBrush}" />
-
-                            <Border x:Name="PART_BackgroundBorder"
-                                    Background="{TemplateBinding Background}"
+                            <!-- Real GPU refraction and RGB displacement. -->
+                            <Border x:Name="PART_BackdropLayer"
+                                    Background="{TemplateBinding BlurBrush}"
                                     CornerRadius="{TemplateBinding CornerRadius}"
-                                    Opacity="0.7" />
-
-                            <ContentPresenter Margin="{TemplateBinding Padding}" />
+                                    Opacity="{TemplateBinding GlassOpacity}" />
                         </Grid>
-                    </Border>
+
+                        <!--
+                            These layers are deliberately outside PART_EffectHost.
+                            They are clipped once by PART_RootGrid and never pass
+                            through the ShaderEffect intermediate render target.
+                        -->
+                        <Border x:Name="PART_TintLayer"
+                                IsHitTestVisible="False"
+                                Background="{TemplateBinding TintBrush}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Opacity="{TemplateBinding TintOpacity}" />
+
+                        <Border x:Name="PART_BackgroundBorder"
+                                IsHitTestVisible="False"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Opacity="{TemplateBinding BackgroundOpacity}" />
+
+                        <Border x:Name="PART_SheenLayer"
+                                IsHitTestVisible="False"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Opacity="{TemplateBinding SheenOpacity}">
+
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0"
+                                                     EndPoint="1,1">
+
+                                    <GradientStop Offset="0"
+                                                  Color="{Binding Background,
+                                                      RelativeSource={RelativeSource TemplatedParent},
+                                                      Converter={StaticResource BrushAlphaColorConverter},
+                                                      ConverterParameter=0.72}" />
+
+                                    <GradientStop Offset="0.20"
+                                                  Color="{Binding Background,
+                                                      RelativeSource={RelativeSource TemplatedParent},
+                                                      Converter={StaticResource BrushAlphaColorConverter},
+                                                      ConverterParameter=0.30}" />
+
+                                    <GradientStop Offset="0.48"
+                                                  Color="Transparent" />
+
+                                    <GradientStop Offset="0.78"
+                                                  Color="{Binding Background,
+                                                      RelativeSource={RelativeSource TemplatedParent},
+                                                      Converter={StaticResource BrushAlphaColorConverter},
+                                                      ConverterParameter=0.10}" />
+
+                                    <GradientStop Offset="1"
+                                                  Color="{Binding Background,
+                                                      RelativeSource={RelativeSource TemplatedParent},
+                                                      Converter={StaticResource BrushAlphaColorConverter},
+                                                      ConverterParameter=0.24}" />
+
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+
+                        <Border x:Name="PART_RimLayer"
+                                IsHitTestVisible="False"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                BorderThickness="0.5">
+
+                            <Border.BorderBrush>
+                                <LinearGradientBrush StartPoint="0,0"
+                                                     EndPoint="1,1">
+
+                                    <GradientStop Offset="0"
+                                                  Color="{Binding Background,
+                                                      RelativeSource={RelativeSource TemplatedParent},
+                                                      Converter={StaticResource BrushAlphaColorConverter},
+                                                      ConverterParameter=0.95}" />
+
+                                    <GradientStop Offset="0.32"
+                                                  Color="{Binding Background,
+                                                      RelativeSource={RelativeSource TemplatedParent},
+                                                      Converter={StaticResource BrushAlphaColorConverter},
+                                                      ConverterParameter=0.48}" />
+
+                                    <GradientStop Offset="0.72"
+                                                  Color="{Binding Background,
+                                                      RelativeSource={RelativeSource TemplatedParent},
+                                                      Converter={StaticResource BrushAlphaColorConverter},
+                                                      ConverterParameter=0.16}" />
+
+                                    <GradientStop Offset="1"
+                                                  Color="{Binding Background,
+                                                      RelativeSource={RelativeSource TemplatedParent},
+                                                      Converter={StaticResource BrushAlphaColorConverter},
+                                                      ConverterParameter=0.58}" />
+
+                                </LinearGradientBrush>
+                            </Border.BorderBrush>
+                        </Border>
+
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                    </Grid>
 
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver"
                                  Value="True">
                             <Setter TargetName="PART_BackgroundBorder"
                                     Property="Opacity"
-                                    Value="0.6" />
+                                    Value="0.25" />
                         </Trigger>
 
                         <Trigger Property="IsPressed"
                                  Value="True">
                             <Setter TargetName="PART_BackgroundBorder"
                                     Property="Opacity"
-                                    Value="0.5" />
+                                    Value="0.2" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
