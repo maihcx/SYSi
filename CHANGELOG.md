@@ -1,3 +1,13 @@
+## v0.10.8
+
+## 🚀 Changelog
+## 🧹 Maintenance
+
+- Add real glass rim layer to acrylic panel (#159) — @maihcx
+
+
+---
+
 ## v0.10.7
 
 ## 🚀 Changelog
