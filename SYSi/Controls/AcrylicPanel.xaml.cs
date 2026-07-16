@@ -28,8 +28,11 @@ public class AcrylicPanel : ContentControl
     private Grid? _rootGrid;
     private Grid? _effectHost;
     private Border? _backdropLayer;
+    private Grid? _glassRimHost;
+    private Border? _glassRimLayer;
     private Geometry? _roundedClipGeometry;
     private LiquidGlassEffect? _liquidGlassEffect;
+    private LiquidGlassEffect? _glassRimEffect;
     private ScrollViewer? _scrollViewer;
     private BackdropSourceCache? _sourceCache;
     private DispatcherTimer? _scrollIdleTimer;
@@ -339,6 +342,26 @@ public class AcrylicPanel : ContentControl
         set => SetValue(RefractionDepthProperty, value);
     }
 
+    public static readonly DependencyProperty RimWidthProperty =
+        DependencyProperty.Register(
+            nameof(RimWidth),
+            typeof(double),
+            typeof(AcrylicPanel),
+            new FrameworkPropertyMetadata(
+                12.0,
+                OnLiquidGlassSettingChanged,
+                CoerceRimWidth));
+
+    /// <summary>
+    /// Width, in device-independent pixels, of the visible refractive glass
+    /// ring. The ring samples the real backdrop; it is not a painted border.
+    /// </summary>
+    public double RimWidth
+    {
+        get => (double)GetValue(RimWidthProperty);
+        set => SetValue(RimWidthProperty, value);
+    }
+
     public static readonly DependencyProperty RefractionStrengthProperty =
         DependencyProperty.Register(
             nameof(RefractionStrength),
@@ -461,7 +484,8 @@ public class AcrylicPanel : ContentControl
         {
             panel.UpdateLiquidGlassEffect();
 
-            if (eventArgs.Property == CornerRadiusProperty)
+            if (eventArgs.Property == CornerRadiusProperty ||
+                eventArgs.Property == RimWidthProperty)
             {
                 panel.UpdateRoundedClip();
             }
@@ -482,6 +506,14 @@ public class AcrylicPanel : ContentControl
     {
         double value = (double)baseValue;
         return double.IsFinite(value) ? Math.Clamp(value, 0.5, 64.0) : 10.0;
+    }
+
+    private static object CoerceRimWidth(
+        DependencyObject dependencyObject,
+        object baseValue)
+    {
+        double value = (double)baseValue;
+        return double.IsFinite(value) ? Math.Clamp(value, 0.5, 64.0) : 12.0;
     }
 
     private static object CoerceRefractionStrength(
@@ -564,11 +596,18 @@ public class AcrylicPanel : ContentControl
             _backdropLayer.Effect = null;
         }
 
+        if (_glassRimLayer is not null)
+        {
+            _glassRimLayer.Effect = null;
+        }
+
         base.OnApplyTemplate();
 
         _rootGrid = GetTemplateChild("PART_RootGrid") as Grid;
         _effectHost = GetTemplateChild("PART_EffectHost") as Grid;
         _backdropLayer = GetTemplateChild("PART_BackdropLayer") as Border;
+        _glassRimHost = GetTemplateChild("PART_GlassRimHost") as Grid;
+        _glassRimLayer = GetTemplateChild("PART_GlassRimLayer") as Border;
 
         UpdateRoundedClip();
         UpdateLiquidGlassEffect();
@@ -833,17 +872,25 @@ public class AcrylicPanel : ContentControl
                 ActualWidth,
                 ActualHeight);
 
+            bool isInsideViewport = IsInsideScrollViewport();
+
             if (_backdropLayer is not null)
             {
-                bool isInsideViewport = IsInsideScrollViewport();
                 _backdropLayer.Visibility = isInsideViewport
                     ? Visibility.Visible
                     : Visibility.Hidden;
+            }
 
-                if (isInsideViewport)
-                {
-                    UpdateLiquidGlassEffect();
-                }
+            if (_glassRimLayer is not null)
+            {
+                _glassRimLayer.Visibility = isInsideViewport
+                    ? Visibility.Visible
+                    : Visibility.Hidden;
+            }
+
+            if (isInsideViewport)
+            {
+                UpdateLiquidGlassEffect();
             }
         }
         catch (InvalidOperationException)
@@ -904,6 +951,12 @@ public class AcrylicPanel : ContentControl
         {
             _rootGrid.Clip = null;
             _effectHost.Clip = null;
+
+            if (_glassRimHost is not null)
+            {
+                _glassRimHost.Clip = null;
+            }
+
             return;
         }
 
@@ -912,12 +965,64 @@ public class AcrylicPanel : ContentControl
 
         _roundedClipGeometry = geometry;
 
-        // Clip the final root composition and the shader host directly.
-        // Avoid OpacityMask here: combining ShaderEffect + OpacityMask on the
-        // same subtree can force WPF through tiled intermediate surfaces and
-        // produce moving horizontal/vertical seam artifacts.
+        // Clip the final root composition and the main shader host directly.
+        // The rim host receives a ring-shaped clip built from the same rounded
+        // geometry, so the visible border is made of real backdrop pixels.
         _rootGrid.Clip = geometry;
         _effectHost.Clip = geometry;
+
+        if (_glassRimHost is not null)
+        {
+            _glassRimHost.Clip = CreateGlassRimGeometry(
+                bounds,
+                CornerRadius,
+                RimWidth);
+        }
+    }
+
+    private static Geometry CreateGlassRimGeometry(
+        Rect rect,
+        CornerRadius cornerRadius,
+        double rimWidth)
+    {
+        Geometry outer = CreateRoundedRectangleGeometry(rect, cornerRadius);
+
+        double normalizedRimWidth = Math.Max(0.5, rimWidth);
+        double innerWidth = rect.Width - normalizedRimWidth * 2.0;
+        double innerHeight = rect.Height - normalizedRimWidth * 2.0;
+
+        if (innerWidth <= 0 || innerHeight <= 0)
+        {
+            return outer;
+        }
+
+        Rect innerRect = new(
+            rect.Left + normalizedRimWidth,
+            rect.Top + normalizedRimWidth,
+            innerWidth,
+            innerHeight);
+
+        CornerRadius innerCornerRadius = new(
+            Math.Max(0.0, cornerRadius.TopLeft - normalizedRimWidth),
+            Math.Max(0.0, cornerRadius.TopRight - normalizedRimWidth),
+            Math.Max(0.0, cornerRadius.BottomRight - normalizedRimWidth),
+            Math.Max(0.0, cornerRadius.BottomLeft - normalizedRimWidth));
+
+        Geometry inner = CreateRoundedRectangleGeometry(
+            innerRect,
+            innerCornerRadius);
+
+        CombinedGeometry rimGeometry = new(
+            GeometryCombineMode.Exclude,
+            outer,
+            inner);
+
+        if (rimGeometry.CanFreeze)
+        {
+            rimGeometry.Freeze();
+        }
+
+        return rimGeometry;
     }
 
     private static Geometry CreateRoundedRectangleGeometry(
@@ -1020,13 +1125,28 @@ public class AcrylicPanel : ContentControl
         if (!IsLiquidGlassEnabled || _shaderInitializationFailed)
         {
             _backdropLayer.Effect = null;
+
+            if (_glassRimLayer is not null)
+            {
+                _glassRimLayer.Effect = null;
+            }
+
             return;
         }
 
+        LiquidGlassEffect mainEffect;
+        LiquidGlassEffect? rimEffect = null;
+
         try
         {
-            _liquidGlassEffect ??= new LiquidGlassEffect();
-            _backdropLayer.Effect = _liquidGlassEffect;
+            mainEffect = _liquidGlassEffect ??= new LiquidGlassEffect();
+            _backdropLayer.Effect = mainEffect;
+
+            if (_glassRimLayer is not null)
+            {
+                rimEffect = _glassRimEffect ??= new LiquidGlassEffect();
+                _glassRimLayer.Effect = rimEffect;
+            }
         }
         catch (Exception exception) when (
             exception is IOException or
@@ -1038,6 +1158,12 @@ public class AcrylicPanel : ContentControl
             // backdrop instead of preventing the whole control from loading.
             _shaderInitializationFailed = true;
             _backdropLayer.Effect = null;
+
+            if (_glassRimLayer is not null)
+            {
+                _glassRimLayer.Effect = null;
+            }
+
             return;
         }
 
@@ -1052,17 +1178,58 @@ public class AcrylicPanel : ContentControl
         double scrollingChromaticFactor =
             ReduceEffectsWhileScrolling && _isScrolling ? 0.78 : 1.0;
 
-        _liquidGlassEffect.InputSize = new Point(width, height);
-        _liquidGlassEffect.CornerRadius = radius;
-        _liquidGlassEffect.RefractionDepth = RefractionDepth;
-        _liquidGlassEffect.RefractionStrength =
-            RefractionStrength * scrollingStrengthFactor;
-        _liquidGlassEffect.ChromaticAberration =
-            ChromaticAberration * scrollingChromaticFactor;
-        _liquidGlassEffect.Saturation = Saturation;
-        _liquidGlassEffect.Brightness = Brightness;
-        _liquidGlassEffect.EdgeHighlight = EdgeHighlight;
-        _liquidGlassEffect.LightDirection = LightDirection;
+        ConfigureLiquidGlassEffect(
+            mainEffect,
+            width,
+            height,
+            radius,
+            RefractionDepth,
+            RefractionStrength * scrollingStrengthFactor,
+            ChromaticAberration * scrollingChromaticFactor,
+            Saturation,
+            Brightness,
+            EdgeHighlight);
+
+        if (rimEffect is not null && _glassRimLayer is not null)
+        {
+            // The rim is made from the same real backdrop, but receives a
+            // stronger optical treatment so it behaves like a thick glass edge
+            // instead of a painted stroke.
+            ConfigureLiquidGlassEffect(
+                rimEffect,
+                width,
+                height,
+                radius,
+                Math.Max(RefractionDepth, RimWidth),
+                RefractionStrength * 1.35 * scrollingStrengthFactor,
+                ChromaticAberration * 1.40 * scrollingChromaticFactor,
+                Math.Min(3.0, Saturation * 1.05),
+                Math.Min(3.0, Brightness * 1.06),
+                Math.Min(1.0, EdgeHighlight * 1.55));
+        }
+    }
+
+    private void ConfigureLiquidGlassEffect(
+        LiquidGlassEffect effect,
+        double width,
+        double height,
+        double radius,
+        double refractionDepth,
+        double refractionStrength,
+        double chromaticAberration,
+        double saturation,
+        double brightness,
+        double edgeHighlight)
+    {
+        effect.InputSize = new Point(width, height);
+        effect.CornerRadius = radius;
+        effect.RefractionDepth = refractionDepth;
+        effect.RefractionStrength = refractionStrength;
+        effect.ChromaticAberration = chromaticAberration;
+        effect.Saturation = saturation;
+        effect.Brightness = brightness;
+        effect.EdgeHighlight = edgeHighlight;
+        effect.LightDirection = LightDirection;
     }
 
     protected override void OnMouseLeftButtonDown(
