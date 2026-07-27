@@ -4,8 +4,6 @@
     {
         public MainWindowViewModel ViewModel { get; }
 
-        public ApplicationThemeManagerService ThemeManagerService { get; }
-
         public MainWindow(
             MainWindowViewModel viewModel,
             INavigationService navigationService,
@@ -16,11 +14,6 @@
         {
             ViewModel = viewModel;
             DataContext = this;
-
-            ThemeManagerService = new ApplicationThemeManagerService(this);
-            WindowHelper.ThemeManagerService = ThemeManagerService;
-            ThemeManagerService.InitCornerRadius();
-            ThemeManagerService.SetApplicationTheme(ThemeManagerService.GetApplicationTheme());
 
             InitializeComponent();
 

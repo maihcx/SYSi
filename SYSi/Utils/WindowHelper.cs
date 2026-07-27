@@ -2,10 +2,6 @@
 {
     public static class WindowHelper
     {
-        public static ApplicationThemeManagerService? ThemeManagerService;
-
-        public static Window? MainWindow;
-
         public static ISnackbarService? GlobalSnackbar;
 
         [DllImport("user32.dll")]

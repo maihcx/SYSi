@@ -7,7 +7,7 @@ namespace SYSi.ViewModels.PagesBottom
     {
         public event Action? ScrollToUpdateRequested;
 
-        private static ApplicationThemeManagerService? ThemeManagerService = WindowHelper.ThemeManagerService;
+        private readonly ThemeManagerHostService? ThemeManagerService;
 
         private readonly UpdateHostService updateHostService;
 
@@ -23,15 +23,23 @@ namespace SYSi.ViewModels.PagesBottom
             UpdateHostService updateHostService, 
             HardwareHostService hardwareHostService, 
             OsHostService osHostService, 
-            NavigationPanelHostService navigationPanelHostService
+            NavigationPanelHostService navigationPanelHostService,
+            ThemeManagerHostService themeManagerService
         )
         {
+            _autoHideNavigationPanel = navigationPanelHostService.NaviPanelOpen == NaviPanelOpenState.Auto;
+
             this.updateHostService = updateHostService;
             this.hardwareHostService = hardwareHostService;
             this.osHostService = osHostService;
             this.navigationPanelHostService = navigationPanelHostService;
+            this.ThemeManagerService = themeManagerService;
 
-            _autoHideNavigationPanel = navigationPanelHostService.NaviPanelOpen == NaviPanelOpenState.Auto;
+            _selectedTheme = ThemeManagerService?.GetThemeCBBSelected();
+            _themeList = ThemeManagerService?.GetThemeCBBs();
+            _selectedMaterial = ThemeManagerService?.GetMaterialCBBSelected();
+            _materialList = ThemeManagerService?.GetMaterialCBBs();
+            _sliderCornerRadius = ThemeManagerService?.GlobalCornerRadius ?? 0;
 
             InitializeViewModel();
         }
@@ -158,10 +166,10 @@ namespace SYSi.ViewModels.PagesBottom
 
         #region Theme list handle
         [ObservableProperty]
-        private Models.ComboBoxItem? _selectedTheme = ThemeManagerService?.GetThemeCBBSelected();
+        private Models.ComboBoxItem? _selectedTheme;
 
         [ObservableProperty]
-        private ObservableCollection<Models.ComboBoxItem>? _themeList = ThemeManagerService?.GetThemeCBBs();
+        private ObservableCollection<Models.ComboBoxItem>? _themeList;
 
         partial void OnSelectedThemeChanged(Models.ComboBoxItem? value)
         {
@@ -171,10 +179,10 @@ namespace SYSi.ViewModels.PagesBottom
 
         #region Material list handle
         [ObservableProperty]
-        private Models.ComboBoxItem? _selectedMaterial = ThemeManagerService?.GetMaterialCBBSelected();
+        private Models.ComboBoxItem? _selectedMaterial;
 
         [ObservableProperty]
-        private ObservableCollection<Models.ComboBoxItem>? _materialList = ThemeManagerService?.GetMaterialCBBs();
+        private ObservableCollection<Models.ComboBoxItem>? _materialList;
 
         partial void OnSelectedMaterialChanged(Models.ComboBoxItem? value)
         {
@@ -185,7 +193,7 @@ namespace SYSi.ViewModels.PagesBottom
 
         #region CornerRadius list handle
         [ObservableProperty]
-        private int _sliderCornerRadius = ThemeManagerService?.GlobalCornerRadius ?? 0;
+        private int _sliderCornerRadius;
 
         partial void OnSliderCornerRadiusChanged(int oldValue, int newValue)
         {

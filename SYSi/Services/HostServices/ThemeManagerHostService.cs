@@ -1,7 +1,14 @@
-﻿namespace SYSi.Services
+﻿namespace SYSi.Services.HostServices
 {
-    public class ApplicationThemeManagerService
+    public class ThemeManagerHostService : IHostedService
     {
+        private readonly IServiceProvider _serviceProvider;
+
+        public ThemeManagerHostService(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
+
         public WindowBackdropType GetBackdropType()
         {
             return (WindowBackdropType)Enum.Parse(
@@ -14,27 +21,16 @@
 
         public event ThemeChangedHandle? OnThemeChanged;
 
-        public Window MainWindowHandle { get; private set; }
+        public Window? MainWindowHandle { get; private set; }
 
         public bool IsWatcher { get; set; }
 
-        public ApplicationThemeManagerService(Window mainWindow)
+        public void Init(Window mainWindow)
         {
             MainWindowHandle = mainWindow;
-            //ApplicationThemeManager.Changed += (ThemeType currentTheme, System.Windows.Media.Color systemAccent) =>
-            //{
-            //ThemeType themeType = Wpf.Ui.Appearance.ApplicationThemeManager.GetAppTheme();
-            //ApplicationSysTheme = themeService.GetTheme();
 
-            //if (ApplicationThemeManager.IsMatchedDark() || (!ApplicationThemeManager.IsMatchedLight() && currentTheme == ThemeType.Light))
-            //{
-            //    ApplicationSysTheme = ThemeType.Dark;
-            //}
-            //else if (ApplicationThemeManager.IsMatchedLight() || (!ApplicationThemeManager.IsMatchedDark() && currentTheme == ThemeType.Dark))
-            //{
-            //    ApplicationSysTheme = ThemeType.Light;
-            //}
-            //};
+            InitCornerRadius();
+            SetApplicationTheme(GetApplicationTheme());
         }
 
         public void SetBackdropType(WindowBackdropType _WindowBackdropType)
@@ -79,23 +75,22 @@
             return _ThemeType;
         }
 
-        private int globalCornerRadius = UserDataStore.GetValue<int>("ObjectCornerRadius");
         public int GlobalCornerRadius
         {
-            get => globalCornerRadius;
+            get => field;
             set
             {
-                if (globalCornerRadius == value)
+                if (field == value)
                 {
                     return;
                 }
 
-                globalCornerRadius = value;
+                field = value;
 
                 Application.Current.Resources["ControlCornerRadius"] = new CornerRadius(value);
                 UserDataStore.SetValue("ObjectCornerRadius", value);
             }
-        }
+        } = UserDataStore.GetValue<int>("ObjectCornerRadius");
 
         public void SetApplicationTheme(ThemeConfigs.IThemeType _IThemeType)
         {
@@ -120,7 +115,7 @@
             if (!IsWatcher)
             {
                 ThemeApply(applicationTheme, windowBackdrop);
-                Watcher.Watch(WindowHelper.MainWindow, windowBackdrop, updateAccents);
+                Watcher.Watch(MainWindowHandle, windowBackdrop, updateAccents);
                 SystemThemeWatcher.Watch(MainWindowHandle, this.GetBackdropType(), updateAccents);
 
                 IsWatcher = true;
@@ -136,7 +131,7 @@
         {
             if (IsWatcher)
             {
-                Watcher.UnWatch(WindowHelper.MainWindow);
+                Watcher.UnWatch(MainWindowHandle);
                 SystemThemeWatcher.UnWatch(MainWindowHandle);
                 IsWatcher = false;
             }
@@ -182,6 +177,17 @@
         public Models.ComboBoxItem? GetMaterialCBBSelected()
         {
             return GetMaterialCBBs().FirstOrDefault(x => x.Content == GetBackdropType().ToString());
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            Init(App.Current.MainWindow);
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
     }
 }
