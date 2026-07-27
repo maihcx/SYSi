@@ -59,6 +59,8 @@
                 // Main window with navigation
                 services.AddSingleton<IWindow, MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
+                services.AddSingleton<ThemeManagerHostService>();
+                services.AddSingleton<IHostedService>(ihsv => ihsv.GetRequiredService<ThemeManagerHostService>());
                 services.AddSingleton<INavigationService, NavigationService>();
                 services.AddSingleton<ISnackbarService, SnackbarService>();
                 services.AddSingleton<WindowsProviderService>();

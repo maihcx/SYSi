@@ -6,6 +6,8 @@ public class StatusBadge : Control
         DependencyProperty.Register(nameof(IsHighContrast), typeof(bool), typeof(StatusBadge),
             new PropertyMetadata(false));
 
+    private ThemeManagerHostService? themeManagerService;
+
     public bool IsHighContrast
     {
         get => (bool)GetValue(IsHighContrastProperty);
@@ -21,8 +23,9 @@ public class StatusBadge : Control
 
     public StatusBadge()
     {
-        IsHighContrast = WindowHelper.ThemeManagerService?.GetSysApplicationTheme() == ApplicationTheme.HighContrast;
-        WindowHelper.ThemeManagerService?.OnThemeChanged += StatusBadge_OnThemeChanged;
+        themeManagerService = App.GetRequiredService<ThemeManagerHostService>();
+        IsHighContrast = themeManagerService?.GetSysApplicationTheme() == ApplicationTheme.HighContrast;
+        themeManagerService?.OnThemeChanged += StatusBadge_OnThemeChanged;
     }
 
     private void StatusBadge_OnThemeChanged(ThemeType theme)
